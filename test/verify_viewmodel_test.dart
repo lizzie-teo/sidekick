@@ -7,13 +7,16 @@ import 'support/fakes.dart';
 
 void main() {
   late FakeAuthService authService;
+  late FakeConfigurationService configurationService;
   late VerifyViewModel viewModel;
 
   VerifyViewModel build() {
     authService = FakeAuthService();
+    configurationService = FakeConfigurationService();
     return viewModel = VerifyViewModel(
       loggerService: SilentLoggerService(),
       authService: authService,
+      configurationService: configurationService,
       email: 'someone@example.com',
     );
   }
@@ -57,7 +60,7 @@ void main() {
       viewModel.init();
 
       expect(viewModel.state.value.resendCooldown,
-          VerifyViewModel.cooldownSeconds);
+          VerifyViewModel.fallbackCooldownSeconds);
       expect(viewModel.state.value.canResend, isFalse);
 
       await viewModel.resendCode();
@@ -72,10 +75,10 @@ void main() {
 
       await tester.pump(const Duration(seconds: 1));
       expect(viewModel.state.value.resendCooldown,
-          VerifyViewModel.cooldownSeconds - 1);
+          VerifyViewModel.fallbackCooldownSeconds - 1);
 
       await tester.pump(
-        const Duration(seconds: VerifyViewModel.cooldownSeconds),
+        const Duration(seconds: VerifyViewModel.fallbackCooldownSeconds),
       );
       expect(viewModel.state.value.canResend, isTrue);
 
@@ -85,6 +88,42 @@ void main() {
 
       // Resending restarts the cooldown.
       expect(viewModel.state.value.canResend, isFalse);
+
+      viewModel.dispose();
+    });
+
+    testWidgets('starts at the fallback before the configured value arrives',
+        (tester) async {
+      build();
+      configurationService.values['otp_resend_cooldown_seconds'] = '60';
+
+      viewModel.init();
+
+      // Synchronous: the cooldown is running before the read is awaited, so
+      // resend is never live during the round trip.
+      expect(viewModel.state.value.resendCooldown,
+          VerifyViewModel.fallbackCooldownSeconds);
+
+      // The read lands and the shorter configured value takes over.
+      await tester.pump();
+      expect(viewModel.state.value.resendCooldown, 60);
+
+      await tester.pump(const Duration(seconds: 60));
+      expect(viewModel.state.value.canResend, isTrue);
+
+      viewModel.dispose();
+    });
+
+    testWidgets('falls back when the configured value cannot be read',
+        (tester) async {
+      build();
+      configurationService.readError = Exception('offline');
+
+      viewModel.init();
+      await tester.pump();
+
+      expect(viewModel.state.value.resendCooldown,
+          VerifyViewModel.fallbackCooldownSeconds);
 
       viewModel.dispose();
     });

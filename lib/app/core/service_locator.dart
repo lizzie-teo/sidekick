@@ -8,6 +8,7 @@ import 'package:sidekick/app/core/auth_state_service.dart';
 import 'package:sidekick/app/core/event_bus.dart';
 import 'package:sidekick/app/core/feature_registry.dart';
 import 'package:sidekick/app/core/logger_service.dart';
+import 'package:sidekick/data/services/configuration_service.dart';
 
 final GetIt getIt = GetIt.instance;
 
@@ -34,6 +35,21 @@ Future<void> setupServiceLocator() async {
 
   getIt.registerLazySingleton<AuthStateService>(
     () => AuthStateService(
+      loggerService: getIt<LoggerService>(),
+      supabaseClient: getIt<SupabaseClient>(),
+      // Signing out is the end of the session, so it is what runs the
+      // features' session-scoped cleanup.
+      onSessionEnded: () async {
+        for (final module in featureModules) {
+          await module.onSessionEnded();
+        }
+      },
+    ),
+  );
+
+  // Data services
+  getIt.registerLazySingleton<ConfigurationService>(
+    () => ConfigurationService(
       loggerService: getIt<LoggerService>(),
       supabaseClient: getIt<SupabaseClient>(),
     ),

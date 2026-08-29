@@ -9,7 +9,7 @@ Flutter application. Feature-first MVVM with a plugin-style feature registry.
 | Layer | Location | Rules |
 | --- | --- | --- |
 | App | `lib/app/` | Cross-cutting: routing, DI, logging, events, theme, shared views |
-| Data | `lib/data/` | Models and services. Currently empty -- no backend wired up yet |
+| Data | `lib/data/` | Models and services. Currently the `_configuration` table only |
 | Features | `lib/features/` | Self-contained modules, one folder each |
 
 Dependencies point one way: Features -> Data -> (backend). Nothing in `lib/data/`
@@ -41,7 +41,8 @@ features/<name>/
   services/               feature-local business logic (add when needed)
 ```
 
-Copy `lib/features/_template/` to start a new feature.
+Copy `lib/features/_template/` to start a new feature. It is not in the
+registry -- it is the scaffold, not a feature, and it claims `/`.
 
 ### State management
 
@@ -165,7 +166,11 @@ Rules:
   **abstract type**, with the interface living in `lib/data/services/` and the
   implementation in the feature. Otherwise deleting a feature breaks another
   one and the registry stops being the only thing that changes.
-- Session-scoped services reset in `FeatureModule.onSessionEnded()`.
+- Session-scoped services reset in `FeatureModule.onSessionEnded()`, which
+  `AuthStateService` runs whenever the session goes away -- the sign-out
+  button, an expired refresh token, a sign-out on another device. The callback
+  is handed in from `service_locator.dart`, so `AuthStateService` itself still
+  knows nothing about features.
 
 Use `addTeardown()` for cleanup `watch()` does not cover: a `StreamSubscription`,
 a `TextEditingController`, a timer.
@@ -218,17 +223,54 @@ re-runs the instant a session appears or disappears. Consequences:
 Route access is decided by `Routes.public` in `app_constants.dart`. Everything
 not in that list needs a session.
 
-**Two constants must match Supabase dashboard settings.** They are not
+`/` is the authenticated destination, owned by the **dashboard** feature. There
+is no separate `/dashboard` path, so there is nothing for the guard to be kept
+in step with.
+
+Signing out is the mirror of verifying a code, and works the same way:
+`DashboardViewModel.signOut()` calls `AuthService.signOut()` and navigates
+nowhere. The session disappears, `AuthStateService` notifies, the redirect
+re-runs, and the user lands on `/welcome`. A failed sign-out leaves the user on
+the dashboard with an error, because the session really is still there.
+
+**Two settings must match Supabase dashboard settings.** They are not
 independent choices, and a mismatch is a bug the app cannot detect:
 
-| Constant | Supabase setting |
-| --- | --- |
-| `VerifyViewModel.codeLength` = 6 | Authentication -> Providers -> Email -> Email OTP length |
-| `VerifyViewModel.cooldownSeconds` = 300 | Authentication -> Providers -> Email -> minimum interval per user |
+| Setting | Where it lives | Supabase setting |
+| --- | --- | --- |
+| `codeLength` = 6 | `VerifyViewModel` | Authentication -> Providers -> Email -> Email OTP length |
+| `otp_resend_cooldown_seconds` = 300 | `_configuration` table | Authentication -> Providers -> Email -> minimum interval per user |
 
 If the cooldown is shorter than the minimum interval, the resend button
 re-enables before Supabase will accept another send, and the user gets a rate
 limit error that looks like the app is broken.
+
+The cooldown is a table row rather than a constant so it can be corrected
+without an app store release. `VerifyViewModel.fallbackCooldownSeconds` holds
+300 as well, but only as a parse guard for a missing or unreadable row -- it is
+not a third thing to keep in step.
+
+`VerifyViewModel.init()` starts the countdown at the fallback **before**
+awaiting the configured value, and swaps it in afterwards only when the two
+differ. Waiting for the read would leave "Resend code" live for the length of
+the round trip, which is exactly the window where a second send gets rate
+limited.
+
+### Runtime configuration
+
+`_configuration` is a key/value table of settings the app reads at runtime, so
+they change without a release. `config_value` is always text; `data_type` says
+how to read it and is part of the primary key, so a key cannot be read back as
+the wrong type.
+
+`ConfigurationService.getConfiguration()` returns null for a key that is not
+set and rethrows a failed read, so a caller can tell "nobody set this" apart
+from "the database could not be reached". Both current callers degrade quietly:
+a missing cooldown falls back, a missing URL leaves its footer link as plain
+text rather than blocking sign-in.
+
+Keys are declared in `ConfigKeys` in `app_constants.dart`. Migrations live in
+`_supabase/migrations/`, named `YYYYMMDD_HHMM_description.sql`.
 
 Custom SMTP (Brevo) is required, not optional: free-tier projects on Supabase's
 built-in sender cannot edit email templates, and both the **Confirm signup** and
@@ -299,14 +341,10 @@ Deliberately absent -- do not add without being asked:
 - No local database. No SQLite, no Drift.
 - No repository layer. It goes between viewmodels and data services when a
   backend and a local cache both exist.
-- `lib/data/` is still empty -- Supabase is wired up for auth only. No tables,
-  no models, no data services yet.
+- `lib/data/` holds one table's worth of code: `_configuration`, its model and
+  its service. No domain tables yet.
 - No connectivity or onboarding guards. The auth guard is in place; the redirect
   marks where the others land around it.
-- No sign-out UI. `AuthService.signOut()` exists and the redirect handles the
-  rest, but nothing calls it yet.
-- `/` is still the `_template` screen. It is the authenticated destination and
-  needs replacing with a real home screen.
 - `StateScope` in `app_constants.dart` is a placeholder enum with nothing behind
   it yet. It marks the intended split between application-scoped and
   session-scoped state.

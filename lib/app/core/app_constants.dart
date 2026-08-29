@@ -24,6 +24,22 @@ abstract class Routes {
   static const List<String> public = <String>[welcome, connect, verify];
 }
 
+// Keys in the _configuration table. Every one of these rows is expected to
+// exist -- see _supabase/migrations. A missing row degrades the screen that
+// reads it rather than breaking it.
+abstract class ConfigKeys {
+  static const String termsOfServiceUrl = 'terms_of_service_url';
+  static const String privacyPolicyUrl = 'privacy_policy_url';
+  static const String otpResendCooldownSeconds = 'otp_resend_cooldown_seconds';
+}
+
+// How to read a _configuration.config_value, which is always stored as text.
+// Part of the table's primary key, so it is asked for on every read.
+enum ConfigurationDataType {
+  integer,
+  string,
+}
+
 // Lifecycle of a value held by the state layer.
 //
 // Application: survives for the life of the process, shared app-wide.
