@@ -34,4 +34,30 @@ void main() {
 
     expect(find.text('connect screen'), findsOneWidget);
   });
+
+  testWidgets('the link leads to the design system screen', (tester) async {
+    final router = GoRouter(
+      initialLocation: Routes.welcome,
+      routes: [
+        GoRoute(
+          path: Routes.welcome,
+          builder: (context, state) => const WelcomeView(),
+        ),
+        GoRoute(
+          path: Routes.designSystem,
+          builder: (context, state) =>
+              const Scaffold(body: Text('design system screen')),
+        ),
+      ],
+    );
+
+    await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+
+    expect(find.text('Design system'), findsOneWidget);
+
+    await tester.tap(find.text('Design system'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('design system screen'), findsOneWidget);
+  });
 }

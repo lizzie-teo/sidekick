@@ -20,8 +20,16 @@ abstract class Routes {
   static const String connect = '/connect';
   static const String verify = '/verify';
 
+  // Design system
+  static const String designSystem = '/design-system';
+
   // Reachable without a session. Everything else needs one.
-  static const List<String> public = <String>[welcome, connect, verify];
+  static const List<String> public = <String>[
+    welcome,
+    connect,
+    verify,
+    designSystem,
+  ];
 }
 
 // Keys in the _configuration table. Every one of these rows is expected to

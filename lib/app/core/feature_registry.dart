@@ -1,6 +1,7 @@
 import 'package:sidekick/app/core/feature_module.dart';
 import 'package:sidekick/features/authentication/authentication_module.dart';
 import 'package:sidekick/features/dashboard/dashboard_module.dart';
+import 'package:sidekick/features/design_system/design_system_module.dart';
 import 'package:sidekick/features/welcome/welcome_module.dart';
 
 // The single list of features in the application.
@@ -14,4 +15,5 @@ const List<FeatureModule> featureModules = <FeatureModule>[
   WelcomeModule(),
   AuthenticationModule(),
   DashboardModule(),
+  DesignSystemModule(),
 ];

@@ -33,6 +33,13 @@ class WelcomeView extends StatelessWidget {
               onPressed: () => context.go(Routes.connect),
               child: const Text('Get started'),
             ),
+
+            const SizedBox(height: 8),
+
+            TextButton(
+              onPressed: () => context.go(Routes.designSystem),
+              child: const Text('Design system'),
+            ),
           ],
         ),
       ),
