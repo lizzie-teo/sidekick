@@ -6,13 +6,20 @@ A Flutter application.
 
 Once per machine. Stuck on any step? Paste the error into Claude Code.
 
-1. Install **Xcode** from the Mac App Store. Open it once and let it finish
+1. Check whether you have **Homebrew**:
+
+   ```
+   brew --version
+   ```
+
+   If that errors, install it with the one command at <https://brew.sh>.
+2. Install **Xcode** from the Mac App Store. Open it once and let it finish
    installing components.
-2. Add an iPhone simulator: Xcode -> Settings -> Components -> install an iOS
+3. Add an iPhone simulator: Xcode -> Settings -> Components -> install an iOS
    simulator runtime.
-3. Install **Flutter**, following
+4. Install **Flutter**, following
    <https://docs.flutter.dev/get-started/install/macos/mobile-ios>.
-4. Check it worked:
+5. Check it worked:
 
    ```
    flutter doctor
@@ -21,7 +28,7 @@ Once per machine. Stuck on any step? Paste the error into Claude Code.
    "Flutter" and "Xcode" both need a green tick. If it asks for CocoaPods,
    run `brew install cocoapods` and check again. Ignore anything about
    Android or Linux -- you do not need them.
-5. In the project folder, install the dependencies and create your local
+6. In the project folder, install the dependencies and create your local
    credentials file:
 
    ```
@@ -29,9 +36,9 @@ Once per machine. Stuck on any step? Paste the error into Claude Code.
    cp env.example.json env.json
    ```
 
-6. Open `env.json` and paste in the two Supabase values. **Ask the project
+7. Open `env.json` and paste in the two Supabase values. **Ask the project
    owner for these** -- they are deliberately not in the repo.
-7. Create the simulator. Name it **exactly** `iPhone 17 (1)`, brackets
+8. Create the simulator. Name it **exactly** `iPhone 17 (1)`, brackets
    included -- everyone on the project uses that name, which is what lets the
    same run command work on all our machines:
 
@@ -39,7 +46,7 @@ Once per machine. Stuck on any step? Paste the error into Claude Code.
    xcrun simctl create "iPhone 17 (1)" "iPhone 17"
    ```
 
-   If that errors, the iOS runtime from step 2 is missing.
+   If that errors, the iOS runtime from step 3 is missing.
 
 ## Running the app
 
