@@ -2,18 +2,75 @@
 
 A Flutter application.
 
-## Running
+## First-time setup
 
-```
-flutter pub get
-cp env.example.json env.json     # then fill in your Supabase URL and key
-flutter run --dart-define-from-file=env.json
-```
+Once per machine. Stuck on any step? Paste the error into Claude Code.
 
-`env.json` is gitignored. Running without it shows a "Missing Supabase
-configuration" screen rather than failing at startup.
+1. Install **Xcode** from the Mac App Store. Open it once and let it finish
+   installing components.
+2. Add an iPhone simulator: Xcode -> Settings -> Components -> install an iOS
+   simulator runtime.
+3. Install **Flutter**, following
+   <https://docs.flutter.dev/get-started/install/macos/mobile-ios>.
+4. Check it worked:
 
-Tests:
+   ```
+   flutter doctor
+   ```
+
+   "Flutter" and "Xcode" both need a green tick. If it asks for CocoaPods,
+   run `brew install cocoapods` and check again. Ignore anything about
+   Android or Linux -- you do not need them.
+5. In the project folder, install the dependencies and create your local
+   credentials file:
+
+   ```
+   flutter pub get
+   cp env.example.json env.json
+   ```
+
+6. Open `env.json` and paste in the two Supabase values. **Ask the project
+   owner for these** -- they are deliberately not in the repo.
+7. Create the simulator. Name it **exactly** `iPhone 17 (1)`, brackets
+   included -- everyone on the project uses that name, which is what lets the
+   same run command work on all our machines:
+
+   ```
+   xcrun simctl create "iPhone 17 (1)" "iPhone 17"
+   ```
+
+   If that errors, the iOS runtime from step 2 is missing.
+
+## Running the app
+
+1. Boot the simulator:
+
+   ```
+   xcrun simctl boot "iPhone 17 (1)"
+   open -a Simulator
+   ```
+
+2. Run the app:
+
+   ```
+   flutter run -d "iPhone 17 (1)" --dart-define-from-file=env.json
+   ```
+
+   That flag is needed **every time** -- it is how the Supabase credentials
+   reach the app. Without it you get a "Missing Supabase configuration"
+   screen instead of the app.
+3. While it is running, in the same terminal:
+   `r` reloads your changes, `R` restarts the app, `q` quits.
+
+Finished for the day: `xcrun simctl shutdown all`.
+
+If `flutter run` cannot find the device, `flutter devices` lists what it can
+see. The name has to match `iPhone 17 (1)` character for character.
+
+To sign in, use any email address you can read: the app sends a 6-digit code
+rather than asking for a password.
+
+## Checks
 
 ```
 flutter analyze
