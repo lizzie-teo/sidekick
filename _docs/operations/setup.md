@@ -45,12 +45,12 @@ flutter test
 
 ## Supabase dashboard settings this depends on
 
-**Status: not yet configured.** The Supabase project does not exist at the time
-of writing and `env.json` still holds the template placeholders. This section is
-the specification to configure it against, taken from Howler, which has run this
-same flow in production since 16 August 2026. Once the project is set up, keep
-this section updated as the record of configured state rather than a to-do list,
-so nothing gets changed back by accident.
+**Status: configured.** The project exists, sign-in and sign-out both work end
+to end, and the migrations under `_supabase/migrations/` have been applied.
+
+This section is the record of configured state, not a to-do list. Anything
+changed in the dashboard should be changed here in the same sitting, so a
+setting that drifts is visible in a diff rather than discovered by a user.
 
 ### Authentication → Email Templates
 
@@ -69,13 +69,19 @@ different paths through this, so test both.
 | --- | --- | --- |
 | Email OTP expiry | 600 seconds | — |
 | Email OTP length | 6 digits | `VerifyViewModel.codeLength` |
-| Minimum interval per user | 300 seconds | `VerifyViewModel.cooldownSeconds` |
+| Minimum interval per user | 300 seconds | `otp_resend_cooldown_seconds` in `_configuration` |
 
 Nothing enforces the last two pairings, so move each pair together or not at
 all. If the app's cooldown is the shorter of the two, the "Resend code" button
 re-enables before Supabase will accept another send and the user gets a rate
 limit error that looks like a broken app; if it is the longer, they wait for no
 reason.
+
+The cooldown is a table row rather than a constant, so correcting a mismatch is
+a SQL statement rather than an app store release.
+`VerifyViewModel.fallbackCooldownSeconds` also holds 300, but only as a parse
+guard for a missing or unreadable row -- it is not a third value to keep in
+step.
 
 ### SMTP
 
@@ -114,23 +120,24 @@ It matters even though this app is one-time-code only. `AuthService` calls
 which is a second way in that no one is watching. Either enable this check, or
 keep the email provider's password grant disabled.
 
-## What Sidekick does not have yet
+## Runtime configuration
 
-Howler reads some of these values from a `public._configuration` table so they
-can change without an app store release. Sidekick has no data layer yet — `lib/data/`
-is empty and there is no configuration service — so the equivalent values are
-compile-time constants:
+Values that have to track a dashboard setting live in the `public._configuration`
+table, so correcting one does not mean an app store release:
 
-| Value | Sidekick | Howler |
-| --- | --- | --- |
-| Resend cooldown | `VerifyViewModel.cooldownSeconds` = 300 | `otp_resend_cooldown_seconds` row, falling back to 300 |
-| OTP length | `VerifyViewModel.codeLength` = 6 | same, constant |
-| Terms / privacy URLs | not present | `terms_of_service_url`, `privacy_policy_url` rows |
+| Value | Where it lives |
+| --- | --- |
+| Resend cooldown | `otp_resend_cooldown_seconds` row, falling back to 300 |
+| OTP length | `VerifyViewModel.codeLength` = 6, a constant |
 
-Moving the cooldown into a config table is worth doing once there is a data
-layer, since it has to track a dashboard setting that can change. Until then,
-changing it means an app release.
+OTP length stays a constant because the field's `maxLength` and its validation
+have to agree with it at build time, and it does not change once chosen.
 
-There is also no `_supabase/` directory here yet. Howler keeps migrations,
-edge functions and SQL under `_supabase/` rather than the CLI default
-`supabase/`; match that when the first migration is written.
+Migrations live in `_supabase/migrations/`, named `YYYYMMDD_HHMM_description.sql`
+-- Howler's layout, chosen over the Supabase CLI default `supabase/` so the
+directory sorts with the other underscore-prefixed project folders.
+
+A `terms_of_service_url` / `privacy_policy_url` pair existed briefly for the
+connect screen footer and was removed on 29 August 2026 along with the footer
+itself. `20260829_1256_remove_footer_urls.sql` deletes the rows; re-running
+`20260829_1133_configuration.sql` re-seeds them if the footer comes back.
