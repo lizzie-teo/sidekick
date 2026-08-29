@@ -21,9 +21,6 @@ dependencies:
   supabase_flutter: ^2.17.2
   flutter_secure_storage: ^11.0.0
 
-  # Used to open the footer's Terms and Privacy links in the browser
-  url_launcher: ^6.3.2
-
 dev_dependencies:
   flutter_test:
     sdk: flutter

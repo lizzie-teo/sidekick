@@ -28,8 +28,6 @@ abstract class Routes {
 // exist -- see _supabase/migrations. A missing row degrades the screen that
 // reads it rather than breaking it.
 abstract class ConfigKeys {
-  static const String termsOfServiceUrl = 'terms_of_service_url';
-  static const String privacyPolicyUrl = 'privacy_policy_url';
   static const String otpResendCooldownSeconds = 'otp_resend_cooldown_seconds';
 }
 

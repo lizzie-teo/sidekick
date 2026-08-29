@@ -265,9 +265,8 @@ the wrong type.
 
 `ConfigurationService.getConfiguration()` returns null for a key that is not
 set and rethrows a failed read, so a caller can tell "nobody set this" apart
-from "the database could not be reached". Both current callers degrade quietly:
-a missing cooldown falls back, a missing URL leaves its footer link as plain
-text rather than blocking sign-in.
+from "the database could not be reached". The one current caller degrades
+quietly: a missing cooldown falls back rather than blocking sign-in.
 
 Keys are declared in `ConfigKeys` in `app_constants.dart`. Migrations live in
 `_supabase/migrations/`, named `YYYYMMDD_HHMM_description.sql`.

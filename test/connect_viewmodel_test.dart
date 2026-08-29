@@ -7,16 +7,13 @@ import 'support/fakes.dart';
 
 void main() {
   late FakeAuthService authService;
-  late FakeConfigurationService configurationService;
   late ConnectViewModel viewModel;
 
   setUp(() {
     authService = FakeAuthService();
-    configurationService = FakeConfigurationService();
     viewModel = ConnectViewModel(
       loggerService: SilentLoggerService(),
       authService: authService,
-      configurationService: configurationService,
     );
   });
 
@@ -63,25 +60,4 @@ void main() {
     expect(viewModel.state.value.errors, isEmpty);
   });
 
-  group('footer links', () {
-    test('folds the configured URLs into state', () async {
-      configurationService.values['terms_of_service_url'] = 'https://t.example';
-      configurationService.values['privacy_policy_url'] = 'https://p.example';
-
-      await viewModel.init();
-
-      expect(viewModel.state.value.termsUrl, 'https://t.example');
-      expect(viewModel.state.value.privacyUrl, 'https://p.example');
-    });
-
-    test('leaves the URLs null when the read fails, rather than throwing',
-        () async {
-      configurationService.readError = Exception('offline');
-
-      await viewModel.init();
-
-      expect(viewModel.state.value.termsUrl, isNull);
-      expect(viewModel.state.value.privacyUrl, isNull);
-    });
-  });
 }
