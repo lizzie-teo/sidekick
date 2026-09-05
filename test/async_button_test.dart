@@ -6,7 +6,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:sidekick/app/widgets/async_button.dart';
 
 void main() {
-  testWidgets('ignores repeat taps while the action is in flight', (tester) async {
+  testWidgets('ignores repeat taps while the action is in flight',
+      (tester) async {
     var callCount = 0;
     final completer = Completer<void>();
 

@@ -108,7 +108,9 @@ class _VerifyViewState extends State<VerifyView> {
                         autofocus: true,
                         autofillHints: const [AutofillHints.oneTimeCode],
                         maxLength: VerifyViewModel.codeLength,
-                        inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                        inputFormatters: [
+                          FilteringTextInputFormatter.digitsOnly
+                        ],
                         textInputAction: TextInputAction.go,
                         onSubmitted: (_) => _viewModel.verify(_controller.text),
                         decoration: InputDecoration(
@@ -123,12 +125,10 @@ class _VerifyViewState extends State<VerifyView> {
                         const SizedBox(height: 12),
                         Text(
                           state.errors['general']!,
-                          style: Theme.of(context)
-                              .textTheme
-                              .bodyMedium
-                              ?.copyWith(
-                                color: Theme.of(context).colorScheme.error,
-                              ),
+                          style:
+                              Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                    color: Theme.of(context).colorScheme.error,
+                                  ),
                           textAlign: TextAlign.center,
                         ),
                       ],
@@ -155,7 +155,8 @@ class _VerifyViewState extends State<VerifyView> {
                       const SizedBox(height: 12),
 
                       TextButton(
-                        onPressed: state.canResend ? _viewModel.resendCode : null,
+                        onPressed:
+                            state.canResend ? _viewModel.resendCode : null,
                         child: Text(
                           state.canResend
                               ? 'Resend code'

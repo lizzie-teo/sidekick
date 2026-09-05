@@ -26,7 +26,8 @@ class _CounterState {
 }
 
 class _CounterViewModel extends ViewModel<_CounterState> {
-  _CounterViewModel(ValueListenable<int> source) : super(const _CounterState()) {
+  _CounterViewModel(ValueListenable<int> source)
+      : super(const _CounterState()) {
     watch(source, (value) => emit(current.copyWith(shared: value)));
   }
 

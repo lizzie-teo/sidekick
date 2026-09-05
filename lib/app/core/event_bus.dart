@@ -6,7 +6,8 @@ import 'dart:async';
 // deliver (auth state changed, connectivity dropped, a table changed remotely).
 // Feature-to-feature calls should be direct and typed, not routed through here.
 class EventBus {
-  final StreamController<AppEvent> _controller = StreamController<AppEvent>.broadcast();
+  final StreamController<AppEvent> _controller =
+      StreamController<AppEvent>.broadcast();
 
   Stream<AppEvent> get stream => _controller.stream;
 

@@ -64,3 +64,7 @@ app.*.map.json
 
 # Local Supabase credentials (see env.example.json)
 env.json
+
+# Design source archives. The wireframes are tracked unzipped in
+# _docs/design-guidelines/; the zip is a 23MB duplicate of the same thing.
+_docs/briefs/*.zip

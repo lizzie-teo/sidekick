@@ -1,6 +1,9 @@
 import 'package:sidekick/app/core/feature_module.dart';
 import 'package:sidekick/features/authentication/authentication_module.dart';
 import 'package:sidekick/features/dashboard/dashboard_module.dart';
+import 'package:sidekick/features/good_things/good_things_module.dart';
+import 'package:sidekick/features/meditate/meditate_module.dart';
+import 'package:sidekick/features/me/me_module.dart';
 import 'package:sidekick/features/design_system/design_system_module.dart';
 import 'package:sidekick/features/welcome/welcome_module.dart';
 
@@ -15,5 +18,8 @@ const List<FeatureModule> featureModules = <FeatureModule>[
   WelcomeModule(),
   AuthenticationModule(),
   DashboardModule(),
+  GoodThingsModule(),
+  MeditateModule(),
+  MeModule(),
   DesignSystemModule(),
 ];

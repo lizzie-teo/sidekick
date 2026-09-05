@@ -35,21 +35,33 @@ class AppRouter {
       redirect: (BuildContext context, GoRouterState state) {
         final String path = state.uri.path;
         final bool isAuthenticated = authStateService.isAuthenticated.value;
-        final bool isPublic = Routes.public.contains(path);
+        final bool hasAccount = authStateService.hasAccount.value;
 
         loggerService.debug(
-          'Router: $path, authenticated $isAuthenticated',
+          'Router: $path, authenticated $isAuthenticated, '
+          'account $hasAccount',
         );
 
         // Guards run in priority order. Connectivity and onboarding land here
         // when they exist, before and after auth respectively.
+        //
+        // Sign-in is a door on one room, not a gate on the app. Everyone has a
+        // session from first open -- an anonymous one -- so requiresSession is
+        // empty and this branch is effectively dead. It stays as the hook for
+        // a screen that one day needs more than the app can give it on its
+        // own.
         if (!isAuthenticated) {
-          return isPublic ? null : Routes.welcome;
+          return Routes.requiresSession.contains(path) ? Routes.connect : null;
         }
 
-        // Signed in: the auth screens are no longer somewhere to be, which is
-        // what leaves the home screen at the bottom of the stack.
-        return isPublic ? Routes.home : null;
+        // The account screens exist to put an email on the account. Once there
+        // is one they are no longer somewhere to be. The test is hasAccount,
+        // not isAuthenticated: an anonymous session is exactly the state these
+        // screens are there to change, so testing the session would lock out
+        // everyone who needs them.
+        return hasAccount && Routes.authScreens.contains(path)
+            ? Routes.home
+            : null;
       },
       routes: <RouteBase>[
         // App-level routes, outside the shell chrome

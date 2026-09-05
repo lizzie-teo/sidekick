@@ -5,12 +5,22 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'package:sidekick/app/core/logger_service.dart';
 
-// Whether anyone is signed in.
+// Two facts about the current user, kept apart on purpose.
 //
-// This is an app-wide service holding a ValueNotifier, the shape described in
-// CLAUDE.md: private notifier, read-only ValueListenable out. It is also the
-// router's refreshListenable, so the redirect re-runs the moment a session
-// appears or goes away.
+// isAuthenticated -- there is a session. True for everyone from first open,
+// because the app signs in anonymously. Almost nothing should ask this.
+//
+// hasAccount -- there is an email on the account, so it can be recovered on a
+// new phone. This is what "signed in" means to the user, and what the account
+// screens and the Me tab hang off.
+//
+// Collapsing the two would break both ends: a session test makes /connect
+// unreachable, and an email test would let a screen run with no session.
+//
+// This is an app-wide service holding ValueNotifiers, the shape described in
+// CLAUDE.md: private notifier, read-only ValueListenable out. isAuthenticated
+// is also the router's refreshListenable, so the redirect re-runs the moment
+// a session appears or goes away.
 //
 // This is the only thing watching Supabase's auth stream. Views ask the router
 // where they are, and the router asks this.
@@ -28,8 +38,11 @@ class AuthStateService {
         _onSessionEnded = onSessionEnded;
 
   final ValueNotifier<bool> _isAuthenticated = ValueNotifier<bool>(false);
+  final ValueNotifier<bool> _hasAccount = ValueNotifier<bool>(false);
 
   ValueListenable<bool> get isAuthenticated => _isAuthenticated;
+
+  ValueListenable<bool> get hasAccount => _hasAccount;
 
   StreamSubscription<AuthState>? _subscription;
 
@@ -37,30 +50,47 @@ class AuthStateService {
   // restores a persisted session before emitting its first event, so a
   // returning user is already authenticated by the time the router first runs.
   void initialize() {
-    _isAuthenticated.value = _supabaseClient.auth.currentSession != null;
+    _apply(_supabaseClient.auth.currentSession);
 
     _subscription = _supabaseClient.auth.onAuthStateChange.listen((authState) {
-      final next = authState.session != null;
-      if (next == _isAuthenticated.value) {
-        return;
-      }
+      final bool wasAuthenticated = _isAuthenticated.value;
 
-      _loggerService.debug('AuthStateService: isAuthenticated $next');
-      _isAuthenticated.value = next;
+      _apply(authState.session);
 
       // Every way a session can end arrives here -- the sign-out button, an
       // expired refresh token, a sign-out on another device -- so this is the
       // one place session-scoped state can be reset from. Deliberately after
-      // the notifier is updated, so the redirect has already moved the user
-      // off the screens that were reading it.
+      // the notifiers are updated, so the redirect has already moved the user
+      // off the screens that were reading them.
       //
       // The callback is passed in rather than reached for: this service knows
       // nothing about features, and service_locator.dart is where the registry
       // is already iterated.
-      if (!next) {
+      if (wasAuthenticated && !_isAuthenticated.value) {
         _endSession();
       }
     });
+  }
+
+  // The session decides both notifiers. Assigning an unchanged value to a
+  // ValueNotifier notifies nobody, so there is nothing to guard here: a token
+  // refresh that changes neither fact rebuilds nothing.
+  void _apply(Session? session) {
+    final User? user = session?.user;
+    final bool authenticated = session != null;
+    final bool account =
+        user != null && !user.isAnonymous && (user.email?.isNotEmpty ?? false);
+
+    if (authenticated != _isAuthenticated.value ||
+        account != _hasAccount.value) {
+      _loggerService.debug(
+        'AuthStateService: isAuthenticated $authenticated, '
+        'hasAccount $account',
+      );
+    }
+
+    _isAuthenticated.value = authenticated;
+    _hasAccount.value = account;
   }
 
   // Fire and forget: nothing waits on cleanup, and a feature that throws while
@@ -76,5 +106,6 @@ class AuthStateService {
   void dispose() {
     _subscription?.cancel();
     _isAuthenticated.dispose();
+    _hasAccount.dispose();
   }
 }

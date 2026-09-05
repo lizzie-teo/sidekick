@@ -192,46 +192,117 @@ The session is persisted by `SecureLocalStorage` into the Android Keystore /
 iOS Keychain, not the package default of unencrypted SharedPreferences /
 NSUserDefaults.
 
-The signed-out flow:
+**Everyone has a session from first open.** `AuthService.ensureSession()`
+calls `signInAnonymously()` during startup, so every install is a real
+Supabase user with a real session and no email address. Good things and
+journal entries go to the server from the very first save, under row-level
+security. There is no copy on the phone, no holding pen, no upload step and
+nothing to merge.
+
+The call is deliberately **not** awaited in `setupServiceLocator()`. It is a
+network call, and blocking the first frame on it would hold a slow or offline
+first open on a blank screen. Nothing is gated on the session, so the app
+opens either way, and `ensureSession()` is safe to call again from the first
+save. Failure is logged, not thrown.
+
+**"Signed in" means an email, not a session.** These are two different facts
+and `AuthStateService` exposes them separately:
+
+| Notifier | Means | Who asks |
+| --- | --- | --- |
+| `isAuthenticated` | There is a session | The router's `requiresSession` guard, and almost nothing else |
+| `hasAccount` | There is an email on the account | The router's `authScreens` guard, `MeViewModel`, anything user-facing |
+
+Collapsing the two breaks both ends. A session test makes `/connect`
+unreachable -- everyone already has a session, so the redirect would bounce
+off the one screen that exists to change that. An email test would let a
+screen run with nothing to save to.
+
+Anonymous users hold the `authenticated` role, so RLS policies must read the
+`is_anonymous` claim rather than assume a real account.
+
+Anonymous rows are never cleaned up by Supabase.
+`_supabase/migrations/20260905_1030_anonymous_account_cleanup.sql` schedules a
+daily `pg_cron` job that deletes anonymous accounts **that have nothing in
+them** -- anonymous, older than 30 days, and owning no rows. An account with
+something saved in it is kept forever, however long its owner has been away.
+
+The rule is deliberately not "has not been back". `last_sign_in_at` reads like
+that but a session refresh is not a sign-in and does not move it, so a daily
+user's clock would never advance and they would be deleted on day 31 with
+everything they had written. Supabase's own documented cleanup has this bug.
+
+**Adding a user table means editing that migration.** The function holds a
+`covered` list of tables that mean "this account owns something", and refuses
+to delete anything while a `public` table with a `user_id` column is missing
+from it. A skipped night costs nothing; a silent delete cannot be undone.
+
+**Turnstile is outstanding.** `signInAnonymously()` should carry a captcha
+token before the app is released, or the endpoint can be called repeatedly to
+inflate the auth table. There is a `TODO(launch)` on the call.
+
+The account flow:
 
 ```
-/welcome  --[Get started]-->  /connect  --[code sent]-->  /verify
-   ^                                                         |
-   |                                              session created
-   |                                                         v
-   +----------------[sign out]---------------------------   /
+/connect  --[code sent]-->  /verify  --[email attached]-->  back to the app
 ```
 
-`/welcome` is where the redirect sends anyone without a session. It is its own
-feature (`lib/features/welcome/`), not part of authentication: it is the app
-introducing itself, and will carry branding that has nothing to do with signing
-in. It has no viewmodel, because it holds no state.
+`AuthService.signInWithOtp()` does two different things behind one name, and
+the difference matters: the user already has an account, so a plain
+`signInWithOtp` would create a **second** one and strand everything saved on
+the first.
+
+| Current user | What happens |
+| --- | --- |
+| Anonymous | `updateUser(email:)` -- attaches the address to the account they already have |
+| Has an email | `signInWithOtp(email:)` -- a normal sign-in on another device |
+
+`verifyOtp()` picks its `OtpType` the same way, from `currentUser.newEmail`
+rather than from a flag carried over from the screen before, so the flow
+survives the app being closed between the two screens.
+
+`/welcome` is the app introducing itself, its own feature
+(`lib/features/welcome/`), not part of authentication. It is reachable but no
+longer a gate: the redirect does not send anyone there. It has no viewmodel,
+because it holds no state.
 
 `/connect` is the screen that collects an email address and asks Supabase to
 send a one-time code. Named for what the user is doing, not for the field.
 
-**The router owns where the user is.** `AuthStateService` holds a
-`ValueNotifier<bool>` and is the router's `refreshListenable`, so the redirect
-re-runs the instant a session appears or disappears. Consequences:
+**The router owns where the user is.** `AuthStateService.isAuthenticated` is
+the router's `refreshListenable`, so the redirect re-runs the instant the
+session changes. Consequences:
 
-- `VerifyView` does **not** navigate on success. Verifying produces a session,
-  and the redirect moves the user. Nothing calls `context.go` on sign-in.
-- `ConnectView` **does** navigate to `/verify`, because no session exists yet
-  and the redirect cannot move anyone.
-- Signing out anywhere redirects to `/welcome` with no navigation code.
+- `VerifyView` does **not** navigate on success. Verifying puts an email on
+  the account, and the redirect moves the user off the auth screens. Nothing
+  calls `context.go` on sign-in.
+- `ConnectView` **does** navigate to `/verify`, because no email is attached
+  yet and the redirect cannot move anyone.
+- Signing out navigates nowhere and redirects nowhere: no screen the user can
+  be on requires an account, so the user stays put.
 
-Route access is decided by `Routes.public` in `app_constants.dart`. Everything
-not in that list needs a session.
+Two lists in `app_constants.dart` decide route access. `Routes.authScreens`
+(`/welcome`, `/connect`, `/verify`) bounce a user who **has an email** to
+home -- they exist to attach one, so they are no longer somewhere to be.
+`Routes.requiresSession` bounces a user with no session at all to `/connect`;
+it is empty and expected to stay that way, since the app signs in on first
+open. Every other route is open to everyone.
 
-`/` is the authenticated destination, owned by the **dashboard** feature. There
-is no separate `/dashboard` path, so there is nothing for the guard to be kept
-in step with.
+`/` is home for everyone, owned by the **dashboard** feature. There is no
+separate `/dashboard` path, so there is nothing for the guard to be kept in
+step with.
 
-Signing out is the mirror of verifying a code, and works the same way:
-`DashboardViewModel.signOut()` calls `AuthService.signOut()` and navigates
-nowhere. The session disappears, `AuthStateService` notifies, the redirect
-re-runs, and the user lands on `/welcome`. A failed sign-out leaves the user on
-the dashboard with an error, because the session really is still there.
+Signing out lives on the Me page and works like verifying a code in reverse:
+`MeViewModel.signOut()` calls `AuthService.signOut()` and navigates nowhere.
+The account disappears, `AuthStateService` notifies, and the viewmodel's
+`watch()` on `hasAccount` flips the page -- the account group swaps
+"Sign out" for "Create an account". A failed sign-out leaves an error
+instead, because the account really is still there.
+
+The user does not end up with **no** session. The `onSessionEnded` callback in
+`service_locator.dart` runs the features' cleanup and then calls
+`ensureSession()`, which takes a fresh anonymous account. Good things still
+saves -- to a new, empty account. That is what signing out means here.
 
 **Two settings must match Supabase dashboard settings.** They are not
 independent choices, and a mismatch is a bug the app cannot detect:
@@ -271,12 +342,33 @@ quietly: a missing cooldown falls back rather than blocking sign-in.
 Keys are declared in `ConfigKeys` in `app_constants.dart`. Migrations live in
 `_supabase/migrations/`, named `YYYYMMDD_HHMM_description.sql`.
 
+`DeviceSettingsService` is the other half of the same idea, for the settings
+that never leave the phone: which pairing Home showed last, the onboarding
+answers. Losing any of it costs the user nothing, which is why it is not on
+the server. Anything the user would miss on a new phone belongs in a Supabase
+table instead. Keys are declared in `SettingsKeys` in `app_constants.dart`.
+
+It wraps `SharedPreferencesAsync`, which talks to the platform on every call
+rather than caching a snapshot at startup. That means no `initialize()` step
+and no window where a read quietly returns null; the cost is that every read
+is a `Future`, which viewmodels await in `init()`. A failed read returns the
+fallback rather than throwing.
+
 Custom SMTP (Brevo) is required, not optional: free-tier projects on Supabase's
-built-in sender cannot edit email templates, and both the **Confirm signup** and
-**Magic Link** templates must use `{{ .Token }}` rather than
-`{{ .ConfirmationURL }}` for one-time codes to arrive. Missing either template
-breaks exactly one group -- first-time addresses take one path, returning users
-the other.
+built-in sender cannot edit email templates, and **three** templates must use
+`{{ .Token }}` rather than `{{ .ConfirmationURL }}` for one-time codes to
+arrive. Missing any one of them breaks exactly one group and nothing else,
+which is why the symptom is always "it works for me":
+
+| Template | Who hits it |
+| --- | --- |
+| Confirm signup | A first-time address |
+| Magic Link | A returning user signing in on another device |
+| Confirm email change | Anyone attaching an email to their anonymous account -- which is now the normal path |
+
+**Anonymous sign-ins must be switched on** at Authentication -> Sign In / Up ->
+Anonymous sign-ins. Without it `signInAnonymously()` fails on every open, the
+app runs with no session, and nothing can be saved.
 
 `AuthService` and `AuthStateService` are registered in `service_locator.dart`,
 not in `AuthenticationModule`, because the router depends on `AuthStateService`
@@ -325,6 +417,8 @@ explicit call in the second phase of `setupServiceLocator()`.
 | `lib/app/core/auth_service.dart` | Supabase auth calls; keeps viewmodels off `Supabase.instance` |
 | `lib/app/core/auth_state_service.dart` | Signed-in or not, as the router's `refreshListenable` |
 | `lib/app/core/secure_local_storage.dart` | Session in the platform keystore |
+| `lib/app/core/device_settings_service.dart` | Small settings that live on the phone only |
+| `lib/app/widgets/sk_main_tab_bar.dart` | The five slots and where each one goes |
 | `test/support/fakes.dart` | Fakes that `implements` services, so no real `SupabaseClient` is built |
 
 ### Routing
@@ -332,6 +426,20 @@ explicit call in the second phase of `setupServiceLocator()`.
 `go_router`. All guards live in the single `redirect` in `app_router.dart`, in
 priority order (connectivity, then auth, then onboarding). Route paths are
 declared in `app_constants.dart`, not inline.
+
+The app has five slots along the bottom: four tabs (`Routes.tabs` -- Home,
+Good things, Meditate, Me) and the panic button in the centre, which is not a
+tab. `SkMainTabBar` owns the labels, the icons and the destinations; each
+screen only says which slot it is.
+
+The bar is **not** in `ShellView`. It floats over each page's content so the
+page scrolls under the glass, and each page keeps
+`SkMainTabBar.heightOf(context)` of clear space at the bottom so its last row
+stays reachable. A bar in the shell would sit outside the inner Navigator that
+animates between routes and could do neither.
+
+The panic button opens the feeling picker, not the breathing: the sidekick
+reacts to the face that was picked, so the pick has to happen first.
 
 ## Not yet wired up
 
@@ -344,11 +452,15 @@ Deliberately absent -- do not add without being asked:
   its service. No domain tables yet.
 - No connectivity or onboarding guards. The auth guard is in place; the redirect
   marks where the others land around it.
+- No Turnstile on `signInAnonymously()`. Required before release, not before
+  then.
+- `lib/app/views/tab_placeholder_view.dart` and the two feature folders using
+  it (`good_things`, `meditate`) are scaffolding: real screens with nothing
+  behind them, so every tab leads somewhere. Delete the file when the last one
+  is replaced.
 - `StateScope` in `app_constants.dart` is a placeholder enum with nothing behind
   it yet. It marks the intended split between application-scoped and
   session-scoped state.
-- `watch()` has no caller in `lib/` yet. It is covered by tests and waiting for
-  the first genuinely shared value.
 
 ## Comments
 

@@ -1,51 +1,63 @@
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:sidekick/app/core/app_constants.dart';
 import 'package:sidekick/features/dashboard/viewmodels/dashboard_viewmodel.dart';
 
 import 'support/fakes.dart';
 
 void main() {
-  late FakeAuthService authService;
+  late FakeDeviceSettingsService settings;
   late DashboardViewModel viewModel;
 
   setUp(() {
-    authService = FakeAuthService();
+    settings = FakeDeviceSettingsService();
     viewModel = DashboardViewModel(
       loggerService: SilentLoggerService(),
-      authService: authService,
+      deviceSettingsService: settings,
     );
   });
 
   tearDown(() => viewModel.dispose());
 
-  test('init reads the signed-in address off the session', () {
-    viewModel.init();
+  test('a first open shows the first pairing and stops loading', () async {
+    await viewModel.init();
 
-    expect(viewModel.state.value.email, 'someone@example.com');
+    expect(viewModel.state.value.isLoading, isFalse);
+    expect(viewModel.state.value.line, DashboardViewModel.pairings.first);
   });
 
-  test('init leaves the address empty when the session carries none', () {
-    authService.userEmail = null;
+  test('the pairing shown is remembered on the device', () async {
+    await viewModel.init();
 
-    viewModel.init();
-
-    expect(viewModel.state.value.email, isEmpty);
+    expect(settings.values[SettingsKeys.lastHomePairing], 0);
   });
 
-  test('signing out ends the session and reports no error', () async {
-    await viewModel.signOut();
+  // The rule the step exists for: two opens never show the same line.
+  test('the next open moves on from the one before', () async {
+    settings.values[SettingsKeys.lastHomePairing] = 1;
 
-    expect(authService.signedOut, isTrue);
-    expect(viewModel.state.value.errors, isEmpty);
+    await viewModel.init();
+
+    expect(viewModel.state.value.line, DashboardViewModel.pairings[2]);
   });
 
-  test('a failed sign-out surfaces an error and leaves the session alone',
-      () async {
-    authService.signOutError = Exception('offline');
+  test('the set wraps rather than running out', () async {
+    settings.values[SettingsKeys.lastHomePairing] =
+        DashboardViewModel.pairings.length - 1;
 
-    await viewModel.signOut();
+    await viewModel.init();
 
-    expect(authService.signedOut, isFalse);
-    expect(viewModel.state.value.errors['general'], isNotNull);
+    expect(viewModel.state.value.line, DashboardViewModel.pairings.first);
+  });
+
+  // A value left over from a shorter set, or a hand-edited one. Starting from
+  // the top is what a first open does, so it is never a crash and never a
+  // blank line.
+  test('a stored value out of range starts the set again', () async {
+    settings.values[SettingsKeys.lastHomePairing] = 99;
+
+    await viewModel.init();
+
+    expect(viewModel.state.value.line, DashboardViewModel.pairings.first);
   });
 }

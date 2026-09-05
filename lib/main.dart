@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
+import 'package:rive/rive.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'package:sidekick/app/core/secure_local_storage.dart';
@@ -37,6 +38,10 @@ void main() async {
       localStorage: SecureLocalStorage(),
     ),
   );
+
+  // Rive 0.15 runs on a native engine that must be loaded before any Rive
+  // widget builds.
+  await RiveNative.init();
 
   await setupServiceLocator();
 

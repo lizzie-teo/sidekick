@@ -27,7 +27,8 @@ class TemplateViewModel extends ViewModel<TemplateViewModelState> {
   // not "an action is running" -- per-action busy state belongs to the widget
   // that triggers it. See AsyncButton.
   Future<void> init() async {
-    emit(current.copyWith(isLoading: true, errors: const {}, messages: const {}));
+    emit(current
+        .copyWith(isLoading: true, errors: const {}, messages: const {}));
 
     try {
       await Future.delayed(const Duration(milliseconds: 400));

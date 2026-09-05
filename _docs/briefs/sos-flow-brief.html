@@ -1,0 +1,417 @@
+<title>Sidekick SOS Animation Brief</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700&family=Nunito:ital,wght@0,400;0,600;0,700;1,400&family=Patrick+Hand&display=swap">
+<style>
+  :root {
+    --canvas: #F6F1E2;
+    --surface: #FFFFFF;
+    --surface-muted: #E2E8D6;
+    --border: #E0DBC6;
+    --hairline: #ECE7D4;
+    --ink: #2C3324;
+    --muted: #6F6E58;
+    --accent: #3D5232;
+    --on-accent: #F6F1E2;
+    --panic: #C2542A;
+    --note: #8B8A72;
+    --dark-panel: #1B2418;
+    --dark-panel-ink: #F2ECD9;
+    --dark-panel-muted: #9AA88C;
+    --dark-panel-border: #3B4D33;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --canvas: #1B2418;
+      --surface: #232E1E;
+      --surface-muted: #2E3B27;
+      --border: #3B4D33;
+      --hairline: #2E3B27;
+      --ink: #F2ECD9;
+      --muted: #CBD6BD;
+      --accent: #B6C795;
+      --on-accent: #1B2418;
+      --panic: #E08653;
+      --note: #9AA88C;
+      --dark-panel: #141B11;
+      --dark-panel-ink: #F2ECD9;
+      --dark-panel-muted: #9AA88C;
+      --dark-panel-border: #3B4D33;
+    }
+  }
+  :root[data-theme="dark"] {
+    --canvas: #1B2418;
+    --surface: #232E1E;
+    --surface-muted: #2E3B27;
+    --border: #3B4D33;
+    --hairline: #2E3B27;
+    --ink: #F2ECD9;
+    --muted: #CBD6BD;
+    --accent: #B6C795;
+    --on-accent: #1B2418;
+    --panic: #E08653;
+    --note: #9AA88C;
+    --dark-panel: #141B11;
+    --dark-panel-ink: #F2ECD9;
+    --dark-panel-muted: #9AA88C;
+    --dark-panel-border: #3B4D33;
+  }
+
+  body {
+    background: var(--canvas);
+    color: var(--ink);
+    font: 400 17px/1.65 "Nunito", "Segoe UI", system-ui, sans-serif;
+    margin: 0;
+    padding: 0 20px 96px;
+  }
+  main { max-width: 720px; margin: 0 auto; }
+
+  h1, h2, h3 {
+    font-family: "Baloo 2", "Nunito", system-ui, sans-serif;
+    line-height: 1.2;
+    text-wrap: balance;
+    margin: 0;
+  }
+  h1 { font-size: 40px; font-weight: 700; }
+  h2 { font-size: 27px; font-weight: 700; margin-top: 72px; }
+  h3 { font-size: 20px; font-weight: 600; margin-top: 40px; }
+  h2 .no {
+    color: var(--panic);
+    margin-right: 10px;
+  }
+  p { margin: 16px 0; max-width: 62ch; }
+  ul, ol { margin: 16px 0; padding-left: 24px; max-width: 60ch; }
+  li { margin: 8px 0; }
+  strong { font-weight: 700; }
+  em { font-style: italic; }
+
+  .kicker {
+    font: 600 13px/1 "Nunito", system-ui, sans-serif;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--note);
+    margin: 64px 0 14px;
+  }
+  header .kicker { margin-top: 72px; }
+  .lede { font-size: 19px; color: var(--muted); max-width: 56ch; }
+
+  .facts {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    margin: 36px 0 0;
+  }
+  .facts > div { background: var(--surface); padding: 14px 16px; }
+  .facts dt {
+    font: 600 12px/1 "Nunito", system-ui, sans-serif;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--note);
+    margin: 0 0 6px;
+  }
+  .facts dd { margin: 0; font-size: 15px; }
+
+  .rule { border: 0; border-top: 1px solid var(--border); margin: 72px 0 0; }
+
+  /* The dark strip stays dark in both themes: it depicts the panic screens. */
+  .beats {
+    background: var(--dark-panel);
+    border: 1px solid var(--dark-panel-border);
+    border-radius: 12px;
+    padding: 20px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 16px;
+    margin: 24px 0 8px;
+  }
+  .beat { color: var(--dark-panel-ink); min-width: 0; }
+  .beat .t {
+    font: 700 13px/1 "Nunito", system-ui, sans-serif;
+    letter-spacing: 0.08em;
+    color: var(--panic);
+  }
+  .beat h4 {
+    font-family: "Baloo 2", system-ui, sans-serif;
+    font-size: 18px;
+    font-weight: 600;
+    margin: 8px 0 6px;
+  }
+  .beat p { font-size: 14.5px; line-height: 1.5; margin: 0; color: var(--dark-panel-muted); }
+
+  .note {
+    font: 400 16px/1.5 "Patrick Hand", "Comic Sans MS", cursive;
+    color: var(--note);
+    margin: 12px 0 0;
+    max-width: 60ch;
+  }
+
+  .warn {
+    border-left: 3px solid var(--panic);
+    padding: 2px 0 2px 18px;
+    margin: 28px 0;
+    max-width: 58ch;
+  }
+  .warn p { margin: 8px 0; }
+
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 20px 0 8px;
+    font-size: 15px;
+  }
+  .tablewrap { overflow-x: auto; }
+  th {
+    text-align: left;
+    font: 600 12px/1.3 "Nunito", system-ui, sans-serif;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--note);
+    border-bottom: 2px solid var(--border);
+    padding: 8px 14px 8px 0;
+  }
+  td {
+    border-bottom: 1px solid var(--hairline);
+    padding: 10px 14px 10px 0;
+    vertical-align: top;
+  }
+  td:first-child, th:first-child { padding-left: 0; }
+  code {
+    font: 600 13.5px/1 ui-monospace, "SF Mono", Menlo, monospace;
+    background: var(--surface-muted);
+    padding: 2px 6px;
+    border-radius: 5px;
+    white-space: nowrap;
+  }
+  .num { font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+  .flow {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    margin: 24px 0 6px;
+  }
+  .flow .st {
+    background: var(--surface);
+    border: 1.5px solid var(--accent);
+    border-radius: 999px;
+    padding: 7px 16px;
+    font: 600 14.5px/1.2 "Nunito", system-ui, sans-serif;
+    white-space: nowrap;
+  }
+  .flow .st.once { border-style: dashed; }
+  .flow .arrow { color: var(--note); font-size: 18px; }
+  .flow .grp {
+    border: 1.5px solid var(--border);
+    border-radius: 14px;
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .flow .grp .lbl {
+    font: 600 11px/1 "Nunito", system-ui, sans-serif;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--note);
+    margin-right: 4px;
+  }
+
+  .check { list-style: none; padding: 0; max-width: 62ch; }
+  .check li {
+    padding-left: 34px;
+    position: relative;
+    margin: 14px 0;
+  }
+  .check li::before {
+    content: "";
+    position: absolute;
+    left: 0; top: 3px;
+    width: 18px; height: 18px;
+    border: 2px solid var(--accent);
+    border-radius: 5px;
+  }
+
+  footer {
+    margin-top: 88px;
+    padding-top: 28px;
+    border-top: 1px solid var(--border);
+    color: var(--muted);
+    font-size: 15.5px;
+  }
+
+  @media print {
+    * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    body { padding: 0 4px 24px; font-size: 15px; }
+    h1 { font-size: 32px; }
+    h2 { font-size: 23px; margin-top: 44px; break-after: avoid; }
+    h3 { margin-top: 28px; break-after: avoid; }
+    .rule { margin-top: 44px; }
+    .kicker { margin-top: 36px; }
+    header .kicker { margin-top: 8px; }
+    .facts, .beats, .warn, table, .flow { break-inside: avoid; }
+    footer { margin-top: 44px; }
+  }
+</style>
+
+<main>
+<header>
+  <p class="kicker">Sidekick · Round two of work</p>
+  <h1>The SOS flow — animation &amp; state machine brief</h1>
+  <p class="lede">Round one gave us the panda, the hero pose, the breathing loop and the four feelings. This round puts the character into the panic path itself: the screens someone sees after they tap SOS. Two briefs here — first <strong>what to animate</strong>, then <strong>how the Rive file should be wired</strong> so the app can drive it.</p>
+
+  <dl class="facts">
+    <div><dt>Project</dt><dd>Sidekick — anxiety &amp; panic support</dd></div>
+    <div><dt>Tool</dt><dd>Rive, one .riv file</dd></div>
+    <div><dt>Screen</dt><dd>Mobile, 390 × 844pt</dd></div>
+    <div><dt>Grounds</dt><dd>Cream #F6F1E2 · panic screens #1B2418</dd></div>
+  </dl>
+  <p class="note">The background values have shifted a touch since round one — these are the current ones. The character still has to read on both.</p>
+</header>
+
+<hr class="rule">
+
+<h2><span class="no">1</span>Animation for the SOS flow</h2>
+<p>The SOS path is dark, one thing per screen, no navigation. The panda is on every screen of it except one, and it has one job throughout: <strong>model recovery</strong>. It gets startled, it visibly comes down, and then it stays down — calm, steady, breathing — while the person catches up with it.</p>
+<p>All text, buttons and screen chrome are the app's job. Yours is the panda and the anxiety monster.</p>
+
+<h3>The entry — three beats</h3>
+<p>The moment SOS is tapped, before any text appears:</p>
+<div class="beats">
+  <div class="beat">
+    <span class="t num">0.0s</span>
+    <h4>Startle</h4>
+    <p>Paws up, sharp. Held for 0.5s. Mirrors the person — something is wrong.</p>
+  </div>
+  <div class="beat">
+    <span class="t num">0.5s</span>
+    <h4>Coming down</h4>
+    <p>Paws lower, shoulders drop. A 1.5s ease-out — the recovery made visible.</p>
+  </div>
+  <div class="beat">
+    <span class="t num">2.0s</span>
+    <h4>Settled</h4>
+    <p>Seated, still, breathing slowly. The first mantra fades in over this.</p>
+  </div>
+</div>
+<p class="note">Two seconds total. The startle must be short — it plays once, ever, per session.</p>
+<div class="warn">
+  <p><strong>The startle never repeats.</strong> If someone leaves and taps SOS again in the same session, the app opens the flow directly at the settled pose. Being startled twice reads as the panda panicking too, which is the opposite of its job. This is the single biggest reason the file needs a proper state machine — see brief 2.</p>
+</div>
+
+<h3>Settled — the mantra screens</h3>
+<ul>
+  <li>The seated pose from beat three, held as a gentle idle loop. Slow breathing, the occasional blink. Nothing busier than that.</li>
+  <li>The app fades mantra lines in over it, about one every 6 seconds. <strong>No talking animation</strong> — the panda simply sits and breathes while the lines change.</li>
+  <li>This idle needs to hold up for a couple of minutes without feeling like a loop.</li>
+</ul>
+
+<h3>Guided breathing — the pacer</h3>
+<p>This reuses the round-one breathing loop, and the same rules apply:</p>
+<ul>
+  <li>The panda's body <em>is</em> the pacer. Belly expands on the in-breath, contracts on the out-breath. There is no ring and no counter graphic — the character is the only timing cue, so subtle is the one thing it can't be.</li>
+  <li>Build the in-breath and the out-breath as <strong>separate, independently stretchable timelines</strong>. The app drives the pace: roughly 4 in · 6 out during SOS, and the meditation feature reuses the same motion at 4 in · 4 hold · 6 out. So there is also a brief <strong>hold</strong> moment — a beat of stillness at full breath the app can stretch or skip.</li>
+  <li>Clear, distinct beats at the turn of each breath — haptics land on them.</li>
+  <li>The anxiety monster sits beside the panda and <strong>shrinks as the breathing goes on</strong>. The app will drive its size with a number, so build the shrink as a scale the file can be told, not a baked timeline.</li>
+</ul>
+
+<h3>Grounding</h3>
+<ul>
+  <li>The one separate pose in the exercise: seated, paws flat on the floor, very still, breathing slowly.</li>
+  <li>It needs a way in <strong>from the breathing loop without a visible cut</strong> — the panda finishes its out-breath and comes to rest, rather than jumping.</li>
+</ul>
+
+<h3>The check-in and the two exits</h3>
+<ul>
+  <li><strong>“Feeling steadier?”</strong> — the settled idle works here as-is. Neutral, asking, no cartoon faces. Either answer is fine, and the pose shouldn't lean on one.</li>
+  <li><strong>Still escalating → crisis resources.</strong> The panda is <em>absent</em> on this screen. No mascot, no warmth — real phone numbers only. Nothing for you to draw; named here so its absence is a decision you know about, not a gap.</li>
+  <li><strong>Steadier → the recap.</strong> “That passed.” The panda stands steady in the <strong>same pose as the Home idle</strong>. The screen returns to light. Coming out of the dark path and finding the panda exactly as it is at home is the point — please reuse the pose rather than making a near-match.</li>
+</ul>
+
+<hr class="rule">
+
+<h2><span class="no">2</span>State machine management</h2>
+<p>How the app and the file talk: the app loads the .riv, binds its view model, and then drives it by setting named booleans and numbers and firing named triggers. The state machine inside the file decides what actually plays. The app never scrubs timelines — so every behaviour above has to exist as a state, and every switch as a transition.</p>
+
+<h3>The states</h3>
+<div class="flow" aria-label="State diagram: Entry leads to Startle, which settles into Settled. Settled moves into the breathing loop of Inhale, Hold, Exhale. Breathing can end in Grounding, and everything can end in Steady.">
+  <span class="st once">Startle <span class="num">· plays once</span></span>
+  <span class="arrow">→</span>
+  <span class="st">Settled</span>
+  <span class="arrow">→</span>
+  <span class="grp"><span class="lbl">Breathing</span>
+    <span class="st">Inhale</span><span class="arrow">→</span>
+    <span class="st">Hold</span><span class="arrow">→</span>
+    <span class="st">Exhale</span>
+  </span>
+  <span class="arrow">→</span>
+  <span class="st">Grounding</span>
+  <span class="arrow">→</span>
+  <span class="st">Steady</span>
+</div>
+<p class="note">Entry goes to Startle the first time, straight to Settled on re-entry. Exhale loops back to Inhale until the app says otherwise. Steady is reachable from Settled and Grounding both.</p>
+
+<div class="tablewrap"><table>
+  <tr><th>State</th><th>What plays</th><th>Kind</th></tr>
+  <tr><td><strong>Startle</strong></td><td>The three beats: paws up → come down → arrive seated</td><td>One-shot, ~2s, never re-entered</td></tr>
+  <tr><td><strong>Settled</strong></td><td>Seated idle: slow breath, occasional blink</td><td>Loop</td></tr>
+  <tr><td><strong>Inhale</strong></td><td>Belly expands, monster beside</td><td>Timeline, stretchable</td></tr>
+  <tr><td><strong>Hold</strong></td><td>Still at full breath</td><td>Timeline, stretchable, skippable</td></tr>
+  <tr><td><strong>Exhale</strong></td><td>Belly contracts</td><td>Timeline, stretchable</td></tr>
+  <tr><td><strong>Grounding</strong></td><td>Seated, paws flat, very still</td><td>Loop</td></tr>
+  <tr><td><strong>Steady</strong></td><td>The Home idle pose, standing, calm</td><td>Loop</td></tr>
+</table></div>
+
+<h3>The inputs</h3>
+<p>Exposed on the file's view model, so the app can reach them. Proposed names — if any need to change, tell me before the file ships, because these names go into the app's code and changing one afterwards breaks the app.</p>
+<div class="tablewrap"><table>
+  <tr><th>Name</th><th>Type</th><th>What it does</th></tr>
+  <tr><td><code>skipStartle</code></td><td>boolean</td><td>Set before play. True → entry goes straight to Settled. This is the re-entry rule from brief 1.</td></tr>
+  <tr><td><code>breathe</code></td><td>boolean</td><td>True → move from Settled into the breathing loop. False → breathe out, come to rest in Settled.</td></tr>
+  <tr><td><code>ground</code></td><td>trigger</td><td>Breathing → Grounding, after the current breath completes.</td></tr>
+  <tr><td><code>steady</code></td><td>trigger</td><td>Anywhere → Steady, for the recap.</td></tr>
+  <tr><td><code>monster</code></td><td>number 0–100</td><td>Anxiety monster size. 100 = full, 0 = gone. The app eases it down as breathing progresses.</td></tr>
+</table></div>
+<div class="warn">
+  <p><strong>Plain English names, please, and a written list.</strong> In kuzu.riv the ear triggers came out as <code>lKulak</code> and <code>rKulak</code>, which works but needs a translator. For this file: English names, and a short list shipped alongside it of every artboard name, state machine name, and input — spelled exactly. The app selects all of these by name.</p>
+</div>
+
+<h3>Transition rules</h3>
+<div class="tablewrap"><table>
+  <tr><th>From</th><th>To</th><th>When</th><th>Rule</th></tr>
+  <tr><td>Entry</td><td>Startle / Settled</td><td>on load</td><td>Settled if <code>skipStartle</code> is true</td></tr>
+  <tr><td>Startle</td><td>Settled</td><td>automatically</td><td>One-way. No path ever leads back in.</td></tr>
+  <tr><td>Settled</td><td>Inhale</td><td><code>breathe</code> = true</td><td>Start at the top of an in-breath, from rest</td></tr>
+  <tr><td>Exhale</td><td>Inhale / Settled</td><td>end of exhale</td><td>Loops while <code>breathe</code> stays true</td></tr>
+  <tr><td>Breathing</td><td>Grounding</td><td><code>ground</code></td><td>Finish the current exhale first — no visible cut</td></tr>
+  <tr><td>Any</td><td>Steady</td><td><code>steady</code></td><td>A short, calm blend. Never a pop.</td></tr>
+</table></div>
+<p>The rule underneath all of these: <strong>a transition only fires on a natural boundary</strong> — the end of an out-breath, the end of a beat. The person is copying the panda's body with their own; a mid-breath jump is genuinely disorienting here, not just untidy.</p>
+
+<h3>Three technical constraints from the app</h3>
+<ol>
+  <li><strong>Every state's first frame must work as a still.</strong> When a phone has “reduce motion” switched on, the app freezes the animation on its first frame instead of playing it. Whatever frame each state opens on is the poster image those users live with.</li>
+  <li><strong>Loops must be seamless and long-lived.</strong> The settled idle and the breathing loop each run for several minutes across screen changes. No drift, no visible seam, no fidget that becomes a tic on the tenth repeat.</li>
+  <li><strong>No Rive listeners needed.</strong> The app does its own tap handling and pokes the inputs from outside. Don't wire pointer events inside the file.</li>
+</ol>
+
+<hr class="rule">
+
+<h2><span class="no">✓</span>How I'll check the file</h2>
+<p>The review, so nothing here is a surprise:</p>
+<ul class="check">
+  <li>Play twice: first run shows the startle, a run with <code>skipStartle</code> opens settled — no flash of paws.</li>
+  <li>Freeze the first frame of every state: each one reads as a decent still.</li>
+  <li>Fire <code>ground</code> mid-inhale: the panda finishes the breath, then comes to rest. No cut.</li>
+  <li>Let the breathing loop run five minutes at SOS pace and again at meditation pace: no seam, no drift.</li>
+  <li>Slide <code>monster</code> from 100 to 0: the monster shrinks smoothly and is gone at zero.</li>
+  <li>Every artboard, state machine and input name matches the shipped list, letter for letter.</li>
+  <li>Both grounds: the character reads on cream #F6F1E2 and on #1B2418.</li>
+</ul>
+
+<footer>
+  <p>Questions before you start are cheaper than questions after — especially on the input names and the stretchable breathing timelines. Same review shape as round one: send work-in-progress across before we meet, and tell me whether Wednesday or Friday suits.</p>
+</footer>
+</main>

@@ -1,71 +1,94 @@
-import 'package:sidekick/app/core/auth_service.dart';
+import 'package:sidekick/app/core/app_constants.dart';
+import 'package:sidekick/app/core/device_settings_service.dart';
 import 'package:sidekick/app/core/logger_service.dart';
 import 'package:sidekick/app/core/view_model.dart';
 
-// Where a signed-in user lands.
+// Home.
+//
+// One piece of real state today: the pairing at the top of the screen. A pose
+// and a line are written together and chosen once per open, so nothing moves
+// while the user is reading it.
+//
+// The rule here is the small one -- do not repeat the pairing two opens
+// running -- which is why the last index is remembered on the device. Phase
+// 3.5 widens it to no repeats until the whole set has been used, and phase 8
+// gives each pairing its pose.
 class DashboardViewModel extends ViewModel<DashboardViewModelState> {
   final LoggerService _loggerService;
-  final AuthService _authService;
+  final DeviceSettingsService _deviceSettingsService;
 
   DashboardViewModel({
     required LoggerService loggerService,
-    required AuthService authService,
+    required DeviceSettingsService deviceSettingsService,
   })  : _loggerService = loggerService,
-        _authService = authService,
+        _deviceSettingsService = deviceSettingsService,
         super(DashboardViewModelState());
 
-  // Reads the address off the session the auth guard already guarantees is
-  // there. Synchronous, so there is no isLoading: the page is never in a state
-  // of having nothing to show.
-  void init() {
-    emit(current.copyWith(email: _authService.getUserEmail() ?? ''));
+  // Placeholder copy. The real set is written alongside the poses in phase 3.
+  static const List<String> pairings = <String>[
+    'You\'re doing better than you think.',
+    'Nothing has to be fixed right now.',
+    'You came back. That counts.',
+    'Slow is still forward.',
+  ];
+
+  // Reading the last index is a platform call, so the line is not known for
+  // the first frame. isLoading covers exactly that gap and nothing else: it
+  // means the page has nothing to show yet, never that an action is running.
+  Future<void> init() async {
+    final int? previous =
+        await _deviceSettingsService.getInt(SettingsKeys.lastHomePairing);
+
+    final int index = _pick(previous);
+
+    _loggerService.debug('DashboardViewModel: pairing $index');
+
+    emit(current.copyWith(
+      isLoading: false,
+      line: pairings[index],
+    ));
+
+    await _deviceSettingsService.setInt(SettingsKeys.lastHomePairing, index);
   }
 
-  // Nothing navigates here, the same as verifying a code and for the same
-  // reason in reverse: ending the session flips AuthStateService, the router's
-  // redirect re-runs, and the user lands on /welcome. Calling context.go as
-  // well would be a second answer to a question the router has already
-  // answered.
+  // The next one along, so two opens never show the same line. Deterministic
+  // rather than random for the same reason: random repeats, and a repeat is
+  // the one thing this rule exists to prevent.
   //
-  // No isLoading for this either -- the button that calls it owns its own
-  // in-flight state.
-  Future<void> signOut() async {
-    emit(current.copyWith(errors: const {}));
-
-    try {
-      await _authService.signOut();
-    } catch (e, s) {
-      // Staying put with an error is the honest outcome: the session survived,
-      // so pretending otherwise would leave the screen lying about who is
-      // signed in.
-      _loggerService.errorShort(e, s);
-      emit(current.copyWith(
-        errors: {'general': 'Could not sign out. Please try again.'},
-      ));
+  // A missing or out-of-range stored value starts the set from the top, which
+  // is also what a first open does.
+  int _pick(int? previous) {
+    if (previous == null || previous < 0 || previous >= pairings.length) {
+      return 0;
     }
+    return (previous + 1) % pairings.length;
   }
 }
 
 class DashboardViewModelState {
-  // Empty until init() runs, and empty if the session somehow carries no
-  // address. The view shows the line only when there is one.
-  final String email;
+  // True until the stored pairing has been read back. The scene holds its
+  // shape and leaves the line blank rather than showing one and swapping it.
+  final bool isLoading;
+  final String line;
   final Map<String, String> errors;
   final Map<String, String> messages;
 
   DashboardViewModelState({
-    this.email = '',
+    this.isLoading = true,
+    this.line = '',
     this.errors = const {},
     this.messages = const {},
   });
 
   DashboardViewModelState copyWith({
-    String? email,
+    bool? isLoading,
+    String? line,
     Map<String, String>? errors,
     Map<String, String>? messages,
   }) {
     return DashboardViewModelState(
-      email: email ?? this.email,
+      isLoading: isLoading ?? this.isLoading,
+      line: line ?? this.line,
       errors: errors ?? this.errors,
       messages: messages ?? this.messages,
     );

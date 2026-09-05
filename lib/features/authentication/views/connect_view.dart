@@ -101,12 +101,10 @@ class _ConnectViewState extends State<ConnectView> {
                         const SizedBox(height: 12),
                         Text(
                           state.errors['general']!,
-                          style: Theme.of(context)
-                              .textTheme
-                              .bodyMedium
-                              ?.copyWith(
-                                color: Theme.of(context).colorScheme.error,
-                              ),
+                          style:
+                              Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                    color: Theme.of(context).colorScheme.error,
+                                  ),
                           textAlign: TextAlign.center,
                         ),
                       ],

@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:rive/rive.dart';
 
 import 'package:sidekick/app/core/app_router.dart';
 import 'package:sidekick/app/core/auth_service.dart';
 import 'package:sidekick/app/core/auth_state_service.dart';
+import 'package:sidekick/app/core/device_settings_service.dart';
 import 'package:sidekick/app/core/logger_service.dart';
 import 'package:sidekick/app/core/service_locator.dart';
 import 'package:sidekick/app/widgets/theme.dart';
@@ -26,15 +28,25 @@ Future<GoRouter> pumpApp(
   WidgetTester tester, {
   String? location,
   bool isAuthenticated = false,
+  bool hasAccount = false,
   AuthService? authService,
   AuthStateService? authStateService,
   ConfigurationService? configurationService,
+  DeviceSettingsService? deviceSettingsService,
 }) async {
+  // The shell mounts Home, and Home has a Rive animation on it. Rive's native
+  // engine has to be loaded before that widget builds or it asserts. Safe to
+  // call more than once.
+  await RiveNative.init();
+
   await resetServiceLocator();
 
   final LoggerService logger = SilentLoggerService();
   final AuthStateService authState = authStateService ??
-      FakeAuthStateService(isAuthenticated: isAuthenticated);
+      FakeAuthStateService(
+        isAuthenticated: isAuthenticated,
+        hasAccount: hasAccount,
+      );
 
   getIt.registerSingleton<LoggerService>(logger);
   getIt.registerSingleton<AuthService>(authService ?? FakeAuthService());
@@ -42,14 +54,22 @@ Future<GoRouter> pumpApp(
   getIt.registerSingleton<ConfigurationService>(
     configurationService ?? FakeConfigurationService(),
   );
+  getIt.registerSingleton<DeviceSettingsService>(
+    deviceSettingsService ?? FakeDeviceSettingsService(),
+  );
 
   final GoRouter router = AppRouter.create(
     loggerService: logger,
     authStateService: authState,
   );
 
+  // Reduce motion, so anything that would animate forever -- a Rive loop on
+  // Home -- holds its first frame and pumpAndSettle can finish.
   await tester.pumpWidget(
-    MaterialApp.router(theme: appTheme(), routerConfig: router),
+    MediaQuery(
+      data: const MediaQueryData(disableAnimations: true),
+      child: MaterialApp.router(theme: appTheme(), routerConfig: router),
+    ),
   );
   await tester.pumpAndSettle();
 

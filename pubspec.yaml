@@ -21,6 +21,14 @@ dependencies:
   supabase_flutter: ^2.17.2
   flutter_secure_storage: ^11.0.0
 
+  # Used for playing Rive animations
+  rive: ^0.15.0-dev.1
+
+  # Used for device-local settings: the day's pairing, the onboarding answers.
+  # Losing any of it costs the user nothing, which is why it is not on the
+  # server.
+  shared_preferences: ^2.3.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -28,3 +36,24 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+
+  fonts:
+    - family: Baloo 2
+      fonts:
+        - asset: assets/fonts/Baloo2-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/Baloo2-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/Baloo2-Bold.ttf
+          weight: 700
+    - family: Nunito
+      fonts:
+        - asset: assets/fonts/Nunito-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/Nunito-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/Nunito-Bold.ttf
+          weight: 700
+
+  assets:
+    - assets/images/

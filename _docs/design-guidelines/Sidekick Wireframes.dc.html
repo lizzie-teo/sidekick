@@ -1,0 +1,943 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics=""><meta name="design_doc_mode" content="canvas"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin=""><link href="https://fonts.googleapis.com/css2?family=Patrick+Hand&amp;display=swap" rel="stylesheet"><style>
+body{margin:0;background:#f0eee9;font-family:'Patrick Hand',system-ui,sans-serif}
+a{color:#1a1a1a}
+a:hover{color:#c2603f}
+.dv-turn{padding:40px 44px 32px;scroll-margin-top:16px}
+.dv-thd{display:flex;align-items:baseline;gap:10px;margin:0 0 20px}
+.dv-tid{font:600 10px ui-monospace,Menlo,monospace;padding:3px 7px;background:#1a1a1a;color:#fff;border-radius:4px;text-decoration:none}
+.dv-tname{font:600 13px/1.2 system-ui,sans-serif;color:#1a1a1a}
+.dv-opts{display:flex;flex-wrap:wrap;gap:28px;align-items:flex-start}
+.dv-opt{flex:none;display:flex;flex-direction:column;gap:9px;scroll-margin-top:16px}
+.dv-oid{font:600 10.5px ui-monospace,Menlo,monospace;padding:3px 7px;background:rgba(0,0,0,.08);color:#1a1a1a;border-radius:5px;text-decoration:none}
+.dv-olabel{display:flex;align-items:baseline;gap:8px;font:400 11px/1.3 system-ui,sans-serif;color:rgba(0,0,0,.55)}
+.dv-card{max-width:100%;background:#fff;border:1px solid rgba(0,0,0,.08);border-radius:8px;box-shadow:0 1px 3px rgba(0,0,0,.06);overflow:hidden;padding:30px 34px 38px}
+.dv-opt:target .dv-oid{background:#2a78d6;color:#fff}
+.dv-next{margin:22px 0 0;font:12px/1.5 system-ui,sans-serif;color:rgba(0,0,0,.5)}
+.flowhd{font:700 14px system-ui,sans-serif;letter-spacing:.09em;text-transform:uppercase;color:#a09a8d;margin:34px 0 14px;padding-bottom:6px;border-bottom:1px solid rgba(0,0,0,.09)}
+.flowhd:first-child{margin-top:0}
+.row{display:flex;flex-wrap:wrap;gap:24px;align-items:flex-start}
+.wf{width:262px;display:flex;flex-direction:column;gap:8px}
+.wf.w2{width:auto}
+.cap{display:flex;align-items:center;gap:7px;font:700 16px 'Patrick Hand';color:#1a1a1a}
+.pin{flex:none;width:19px;height:19px;border-radius:50%;background:#c2603f;color:#fff;font:700 10px/1 ui-monospace,monospace;display:grid;place-items:center}
+.ann{margin:0;font:15px/1.5 'Patrick Hand';color:#5f5952}
+.ph{width:262px;height:540px;box-sizing:border-box;border:2px solid #1a1a1a;border-radius:24px;background:#fff;padding:13px;display:flex;flex-direction:column;gap:11px;overflow:hidden}
+.ph.dk{background:#1c1b20;border-color:#1c1b20;color:#e9e7e2}
+.sb{display:flex;justify-content:space-between;font:9px ui-monospace,monospace;opacity:.45}
+.t{margin:0;font:700 21px/1.2 'Patrick Hand'}
+.p{margin:0;font:17px/1.4 'Patrick Hand';opacity:.78}
+.pd{box-sizing:border-box;border:2px dashed #beb8ab;border-radius:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:3px;padding:8px;font:11.5px/1.4 ui-monospace,monospace;color:#8d8779;background:repeating-linear-gradient(45deg,rgba(0,0,0,.03) 0 6px,transparent 6px 12px)}
+.dk .pd{border-color:#514e59;color:#a09ca8;background:repeating-linear-gradient(45deg,rgba(255,255,255,.04) 0 6px,transparent 6px 12px)}
+.pd b{font:700 12.5px ui-monospace,monospace;color:#5f5a50}
+.dk .pd b{color:#cfcbd6}
+.btn{box-sizing:border-box;border:2px solid #1a1a1a;border-radius:999px;padding:11px 10px;text-align:center;font:700 17px 'Patrick Hand'}
+.btn.f{background:#1a1a1a;color:#fff}
+.dk .btn{border-color:#e9e7e2}
+.dk .btn.f{background:#e9e7e2;color:#1c1b20}
+.ln{height:8px;border-radius:4px;background:#e4e0d7}
+.card{box-sizing:border-box;border:2px solid #1a1a1a;border-radius:12px;padding:9px 10px;display:flex;flex-direction:column;gap:6px;font:17px 'Patrick Hand'}
+.dk .card{border-color:#4a4854}
+.field{box-sizing:border-box;border:2px solid #cfc9bd;border-radius:9px;padding:9px 10px;font:16px 'Patrick Hand';color:#9b9488}
+.nav{margin-top:auto;display:flex;gap:4px;border-top:2px solid #1a1a1a;padding-top:8px}
+.nav>div{flex:1;text-align:center;font:12.5px/1.2 'Patrick Hand';opacity:.55}
+.nav>div.on{opacity:1;font-weight:700}
+.strip{display:flex;gap:9px}
+.strip .ph{width:160px;height:280px;border-radius:18px;padding:10px;gap:8px}
+.beat{font:11.5px ui-monospace,monospace;opacity:.6;margin:0}
+.spread{margin-top:auto}
+.pandacard{border:3px solid #1a1a1a;border-radius:18px;padding:11px;display:flex;flex-direction:column;gap:8px;align-items:center}
+.pill{border:1.5px solid #b9b2a4;border-radius:999px;padding:5px 13px;font:13px 'Patrick Hand';color:#6f6862}
+.tile{box-sizing:border-box;border:2px solid #1a1a1a;border-radius:16px;padding:10px 6px 8px;display:flex;flex-direction:column;align-items:center;gap:5px;font:700 14px 'Patrick Hand'}
+.tile img{width:58px;height:58px;object-fit:contain}
+.dk .sb{padding-right:42px}
+.x{position:absolute;right:11px;top:9px;width:30px;height:30px;border-radius:50%;border:1.5px solid #4a4854;display:grid;place-items:center;font:13px 'Patrick Hand';color:#b6b2be}
+.snd{position:absolute;left:11px;top:9px;width:30px;height:30px;border-radius:50%;border:1.5px solid #4a4854;display:grid;place-items:center;font:13px 'Patrick Hand';color:#b6b2be}
+.dk .sb{padding-left:42px}
+.nxt{align-self:center;border:2px solid #e9e7e2;border-radius:999px;padding:9px 34px;font:700 15px 'Patrick Hand'}
+.scene{margin:-13px -13px 0;border:2px dashed #beb8ab;border-top:none;border-radius:0 0 22px 22px;padding:20px 14px 14px;display:flex;flex-direction:column;align-items:center;gap:8px;background:repeating-linear-gradient(45deg,rgba(0,0,0,.03) 0 6px,transparent 6px 12px)}
+.nav5{margin-top:auto;display:flex;align-items:center;gap:2px;border-top:2px solid #1a1a1a;padding-top:8px}
+.nav5>div{flex:1;text-align:center;font:12px/1.2 'Patrick Hand';opacity:.55}
+.nav5>div.on{opacity:1;font-weight:700}
+.fab{flex:0 0 auto!important;margin:-24px 4px 0;width:42px;height:42px;border-radius:50%;background:#1a1a1a;color:#fff;display:grid;place-items:center;font:700 10px/1.1 'Patrick Hand';opacity:1!important;box-shadow:0 0 0 4px #fff}
+</style></helmet>
+
+<section class="dv-turn" id="t2">
+<div class="dv-thd"><a class="dv-tid" href="#t2">2</a><span class="dv-tname">Sidekick — mobile screens, expression picker and single panic path</span></div>
+<div class="dv-opts">
+<div class="dv-opt" id="2a">
+<div class="dv-olabel"><a class="dv-oid" href="#2a">2a</a>Tapping the panda opens four expressions; the journal offers eleven. Panic runs one path, no severity choice. Faces are the user's stand-in stickers, not final art.</div>
+<div class="dv-card">
+
+<div class="flowhd">First open</div>
+<div class="row">
+  <div class="wf">
+    <div class="cap"><span class="pin">1</span>Welcome carousel</div>
+    <div class="ph">
+      <div class="sb"><span>9:41</span><span>▮▮▮</span></div>
+      <div style="height:250px;border:2px solid #dcd6ca;border-radius:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:10px;background:#faf9f6"><img src="assets/face-hi.png" alt="" style="width:150px;object-fit:contain"><span style="font:11.5px/1.4 ui-monospace,monospace;color:#8d8779;text-align:center">box on its head, tail up<br>wanders in, box lifts on card 2</span></div>
+      <p class="t">Hi. I'm your sidekick.</p>
+      <p class="p">I'll sit with you when things get too much. And I'll help you notice the good days.</p>
+      <div class="spread" style="display:flex;gap:5px;justify-content:center;margin-bottom:9px"><span style="width:7px;height:7px;border-radius:50%;background:#1a1a1a"></span><span style="width:7px;height:7px;border-radius:50%;background:#d6d1c7"></span><span style="width:7px;height:7px;border-radius:50%;background:#d6d1c7"></span></div>
+      <div class="btn f">Next</div>
+      <div style="text-align:center;font:14px 'Patrick Hand';opacity:.5">Skip</div>
+    </div>
+    <p class="ann">3 cards. The panda wanders in with a box on its head and lifts it to say hello, which sets the tone before a single word about anxiety.</p>
+  </div>
+
+  <div class="wf">
+    <div class="cap">What brings you here</div>
+    <div class="ph">
+      <div class="sb"><span>9:41</span><span>▮▮▮</span></div>
+      <div style="height:104px;border:2px solid #dcd6ca;border-radius:14px;display:flex;align-items:center;justify-content:center;gap:10px;padding:8px;background:#faf9f6"><img src="assets/face-peeking.png" alt="" style="height:78px;object-fit:contain"><span style="font:11.5px/1.4 ui-monospace,monospace;color:#8d8779">peeking out, listening<br>doesn’t come out yet</span></div>
+      <p class="t">What brings you here?</p>
+      <p class="p">Pick any. It just helps us know what to show you first.</p>
+      <div style="display:flex;flex-direction:column;gap:7px">
+        <div class="card">Panic attacks</div>
+        <div class="card">Everyday anxiety</div>
+        <div class="card">Confidence</div>
+        <div class="card">Sleep</div>
+      </div>
+      <div class="spread"><div class="btn f">Continue</div></div>
+    </div>
+    <p class="ann">Multi-select, all optional — no question is required to reach Home. The panda watches from inside the box rather than facing the user, so answering feels less like an interview.</p>
+  </div>
+
+  <div class="wf">
+    <div class="cap">Reminders</div>
+    <div class="ph">
+      <div class="sb"><span>9:41</span><span>▮▮▮</span></div>
+      <div style="height:180px;border:2px solid #dcd6ca;border-radius:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:8px;background:#faf9f6"><img src="assets/face-nudge.png" alt="" style="width:132px;object-fit:contain"><span style="font:11.5px/1.4 ui-monospace,monospace;color:#8d8779;text-align:center">draped over the stool, waiting it out<br>no persuasion pose</span></div>
+      <p class="t">Want a nudge once a day?</p>
+      <p class="p">Just one a day. You can turn it off whenever you want.</p>
+      <div class="spread" style="display:flex;flex-direction:column;gap:8px">
+        <div class="btn f">Yes</div>
+        <div class="btn">No thanks</div>
+      </div>
+    </div>
+    <p class="ann">Yes leads to a time wheel with Morning / Evening presets. No goes straight to Home and is never re-asked. The panda is slumped over a stool waiting rather than looking eager, so declining costs nothing.</p>
+  </div>
+</div>
+
+<div class="flowhd">Home — updated to match the hi-fi</div>
+<p class="ann" style="margin:-6px 0 14px;max-width:62ch">All three Home frames now follow <a href="Pages Moss and Cream.dc.html">the Moss &amp; cream screens</a>: full-bleed scene panel, one CTA, the Meditate / Play pair, then real list cards, and a five-slot tab bar with the panic FAB centred. Journal is gone, Me is new. Other screens below still show the old four-item bar and have not had a hi-fi pass.</p>
+<div class="row">
+  <div class="wf">
+    <div class="cap"><span class="pin">2</span>Home — day one</div>
+    <div class="ph">
+      <div class="scene">
+        <div class="sb" style="width:100%"><span>9:41</span><span>▮▮▮</span></div>
+        <div style="height:132px;display:grid;place-items:center"><img src="assets/face-anxious.png" alt="" style="width:126px;object-fit:contain"></div>
+        <p style="margin:0;font:700 18px/1.2 'Patrick Hand';text-align:center">You're doing better than you think.</p>
+        <div class="btn f" style="padding:9px 18px;font-size:15px">Tap me when you need me</div>
+      </div>
+      <div style="display:flex;gap:8px">
+        <div class="card" style="flex:1;align-items:center;border-style:dashed;font-weight:700">Meditate</div>
+        <div class="card" style="flex:1;align-items:center;border-style:dashed;font-weight:700">Play</div>
+      </div>
+      <p class="p" style="font-size:13px;margin:2px 2px 0">Nothing to pick up yet. Try one of these:</p>
+      <div style="display:flex;flex-direction:column;gap:7px">
+        <div class="card" style="border-style:dashed">Breathe for two minutes</div>
+        <div class="card" style="border-style:dashed">Name one good thing</div>
+      </div>
+      <div class="nav5"><div class="on">Home</div><div>Good things</div><div class="fab">panic</div><div>Meditate</div><div>Me</div></div>
+    </div>
+    <p class="ann">Scene panel is full-bleed and owns the status bar; the character, the line and one CTA all sit inside it. No date, no Settings link — Settings moved to the Me tab. No streak and no empty progress bars: two dashed invitations that disappear once done.</p>
+  </div>
+
+  <div class="wf">
+    <div class="cap"><span class="pin">3</span>Home — returning</div>
+    <div class="ph">
+      <div class="scene">
+        <div class="sb" style="width:100%"><span>9:41</span><span>▮▮▮</span></div>
+        <div style="height:118px;display:grid;place-items:center"><img src="assets/face-curled.png" alt="" style="width:118px;object-fit:contain"></div>
+        <p style="margin:0;font:700 16px/1.2 'Patrick Hand';text-align:center">I get anxious too. We can get through this together.</p>
+        <div class="btn f" style="padding:8px 18px;font-size:15px">Tap me when you need me</div>
+      </div>
+      <div style="display:flex;gap:8px">
+        <div class="card" style="flex:1;align-items:center;font-weight:700;padding:7px 10px">Meditate</div>
+        <div class="card" style="flex:1;align-items:center;font-weight:700;padding:7px 10px">Play</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <div class="card" style="padding:7px 10px;gap:3px">Carry on with Mountain<span style="font:13px 'Patrick Hand';opacity:.6">8 min · you stopped at 2:10</span></div>
+        <div class="card" style="padding:7px 10px;gap:3px">7 good things this week<span style="font:13px 'Patrick Hand';opacity:.6">Latest: the coffee guy</span></div>
+      </div>
+      <div class="nav5"><div class="on">Home</div><div>Good things</div><div class="fab">panic</div><div>Meditate</div><div>Me</div></div>
+    </div>
+    <p class="ann">Same frame once there's history: the invitations are replaced by real cards, resume first. One character line per session, fixed while the user reads it. The line is the panda's voice, so the CTA under it carries the affordance.</p>
+  </div>
+
+  <div class="wf">
+    <div class="cap">Home — another day's line</div>
+    <div class="ph">
+      <div class="scene">
+        <div class="sb" style="width:100%"><span>9:41</span><span>▮▮▮</span></div>
+        <div style="height:126px;display:grid;place-items:center"><img src="assets/face-passout.png" alt="" style="width:132px;object-fit:contain"></div>
+        <p style="margin:0;font:700 16px/1.25 'Patrick Hand';text-align:center">Some days I feel like keeling over too. Let's just sit down.</p>
+        <div class="btn f" style="padding:9px 18px;font-size:15px">Tap me when you need me</div>
+      </div>
+      <div style="display:flex;gap:8px">
+        <div class="card" style="flex:1;align-items:center;font-weight:700">Meditate</div>
+        <div class="card" style="flex:1;align-items:center;font-weight:700">Play</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:7px">
+        <div class="card">Carry on with Mountain<span style="font:13px 'Patrick Hand';opacity:.6">8 min · you stopped at 2:10</span></div>
+        <div class="card">Three good things</div>
+      </div>
+      <div class="nav5"><div class="on">Home</div><div>Good things</div><div class="fab">panic</div><div>Meditate</div><div>Me</div></div>
+    </div>
+    <p class="ann">Same frame, a different line: solidarity by being visibly worse off, which lands better than encouragement when a user opens the app already flattened. Drawn at random on open, no repeats until the set is exhausted. It never asks for anything — the CTA is still the only route in.</p>
+  </div>
+</div>
+
+<div class="row">
+  <div class="wf w2" style="width:660px">
+    <div class="cap">Home — the daily pairings</div>
+    <div style="box-sizing:border-box;width:660px;border:2px dashed #beb8ab;border-radius:14px;background:#faf9f6;padding:16px 18px;display:grid;grid-template-columns:1fr 1fr;gap:14px">
+      <div style="display:flex;align-items:center;gap:12px"><img src="assets/face-anxious.png" alt="" style="width:64px;object-fit:contain"><p class="ann" style="margin:0"><b>A</b> · "You're doing better than you think."</p></div>
+      <div style="display:flex;align-items:center;gap:12px"><img src="assets/face-curled.png" alt="" style="width:64px;object-fit:contain"><p class="ann" style="margin:0"><b>B</b> · "I get anxious too. We can get through this together."</p></div>
+      <div style="display:flex;align-items:center;gap:12px"><img src="assets/face-passout.png" alt="" style="width:64px;object-fit:contain"><p class="ann" style="margin:0"><b>C</b> · "Some days I feel like keeling over too. Let's just sit down."</p></div>
+      <div style="display:flex;align-items:center;gap:12px"><img src="assets/face-hidebox.png" alt="" style="width:64px;object-fit:contain"><p class="ann" style="margin:0"><b>D</b> · "Hiding is a valid plan. I'll be in here if you need me."</p></div>
+      <div style="display:flex;align-items:center;gap:12px"><img src="assets/face-facebook.png" alt="" style="width:64px;object-fit:contain"><p class="ann" style="margin:0"><b>E</b> · "Doing nothing still counts. Ask me how I know."</p></div>
+      <div style="display:flex;align-items:center;gap:12px"><img src="assets/face-mygod.png" alt="" style="width:64px;object-fit:contain"><p class="ann" style="margin:0"><b>F</b> · "Sometimes you just need to yell about it. I'll go first."</p></div>
+      <div style="display:flex;align-items:center;gap:12px"><img src="assets/face-toilet.png" alt="" style="width:64px;object-fit:contain"><p class="ann" style="margin:0"><b>G</b> · "It never comes at a good time, does it. It still passes."</p></div>
+      <div style="display:flex;align-items:center;gap:12px"><img src="assets/face-content.png" alt="" style="width:64px;object-fit:contain"><p class="ann" style="margin:0"><b>H</b> · "Nothing's wrong right now. Let it be boring."</p></div>
+    </div>
+    <p class="ann" style="width:660px">A new pairing on every open of the app — fixed for that session, so nothing changes while the user is reading, and no repeats until the set is used. Image and line are written together — the joke is always the panda being in a worse state than the user, never the user being told to cheer up. Every pairing keeps the same "tap when you need me" pill underneath, so the way in never moves.</p>
+  </div>
+</div>
+
+<div class="flowhd">How are you feeling — four expressions</div>
+<div class="row">
+  <div class="wf">
+    <div class="cap"><span class="pin">4</span>The picker</div>
+    <div class="ph">
+      <div class="sb"><span>9:41</span><span>▮▮▮</span></div>
+      <p class="t" style="margin-top:6px">How are you feeling?</p>
+      <div class="tile" style="border-width:3px;padding:12px 10px 10px">
+        <img src="assets/face-panic.png" alt="overwhelmed" style="width:88px;height:88px">
+        <span style="font-size:17px">Can't cope right now</span>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:9px">
+        <div class="tile" style="flex-direction:row;justify-content:flex-start;gap:12px;padding:8px 12px">
+          <img src="assets/face-angry.png" alt="angry">
+          <span>Wound up</span>
+        </div>
+        <div class="tile" style="flex-direction:row;justify-content:flex-start;gap:12px;padding:8px 12px">
+          <img src="assets/face-sad.png" alt="sad">
+          <span>Low</span>
+        </div>
+        <div class="tile" style="flex-direction:row;justify-content:flex-start;gap:12px;padding:8px 12px">
+          <img src="assets/face-content.png" alt="okay">
+          <span>Actually okay</span>
+        </div>
+      </div>
+      <div class="spread" style="text-align:center;font:14px 'Patrick Hand';opacity:.5">Just looking</div>
+    </div>
+    <p class="ann">Panic tile is double-size, always top, always first — reachable without reading. The other three are one row each. "Just looking" exits with nothing asked.</p>
+  </div>
+
+  <div class="wf">
+    <div class="cap">Picker — with the happy faces</div>
+    <div class="ph">
+      <div class="sb"><span>9:41</span><span>▮▮▮</span></div>
+      <p class="t" style="margin-top:6px">How are you feeling?</p>
+      <div class="tile" style="border-width:3px;padding:10px">
+        <img src="assets/face-panic.png" alt="overwhelmed" style="width:70px;height:70px">
+        <span style="font-size:16px">Can't cope right now</span>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <div class="tile" style="padding:7px 4px 6px"><img src="assets/face-angry.png" alt="angry" style="width:46px;height:46px"><span style="font-size:13px">Wound up</span></div>
+        <div class="tile" style="padding:7px 4px 6px"><img src="assets/face-sad.png" alt="sad" style="width:46px;height:46px"><span style="font-size:13px">Low</span></div>
+        <div class="tile" style="padding:7px 4px 6px"><img src="assets/face-content.png" alt="okay" style="width:46px;height:46px"><span style="font-size:13px">Actually okay</span></div>
+        <div class="tile" style="padding:7px 4px 6px"><img src="assets/face-excited.png" alt="excited" style="width:46px;height:46px"><span style="font-size:13px">Buzzing</span></div>
+        <div class="tile" style="padding:7px 4px 6px"><img src="assets/face-grateful.png" alt="grateful" style="width:46px;height:46px"><span style="font-size:13px">Grateful</span></div>
+      </div>
+      <div class="spread" style="text-align:center;font:14px 'Patrick Hand';opacity:.5">Just looking</div>
+    </div>
+    <p class="ann">Six-face version for comparison. Buzzing and Grateful both land in Good things, so they earn a tile only if the entry copy differs. Smaller targets are the cost.</p>
+  </div>
+</div>
+
+<div class="flowhd">Can't cope right now — one path, dark, no nav</div>
+<div class="row">
+  <div class="wf w2">
+    <div class="cap"><span class="pin">5</span>On tapping the panic face — the three beats</div>
+    <div class="strip">
+      <div class="ph dk">
+        <p class="beat">0.0s — startle</p>
+        <div class="pd" style="flex:1"><b>paws up</b><span>sharp, held 0.5s</span></div>
+        <p class="beat" style="text-align:center">no text yet</p>
+      </div>
+      <div class="ph dk">
+        <p class="beat">0.5s — paws lower</p>
+        <div class="pd" style="flex:1"><b>shoulders drop</b><span>1.5s ease-out</span></div>
+        <p class="beat" style="text-align:center">no text yet</p>
+      </div>
+      <div class="ph dk">
+        <p class="beat">2.0s — settled</p>
+        <div class="pd" style="flex:1"><b>settles, becomes the pacer</b><span>breathing begins</span></div>
+        <p class="beat" style="text-align:center">"I'm here. Let's breathe together."</p>
+      </div>
+    </div>
+    <p class="ann" style="max-width:520px">The panda models recovery: it reacts to the face they picked, then visibly comes down and becomes the pacer. No second question — there is one panic path now, and its intensity adapts through pacing rather than through a choice made while panicking.</p>
+  </div>
+
+  <div class="wf">
+    <div class="cap"><span class="pin">6</span>Breathing — counted</div>
+    <div class="ph dk" style="position:relative">
+      <div class="x">✕</div>
+      <div class="snd">🔇</div>
+      <div class="sb"><span>9:41</span><span>▮▮▮</span></div>
+      <div class="pd" style="height:230px;margin-top:16px"><b>panda — pacer</b><span>belly expands and contracts<br>5 in · 8 out</span></div>
+      <p class="p" style="text-align:center;font-size:15px;margin-top:12px">In through your nose.</p>
+      <p class="p" style="text-align:center;font-size:26px;opacity:.45;margin-top:2px">5</p>
+      <p class="t" style="text-align:center;font-size:18px;margin-top:8px">I'm here. Let's breathe together.</p>
+      <div class="spread" style="display:flex;flex-direction:column;align-items:center;gap:9px">
+        <div class="nxt">Next</div>
+        <div style="font:14px 'Patrick Hand';color:#7c7887">Ground me</div>
+      </div>
+    </div>
+    <p class="ann">Breathing starts immediately — no instructions to read first. Three counted breaths with the in/out prompt. Reading is the default and Next advances the text; the speaker button top-left switches to voice, which paces itself.</p>
+  </div>
+
+  <div class="wf">
+    <div class="cap">What's happening in your body?</div>
+    <div class="ph dk" style="position:relative">
+      <div class="x">✕</div>
+      <div class="snd">🔇</div>
+      <div class="sb"><span>9:41</span><span>▮▮▮</span></div>
+      <div class="pd" style="height:120px;margin-top:14px"><b>panda — pacer, keeps going</b><span>breathing does not pause</span></div>
+      <p class="t" style="font-size:19px;text-align:center;margin-top:10px">What's happening in your body?</p>
+      <div style="display:flex;flex-direction:column;gap:7px;margin-top:4px">
+        <div class="card" style="font-size:16px;padding:11px">My heart is racing</div>
+        <div class="card" style="font-size:16px;padding:11px">I can't get a full breath</div>
+        <div class="card" style="font-size:16px;padding:11px">I feel like fainting</div>
+        <div class="card" style="font-size:16px;padding:11px">My hands are tingling</div>
+      </div>
+      <div class="spread" style="text-align:center;font:15px 'Patrick Hand';color:#a29eac">Skip this</div>
+    </div>
+    <p class="ann">Offered after the first counted breaths, never before — breathing shouldn't wait on a menu. Selecting is possible during an attack; naming a thought isn't. Four sensations, each with its own script. Skip covers the case where it's undifferentiated, which is how it often feels, and goes straight back to the breath.</p>
+  </div>
+
+  <div class="wf">
+    <div class="cap">The sensation explained</div>
+    <div class="ph dk" style="position:relative">
+      <div class="x">✕</div>
+      <div class="snd">🔇</div>
+      <div class="sb"><span>9:41</span><span>▮▮▮</span></div>
+      <div class="pd" style="height:150px;margin-top:14px"><b>panda — pacer, still breathing</b></div>
+      <p class="t" style="font-size:21px;text-align:center;margin-top:16px">Your heart is beating fast to move blood to your arms and legs. That's all it's doing.</p>
+      <p class="p" style="text-align:center;margin-top:8px">It feels awful. It isn't hurting you. It slows down on its own.</p>
+      <div class="spread" style="display:flex;flex-direction:column;align-items:center;gap:9px">
+        <div class="nxt">Next</div>
+        <div style="font:15px 'Patrick Hand';color:#a29eac">Ground me</div>
+      </div>
+    </div>
+    <p class="ann">One explanation per sensation, then straight back into the script. No intensity rating, no "is it worse than last time", and the choice is never logged or compared over time — that would turn normalising into monitoring, which feeds the fear it's meant to settle.</p>
+  </div>
+
+  <div class="wf w2">
+    <div class="cap"><span class="pin">7</span>The monster shrinks as the exercise runs</div>
+    <div class="strip">
+      <div class="ph dk">
+        <p class="beat">start</p>
+        <div class="pd" style="flex:1"><b>monster — large, filling the frame</b><span>black, furry, formless<br>panda's paws up, braced<br>never toothy or gory</span></div>
+        <p class="beat" style="text-align:center">"Let's breathe together."</p>
+      </div>
+      <div class="ph dk">
+        <p class="beat">after three breaths</p>
+        <div class="pd" style="flex:1"><b>monster — noticeably smaller</b><span>panda lowers one paw<br>shoulders drop</span></div>
+        <p class="beat" style="text-align:center">sensation script</p>
+      </div>
+      <div class="ph dk">
+        <p class="beat">through the softening lines</p>
+        <div class="pd" style="flex:1"><b>monster — knee height</b><span>panda seated, breathing<br>no longer braced</span></div>
+        <p class="beat" style="text-align:center">one line per breath</p>
+      </div>
+      <div class="ph dk">
+        <p class="beat">by Ground</p>
+        <div class="pd" style="flex:1"><b>monster — small, quiet, still there</b><span>sits beside the panda<br>no longer looked at</span></div>
+        <p class="beat" style="text-align:center">"Feel your feet on the ground."</p>
+      </div>
+    </div>
+    <p class="ann" style="max-width:700px">The monster is the anxiety made external — not the user's failing, and not something to defeat. It shrinks on breaths completed, not on anything the user has to do well, so it can't be failed. It never vanishes: it ends small and calm beside the panda, because the honest promise is that this becomes manageable, not that it disappears forever. Art stays soft and formless — a scary monster would be an unhelpful thing to show someone mid-attack.</p>
+  </div>
+
+  <div class="wf">
+    <div class="cap"><span class="pin">8</span>Softening lines — counter gone</div>
+    <div class="ph dk" style="position:relative">
+      <div class="x">✕</div>
+      <div class="snd">🔇</div>
+      <div class="sb"><span>9:41</span><span>▮▮▮</span></div>
+      <div class="pd" style="height:290px;margin-top:16px"><b>panda — pacer, unchanged</b><span>breathing continues<br>counting stops</span></div>
+      <p class="t" style="text-align:center;font-size:21px;margin-top:18px">This feeling is horrible, but it can't hurt you.</p>
+      <div class="spread" style="display:flex;flex-direction:column;align-items:center;gap:9px">
+        <div class="nxt">Next</div>
+        <div style="font:14px 'Patrick Hand';color:#7c7887">Ground me</div>
+      </div>
+    </div>
+    <p class="ann">Next is the only way lines advance while reading — nothing moves on its own, so a slow reader never loses a line. With sound on, lines follow the voice one per breath and Next disappears. The pacer keeps breathing either way.</p>
+  </div>
+
+  <div class="wf">
+    <div class="cap"><span class="pin">9</span>Encouraging words</div>
+    <div class="ph dk" style="position:relative">
+      <div class="x">✕</div>
+      <div class="snd">🔇</div>
+      <div class="sb"><span>9:41</span><span>▮▮▮</span></div>
+      <div class="pd" style="height:150px;margin-top:14px"><b>panda — talking, slower</b><span>smaller gestures</span></div>
+      <p class="t" style="font-size:23px;text-align:center;margin:24px 0 0">You're doing the best you can.</p>
+      <div class="spread" style="display:flex;flex-direction:column;align-items:center;gap:10px">
+        <div class="nxt">Next</div>
+      </div>
+    </div>
+    <p class="ann">Nine lines, tap to continue. Words come after arousal drops, not at the peak — comprehension is one of the first things to go.</p>
+  </div>
+
+  <div class="wf">
+    <div class="cap"><span class="pin">10</span>Ground</div>
+    <div class="ph dk" style="position:relative">
+      <div class="x">✕</div>
+      <div class="snd">🔇</div>
+      <div class="sb"><span>9:41</span><span>▮▮▮</span></div>
+      <div class="pd" style="height:150px;margin-top:14px"><b>panda — seated, paws flat</b></div>
+      <p class="t" style="font-size:22px;text-align:center;margin:14px 0 0">Feel your feet on the ground.</p>
+      <p class="p" style="text-align:center;font-size:15px;margin-top:8px">If you're lying down, feel your back against what's under you.</p>
+      <div class="spread" style="display:flex;flex-direction:column;gap:9px">
+        <div class="nxt">Next</div>
+        <p class="p" style="font-size:14px;text-align:center;opacity:.5">exits appear on the last line</p>
+      </div>
+    </div>
+    <p class="ann">A sensation to notice, not a task to perform — pressing down is effort, and effort can be failed. Both postures addressed in one screen, so there's nothing to choose. Five lines, tap-paced: Next is the only button while lines remain, and on the last line it gives way to "I feel better" and "It's getting worse" — otherwise two competing calls to action sit on the same screen.</p>
+  </div>
+
+  <div class="wf">
+    <div class="cap">Crisis resources</div>
+    <div class="ph dk">
+      <div class="sb"><span>9:41</span><span>▮▮▮</span></div>
+      <p class="t">Talk to someone now.</p>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div class="btn f">Call a crisis line</div>
+        <div class="btn">Text a crisis line</div>
+        <div class="card">Someone in your contacts<span style="font:13px 'Patrick Hand';opacity:.6">set up in Settings</span></div>
+      </div>
+      <p class="p" style="font-size:13px">If you're in danger right now, call emergency services.</p>
+      <div class="spread" style="text-align:center;font:14px 'Patrick Hand';opacity:.55">Back</div>
+    </div>
+    <p class="ann">Panda is absent. No mascot, no warmth, no illustration — real numbers only.</p>
+  </div>
+
+  <div class="wf">
+    <div class="cap">Recap</div>
+    <div class="ph">
+      <div class="sb"><span>9:41</span><span>▮▮▮</span></div>
+      <div style="height:150px;border:2px solid #dcd6ca;border-radius:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:8px;background:#faf9f6"><img src="assets/face-highfive.png" alt="" style="width:96px;object-fit:contain"><span style="font:11.5px/1.4 ui-monospace,monospace;color:#8d8779;text-align:center">high five, held one beat<br>no confetti, no sound</span></div>
+      <p class="t">That passed.</p>
+      <p class="p">7 minutes. Two mantras, one round of breathing.</p>
+      <p class="p">You got through it. That's a big deal.</p>
+      <div class="card" style="border-style:dashed">Add this to What Went Well</div>
+      <div class="spread"><div class="btn f">Back to home</div></div>
+    </div>
+    <p class="ann">Screen returns to light — the exit from the dark path is the signal it's over. The button pre-fills the first Good things field with "I sat through a hard moment today".</p>
+  </div>
+</div>
+
+<div class="flowhd">The other three faces</div>
+<div class="row">
+  <div class="wf">
+    <div class="cap"><span class="pin">11</span>Wound up — scribble it out</div>
+    <div class="ph">
+      <div class="sb"><span>9:41</span><span>▮▮▮</span></div>
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <p class="p" style="margin:0;font-size:13px">Scribble it out</p>
+        <span style="font:14px 'Patrick Hand';opacity:.5">✕</span>
+      </div>
+      <div class="pd" style="flex:1;border-style:solid;border-color:#dcd6ca"><b>full-bleed scribble pad</b><span>one stroke weight, one colour<br>no undo, no save<br>strokes fade after a few seconds</span></div>
+      <p class="p" style="font-size:15px;text-align:center">Scribble as hard as you like. It fades away.</p>
+      <div class="spread"><div class="btn">I'm done</div></div>
+    </div>
+    <p class="ann">Anger needs discharge, not calming — a slow breathing exercise here reads as being told off. Nothing is kept, which is the point: no artefact, no judgement. The pad fills the screen with no colours, weights or undo to choose between.</p>
+  </div>
+
+  <div class="wf">
+    <div class="cap"><span class="pin">12</span>Low — sit with me</div>
+    <div class="ph">
+      <div class="sb"><span>9:41</span><span>▮▮▮</span></div>
+      <div style="display:flex;justify-content:flex-end"><span style="font:14px 'Patrick Hand';opacity:.5">✕</span></div>
+      <div style="height:250px;border:2px solid #dcd6ca;border-radius:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:10px;background:#faf9f6"><img src="assets/face-meditation.png" alt="" style="width:130px;object-fit:contain"><span style="font:11.5px/1.4 ui-monospace,monospace;color:#8d8779;text-align:center">sits down beside you · slow blink<br>tappable anywhere · no timer</span></div>
+      <p class="t" style="text-align:center;font-size:20px;margin-top:10px">I'll stay here with you.</p>
+      <p class="p" style="text-align:center;font-size:13px">Pet me, or offer me something.</p>
+      <div style="display:flex;gap:8px;margin-top:2px">
+        <div class="pd" style="flex:1;height:62px;border-radius:12px"><b>bamboo</b></div>
+        <div class="pd" style="flex:1;height:62px;border-radius:12px"><b>berry</b></div>
+        <div class="pd" style="flex:1;height:62px;border-radius:12px"><b>tea</b></div>
+      </div>
+      <div class="spread" style="text-align:center;font:14px 'Patrick Hand';opacity:.5">I'm okay for now</div>
+    </div>
+    <p class="ann">Company, not an activity. Three things to offer, always available — never a hunger meter, never a reminder to feed it. Doing a small kind thing for someone else lifts mood more reliably than being told nice things about yourself.</p>
+  </div>
+
+  <div class="wf">
+    <div class="cap">Low — petting</div>
+    <div class="ph">
+      <div class="sb"><span>9:41</span><span>▮▮▮</span></div>
+      <div style="display:flex;justify-content:flex-end"><span style="font:14px 'Patrick Hand';opacity:.5">✕</span></div>
+      <div class="pd" style="height:250px;border-style:solid;border-color:#dcd6ca"><b>panda — leans into your finger</b><span>ear twitch, eyes close<br>soft ripple where you touch<br>answers every tap, no cooldown</span></div>
+      <p class="t" style="text-align:center;font-size:20px;margin-top:10px">Mm.</p>
+      <p class="p" style="text-align:center;font-size:13px">Stroke follows your finger across the screen</p>
+      <div style="display:flex;gap:8px;margin-top:2px">
+        <div class="pd" style="flex:1;height:62px;border-radius:12px"><b>bamboo</b></div>
+        <div class="pd" style="flex:1;height:62px;border-radius:12px"><b>berry</b></div>
+        <div class="pd" style="flex:1;height:62px;border-radius:12px"><b>tea</b></div>
+      </div>
+      <div class="spread" style="text-align:center;font:14px 'Patrick Hand';opacity:.5">I'm okay for now</div>
+    </div>
+    <p class="ann">Response is immediate and small. No sound by default, no confetti. The reply is body language, not words — one syllable at most.</p>
+  </div>
+
+  <div class="wf">
+    <div class="cap">Low — offered tea</div>
+    <div class="ph">
+      <div class="sb"><span>9:41</span><span>▮▮▮</span></div>
+      <div style="display:flex;justify-content:flex-end"><span style="font:14px 'Patrick Hand';opacity:.5">✕</span></div>
+      <div class="pd" style="height:250px;border-style:solid;border-color:#dcd6ca"><b>panda — holds the cup, warms paws</b><span>takes it, settles closer<br>plays once, then back to idle</span></div>
+      <p class="t" style="text-align:center;font-size:20px;margin-top:10px">Thank you. Have some too.</p>
+      <div style="display:flex;gap:8px;margin-top:2px">
+        <div class="pd" style="flex:1;height:62px;border-radius:12px"><b>bamboo</b></div>
+        <div class="pd" style="flex:1;height:62px;border-radius:12px"><b>berry</b></div>
+        <div class="pd" style="flex:1;height:62px;border-radius:12px;border-style:solid;border-color:#dcd6ca"><b>tea</b><span>given</span></div>
+      </div>
+      <div class="spread" style="display:flex;flex-direction:column;gap:9px">
+        <div class="card" style="border-style:dashed;font-size:14px;text-align:center">Tell me about it<span style="font:13px 'Patrick Hand';opacity:.6">not saved anywhere</span></div>
+        <div style="text-align:center;font:14px 'Patrick Hand';opacity:.5">I'm okay for now</div>
+      </div>
+    </div>
+    <p class="ann">Each item gets one line back, and the tea one nudges the user to do the same thing for themselves. "Tell me about it" surfaces only after some interaction — offered once the user has stayed a while, never up front. Free write stays unsaved so it can be honest.</p>
+  </div>
+
+  <div class="wf">
+    <div class="cap"><span class="pin">13</span>Actually okay — capture it</div>
+    <div class="ph">
+      <div class="sb"><span>9:41</span><span>▮▮▮</span></div>
+      <div style="display:flex;justify-content:flex-end"><span style="font:14px 'Patrick Hand';opacity:.5">✕</span></div>
+      <div class="pd" style="height:130px"><b>panda — content, paw raised</b></div>
+      <p class="t" style="margin-top:6px">Good. Nothing to do then.</p>
+      <p class="p">Close this and get on with your day. I'll be here.</p>
+      <div class="spread" style="display:flex;flex-direction:column;gap:10px">
+        <div class="btn" style="border-style:dashed;font-size:14px;padding:13px 8px">I want to share my happiness</div>
+        <div style="text-align:center;font:14px 'Patrick Hand';opacity:.55">Close</div>
+      </div>
+    </div>
+    <p class="ann">The one path that's allowed to end in nothing — an app with homework for every mood becomes another obligation. The ghost button is the only invitation, and it leads into Three good things.</p>
+  </div>
+</div>
+
+<div class="flowhd">Meditation</div>
+<div class="row">
+  <div class="wf">
+    <div class="cap">Choose a session</div>
+    <div class="ph">
+      <div class="sb"><span>9:41</span><span>▮▮▮</span></div>
+      <p class="t">Choose a session</p>
+      <div style="display:flex;flex-direction:column;gap:7px">
+        <div class="card" style="padding:0;overflow:hidden">
+          <div style="height:64px;border-bottom:2px solid #1a1a1a;display:grid;place-items:center;background:#faf9f6"><img src="assets/face-meditation.png" alt="" style="height:56px;object-fit:contain"></div>
+          <div style="padding:9px 10px">Breath<span style="display:block;font:13px 'Patrick Hand';opacity:.6">Simple breathing · 5 min</span></div>
+        </div>
+        <div class="card" style="padding:0;overflow:hidden">
+          <div class="pd" style="height:56px;border:none;border-radius:0;border-bottom:2px solid #1a1a1a"><b>mountain still</b></div>
+          <div style="padding:9px 10px">Mountain<span style="display:block;font:13px 'Patrick Hand';opacity:.6">Visualization · 8 min</span></div>
+        </div>
+        <div class="card" style="padding:0;overflow:hidden">
+          <div style="height:64px;border-bottom:2px solid #1a1a1a;display:grid;place-items:center;background:#faf9f6"><img src="assets/face-walking.png" alt="" style="height:56px;object-fit:contain"></div>
+          <div style="padding:9px 10px">Walk<span style="display:block;font:13px 'Patrick Hand';opacity:.6">Audio, outdoors · 12 min</span></div>
+        </div>
+      </div>
+      <div class="nav"><div>Home</div><div>Good things</div><div class="on">Meditate</div><div>Journal</div></div>
+    </div>
+    <p class="ann">Three sessions. Walking lives here rather than in the panic path — by the time someone has finished the calming exercise they've done enough, and movement at the peak reads as being told to pull yourself together.</p>
+  </div>
+
+  <div class="wf">
+    <div class="cap"><span class="pin">14</span>Mountain visualization</div>
+    <div class="ph">
+      <div class="sb"><span>9:41</span><span>▮▮▮</span></div>
+      <div style="display:flex;justify-content:space-between;font:14px 'Patrick Hand';opacity:.55"><span>Mountain</span><span>6:40 left</span></div>
+      <div class="pd" style="height:330px"><b>panda curled at the summit</b><span>unmoved · weather passes behind:<br>cloud → rain → clear<br>character never reacts</span></div>
+      <p class="p" style="text-align:center;font-size:13px">Audio narration, screen can be pocketed</p>
+      <div class="spread" style="display:flex;gap:8px"><div class="btn" style="flex:1">End</div><div class="btn f" style="flex:1">Finish</div></div>
+    </div>
+    <p class="ann">The whole point of the scene is the stillness — no idle fidget animation here. Breath session uses the same pacer motion as the panic path, so it's familiar under stress.</p>
+  </div>
+
+  <div class="wf">
+    <div class="cap">Walking session</div>
+    <div class="ph">
+      <div class="sb"><span>9:41</span><span>▮▮▮</span></div>
+      <div style="display:flex;justify-content:space-between;font:13px 'Patrick Hand';opacity:.55"><span>Walk</span><span>9:20 left</span></div>
+      <div style="height:250px;border:2px solid #dcd6ca;border-radius:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:10px;background:#faf9f6"><img src="assets/face-walking.png" alt="" style="width:150px;object-fit:contain"><span style="font:11.5px/1.4 ui-monospace,monospace;color:#8d8779;text-align:center">walks alongside, slow loop<br>keeps pace, never ahead<br>no route, no map, no steps</span></div>
+      <p class="t" style="text-align:center;font-size:19px;margin-top:12px">Just listen. You can put your phone away.</p>
+      <p class="p" style="text-align:center">Notice the ground under your feet. Then look at what's ahead.</p>
+      <div class="spread" style="display:flex;flex-direction:column;gap:9px">
+        <div style="display:flex;gap:8px"><div class="btn" style="flex:1">Pause</div><div class="btn" style="flex:1">End</div></div>
+        <p class="p" style="font-size:13px;text-align:center">Works with the screen off and headphones in</p>
+      </div>
+    </div>
+    <p class="ann">Audio-first, designed to be listened to rather than watched — nothing on screen is needed once it starts. No distance, pace, route or step count: the moment it measures anything it becomes exercise, and this is attention practice that happens to involve legs.</p>
+  </div>
+
+  <div class="wf">
+    <div class="cap">Session complete</div>
+    <div class="ph">
+      <div class="sb"><span>9:41</span><span>▮▮▮</span></div>
+      <div style="height:150px;border:2px solid #dcd6ca;border-radius:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:8px;background:#faf9f6"><img src="assets/face-welldone.png" alt="" style="width:96px;object-fit:contain"><span style="font:11.5px/1.4 ui-monospace,monospace;color:#8d8779;text-align:center">thumbs up, one beat<br>then back to steady</span></div>
+      <p class="t">Complete.</p>
+      <p class="p">That's four sessions this week.</p>
+      <div class="spread" style="display:flex;flex-direction:column;gap:8px">
+        <div class="btn f">Done</div>
+        <div class="btn">Note something good</div>
+      </div>
+    </div>
+    <p class="ann">Shared by both sessions. Hands off to Good things rather than dead-ending.</p>
+  </div>
+</div>
+
+<img src="screenshot-2026-08-29-at-9-41-54-pm-mteb9076-27eg.png" alt="screenshot-2026-08-29-at-9-41-54-pm" width="284" height="390" style="max-width: 100%; height: auto; display: block; object-fit: cover; width: 284px; aspect-ratio: 284 / 390"><div class="flowhd">Journal — two layers, both optional</div>
+<div class="row">
+  <div class="wf">
+    <div class="cap"><span class="pin">15</span>Layer 1 — the face <span style="font:400 13px 'Patrick Hand';opacity:.55">· full list, scrolls on device</span></div>
+    <div class="ph" style="height:756px">
+      <div class="sb"><span>9:41</span><span>▮▮▮</span></div>
+      <p class="t">Today felt</p>
+      <p class="p" style="font-size:15px">Tap one. That's the whole thing.</p>
+      <p style="margin:2px 0 0;font:11.5px ui-monospace,monospace;letter-spacing:.08em;color:#a09a8d">HARD</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+        <div class="tile" style="min-width:0;padding:6px 4px 5px"><img src="assets/face-panic.png" alt="couldn't cope" style="width:40px;height:40px"><span style="font-size:12.5px">Couldn't cope</span></div>
+        <div class="tile" style="min-width:0;padding:6px 4px 5px"><img src="assets/face-angry.png" alt="cross" style="width:40px;height:40px"><span style="font-size:12.5px">Cross</span></div>
+        <div class="tile" style="min-width:0;padding:6px 4px 5px"><img src="assets/face-sad.png" alt="low" style="width:40px;height:40px"><span style="font-size:12.5px">Low</span></div>
+        <div class="tile" style="min-width:0;padding:6px 4px 5px"><img src="assets/face-burnedout.png" alt="burned out" style="width:40px;height:40px"><span style="font-size:12.5px">Burned out</span></div>
+      </div>
+      <p style="margin:2px 0 0;font:11.5px ui-monospace,monospace;letter-spacing:.08em;color:#a09a8d">FLAT</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+        <div class="tile" style="min-width:0;padding:6px 4px 5px"><img src="assets/face-drained.png" alt="drained" style="width:40px;height:40px"><span style="font-size:12.5px">Drained</span></div>
+        <div class="tile" style="min-width:0;padding:6px 4px 5px"><img src="assets/face-bored.png" alt="boring" style="width:40px;height:40px"><span style="font-size:12.5px">Boring</span></div>
+      </div>
+      <p style="margin:2px 0 0;font:11.5px ui-monospace,monospace;letter-spacing:.08em;color:#a09a8d">GOOD</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+        <div class="tile" style="min-width:0;padding:6px 4px 5px"><img src="assets/face-serene.png" alt="serene" style="width:40px;height:40px"><span style="font-size:12.5px">Serene</span></div>
+        <div class="tile" style="min-width:0;padding:6px 4px 5px"><img src="assets/face-content.png" alt="okay" style="width:40px;height:40px"><span style="font-size:12.5px">Okay</span></div>
+        <div class="tile" style="min-width:0;padding:6px 4px 5px"><img src="assets/face-winning.png" alt="winning" style="width:40px;height:40px"><span style="font-size:12.5px">Winning</span></div>
+        <div class="tile" style="min-width:0;padding:6px 4px 5px"><img src="assets/face-grateful.png" alt="grateful" style="width:40px;height:40px"><span style="font-size:12.5px">Grateful</span></div>
+        <div class="tile" style="min-width:0;padding:6px 4px 5px"><img src="assets/face-excited.png" alt="buzzing" style="width:40px;height:40px"><span style="font-size:12.5px">Buzzing</span></div>
+      </div>
+      <div class="nav"><div>Home</div><div>Good things</div><div>Meditate</div><div class="on">Journal</div></div>
+    </div>
+    <p class="ann">Two seconds, no typing, done. Tapping a face saves the entry and offers layer 2 — but the entry is already complete, so leaving now costs nothing. Most days will stop here, and that's the point: it has to be possible on the worst day. Eleven faces, grouped Hard / Flat / Good so the eye lands on the right band before reading any label — Couldn't cope stays first, top-left, reachable without reading. The list scrolls; the tab bar stays fixed.</p>
+  </div>
+
+  <div class="wf">
+    <div class="cap"><span class="pin">16</span>Layer 2 — one line</div>
+    <div class="ph">
+      <div class="sb"><span>9:41</span><span>▮▮▮</span></div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <img src="assets/face-sad.png" alt="low" style="width:46px;height:46px;object-fit:contain">
+        <div>
+          <p class="t" style="font-size:17px">Low</p>
+          <p class="p" style="font-size:13px">Saved · tap to change</p>
+        </div>
+      </div>
+      <div class="pd" style="height:78px"><b>panda — sits closer, no fuss</b></div>
+      <p class="t" style="font-size:17px;margin-top:4px">Low days still count as days.</p>
+      <p class="t" style="margin-top:4px">What would have helped?</p>
+      <div class="field" style="height:78px;color:#9b9488">One sentence is plenty…</div>
+      <div class="spread" style="display:flex;flex-direction:column;gap:9px">
+        <div class="btn f">Save</div>
+        <div class="btn" style="border-style:dashed;font-size:15px">Add three good things</div>
+        <div style="text-align:center;font:14px 'Patrick Hand';opacity:.5">Done for today</div>
+      </div>
+    </div>
+    <p class="ann">Nine of the eleven faces share this shape: the panda says one encouraging line, then asks one question, then one field. Never more than one question, and what's written is never summarised or scored back at the user. Burned out and Drained are the exceptions and ask nothing at all — see their own frames.</p>
+  </div>
+
+  <div class="wf">
+    <div class="cap">Layer 2 — Couldn't cope</div>
+    <div class="ph">
+      <div class="sb"><span>9:41</span><span>▮▮▮</span></div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <img src="assets/face-panic.png" alt="couldn't cope" style="width:46px;height:46px;object-fit:contain">
+        <div>
+          <p class="t" style="font-size:17px">Couldn't cope</p>
+          <p class="p" style="font-size:13px">Saved · tap to change</p>
+        </div>
+      </div>
+      <div class="pd" style="height:78px"><b>panda — steady, proud</b></div>
+      <p class="t" style="font-size:17px;margin-top:4px">You got through a day that tried to stop you.</p>
+      <p class="t" style="margin-top:4px">What was happening just before?</p>
+      <div class="field" style="height:78px;color:#9b9488">Only if you want to…</div>
+      <div class="spread" style="display:flex;flex-direction:column;gap:9px">
+        <div class="btn f">Save</div>
+        <div style="text-align:center;font:14px 'Patrick Hand';opacity:.5">Done for today</div>
+      </div>
+    </div>
+    <p class="ann">The only face where the question is about causes, because knowing the run-up is what makes the next one easier to catch. Explicitly optional, and three good things isn't offered here — the panic recap already asked.</p>
+  </div>
+
+  <div class="wf">
+    <div class="cap">Layer 2 — Cross</div>
+    <div class="ph">
+      <div class="sb"><span>9:41</span><span>▮▮▮</span></div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <img src="assets/face-angry.png" alt="cross" style="width:46px;height:46px;object-fit:contain">
+        <div>
+          <p class="t" style="font-size:17px">Cross</p>
+          <p class="p" style="font-size:13px">Saved · tap to change</p>
+        </div>
+      </div>
+      <div class="pd" style="height:78px"><b>panda — arms folded, on your side</b></div>
+      <p class="t" style="font-size:17px;margin-top:4px">It's okay to be cross. It usually means something needs sorting out.</p>
+      <p class="t" style="margin-top:4px">What set it off?</p>
+      <div class="field" style="height:70px;color:#9b9488">Say it plainly…</div>
+      <div class="spread" style="display:flex;flex-direction:column;gap:9px">
+        <div class="btn f">Save</div>
+        <div class="btn" style="border-style:dashed;font-size:15px">Scribble it out instead</div>
+      </div>
+    </div>
+    <p class="ann">The panda takes the user's side rather than talking them down. Writing anger is a discharge too, so the scribble pad sits here as the alternative for anyone who doesn't want to put it in words.</p>
+  </div>
+
+  <div class="wf">
+    <div class="cap">Layer 2 — Okay</div>
+    <div class="ph">
+      <div class="sb"><span>9:41</span><span>▮▮▮</span></div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <img src="assets/face-content.png" alt="okay" style="width:46px;height:46px;object-fit:contain">
+        <div>
+          <p class="t" style="font-size:17px">Okay</p>
+          <p class="p" style="font-size:13px">Saved · tap to change</p>
+        </div>
+      </div>
+      <div class="pd" style="height:78px"><b>panda — content, paw raised</b></div>
+      <p class="t" style="font-size:17px;margin-top:4px">Normal days count too.</p>
+      <p class="t" style="margin-top:4px">What went right?</p>
+      <div class="field" style="height:70px;color:#9b9488">One thing is enough…</div>
+      <div class="spread" style="display:flex;flex-direction:column;gap:9px">
+        <div class="btn f">Save</div>
+        <div class="btn" style="border-style:dashed;font-size:15px">Add three good things</div>
+      </div>
+    </div>
+    <p class="ann">The quiet middle. No praise for a good day, no fixing for a flat one — just a note that unremarkable days are data too.</p>
+  </div>
+
+  <div class="wf">
+    <div class="cap">Layer 2 — Buzzing</div>
+    <div class="ph">
+      <div class="sb"><span>9:41</span><span>▮▮▮</span></div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <img src="assets/face-excited.png" alt="buzzing" style="width:46px;height:46px;object-fit:contain">
+        <div>
+          <p class="t" style="font-size:17px">Buzzing</p>
+          <p class="p" style="font-size:13px">Saved · tap to change</p>
+        </div>
+      </div>
+      <div class="pd" style="height:78px;border-style:solid;border-color:#dcd6ca"><b>panda — bouncing, sparkles</b><span>the one place it gets excited</span></div>
+      <p class="t" style="font-size:17px;margin-top:4px">Tell me everything.</p>
+      <p class="t" style="margin-top:4px">What's got you going?</p>
+      <div class="field" style="height:70px;color:#9b9488">Go on…</div>
+      <div class="spread" style="display:flex;flex-direction:column;gap:9px">
+        <div class="btn f">Save</div>
+        <div class="btn" style="border-style:dashed;font-size:15px">Add three good things</div>
+      </div>
+    </div>
+    <p class="ann">The panda is openly happy for the user here — the only place it shows more energy than they do. Worth keeping rare so it means something.</p>
+  </div>
+
+  <div class="wf">
+    <div class="cap">Layer 2 — Grateful</div>
+    <div class="ph">
+      <div class="sb"><span>9:41</span><span>▮▮▮</span></div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <img src="assets/face-grateful.png" alt="grateful" style="width:46px;height:46px;object-fit:contain">
+        <div>
+          <p class="t" style="font-size:17px">Grateful</p>
+          <p class="p" style="font-size:13px">Saved · tap to change</p>
+        </div>
+      </div>
+      <div class="pd" style="height:78px;border-style:solid;border-color:#dcd6ca"><b>panda — holds it close, warm</b></div>
+      <p class="t" style="font-size:17px;margin-top:4px">That's a good thing to be feeling.</p>
+      <p class="t" style="margin-top:4px">Who or what for?</p>
+      <div class="field" style="height:70px;color:#9b9488">A name is enough…</div>
+      <div class="spread" style="display:flex;flex-direction:column;gap:9px">
+        <div class="btn f">Save</div>
+        <div class="btn" style="border-style:dashed;font-size:15px">Tell them</div>
+      </div>
+    </div>
+    <p class="ann">"Tell them" opens the phone's share sheet with the sentence pre-filled. Gratitude acted on lands better than gratitude logged, and it's the one moment the app points the user outward.</p>
+  </div>
+
+  </div>
+
+<div class="row">
+  <div class="wf">
+    <div class="cap">Layer 2 — Burned out, nothing asked</div>
+    <div class="ph">
+      <div class="sb"><span>9:41</span><span>▮▮▮</span></div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <img src="assets/face-burnedout.png" alt="burned out" style="width:46px;height:46px;object-fit:contain">
+        <div>
+          <p class="t" style="font-size:17px">Burned out</p>
+          <p class="p" style="font-size:13px">Saved · tap to change</p>
+        </div>
+      </div>
+      <div class="pd" style="height:210px;border-style:solid;border-color:#dcd6ca"><b>panda — face down on the laptop</b><span>one paw raised in a thumbs up<br>slides slowly off the desk<br>loops, gets sillier</span></div>
+      <p class="t" style="text-align:center;font-size:21px;margin-top:12px">I'm ok!</p>
+      <p class="p" style="text-align:center;font-size:16px">(I am not ok. Neither of us has to be.)</p>
+      <div class="spread" style="display:flex;flex-direction:column;gap:9px">
+        <div class="pill" style="align-self:center">tap the laptop to shut it</div>
+        <div style="text-align:center;font:14px 'Patrick Hand';opacity:.5">I do want to write something</div>
+      </div>
+    </div>
+    <p class="ann">No question and no button. The one thing to do is tap the laptop: the lid shuts, the panda slides the rest of the way off the desk, and the screen goes quiet. Acting on the scene rather than pressing Continue is the difference between being dismissed and being let off.</p>
+  </div>
+
+  <div class="wf">
+    <div class="cap">Layer 2 — Drained, nothing asked</div>
+    <div class="ph">
+      <div class="sb"><span>9:41</span><span>▮▮▮</span></div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <img src="assets/face-drained.png" alt="drained" style="width:46px;height:46px;object-fit:contain">
+        <div>
+          <p class="t" style="font-size:17px">Drained</p>
+          <p class="p" style="font-size:13px">Saved · tap to change</p>
+        </div>
+      </div>
+      <div class="pd" style="height:210px;border-style:solid;border-color:#dcd6ca"><b>panda — flat out, 0% battery above</b><span>battery ticks 0% → 1% → 0%<br>one ear twitches<br>that's the whole animation</span></div>
+      <p class="t" style="text-align:center;font-size:21px;margin-top:12px">0%. Same.</p>
+      <p class="p" style="text-align:center;font-size:16px">Nothing needs doing tonight.</p>
+      <div class="spread" style="display:flex;flex-direction:column;gap:9px">
+        <div class="pill" style="align-self:center">tap the panda to tuck it in</div>
+        <div style="text-align:center;font:14px 'Patrick Hand';opacity:.5">I do want to write something</div>
+      </div>
+    </div>
+    <p class="ann">Tapping the panda pulls a blanket over it and the battery ticks to 1%. Then the screen settles into the still frame beside this one. The joke is the panda being equally useless, not the user being told to cheer up.</p>
+  </div>
+
+  <div class="wf">
+    <div class="cap">After the gesture — the quiet screen</div>
+    <div class="ph dk">
+      <div class="sb"><span>9:41</span><span>▮▮▮</span></div>
+      <div style="flex:1;margin-top:14px;border:2px solid #4a4854;border-radius:16px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:10px"><img src="assets/face-chill.png" alt="" style="width:150px;object-fit:contain"><span style="font:11.5px/1.4 ui-monospace,monospace;color:#a09ca8;text-align:center">flat out, tea gone cold<br>slow breathing loop, nothing else<br>no timer, no progress, no prompt</span></div>
+      <p class="t" style="text-align:center;font-size:19px;margin-top:14px">Night then.</p>
+      <div class="spread" style="text-align:center;font:15px 'Patrick Hand';color:#a29eac;padding-bottom:6px">tap anywhere to leave</div>
+    </div>
+    <p class="ann">Shared ending for both. The screen dims to the dark palette, the entry is already saved, and there is nothing to dismiss or confirm. Tapping leaves the app rather than returning to Home — going back to a dashboard would undo the point of it.</p>
+  </div>
+
+  <div class="wf w2" style="width:640px">
+    <div class="cap">Layer 2 — the eleven scripts</div>
+    <div style="box-sizing:border-box;width:640px;border:2px dashed #beb8ab;border-radius:14px;background:#faf9f6;padding:18px 20px;display:flex;flex-direction:column;gap:12px">
+      <p style="margin:0;font:11.5px ui-monospace,monospace;letter-spacing:.08em;color:#a09a8d">HARD</p>
+      <div style="display:flex;flex-direction:column;gap:9px">
+        <p class="ann" style="margin:0"><b>Couldn't cope</b> — "You got through a day that tried to stop you." → What was happening just before?</p>
+        <p class="ann" style="margin:0"><b>Cross</b> — "It's okay to be cross. It usually means something needs sorting out." → What set it off?</p>
+        <p class="ann" style="margin:0"><b>Low</b> — "Low days still count as days." → What would have helped?</p>
+        <p class="ann" style="margin:0"><b>Burned out</b> — "I'm ok! (I am not ok. Neither of us has to be.)" → no question · panda flops on the laptop</p>
+      </div>
+      <p style="margin:6px 0 0;font:11.5px ui-monospace,monospace;letter-spacing:.08em;color:#a09a8d">FLAT</p>
+      <div style="display:flex;flex-direction:column;gap:9px">
+        <p class="ann" style="margin:0"><b>Drained</b> — "0%. Same. Nothing needs doing tonight." → no question · panda flat out at 0% battery</p>
+        <p class="ann" style="margin:0"><b>Boring</b> — "Boring is fine. Nothing went wrong today." → Anything you'd rather have been doing?</p>
+      </div>
+      <p style="margin:6px 0 0;font:11.5px ui-monospace,monospace;letter-spacing:.08em;color:#a09a8d">GOOD</p>
+      <div style="display:flex;flex-direction:column;gap:9px">
+        <p class="ann" style="margin:0"><b>Serene</b> — "This is what calm feels like. Worth remembering." → What made it this calm?</p>
+        <p class="ann" style="margin:0"><b>Okay</b> — "Normal days count too." → What went right?</p>
+        <p class="ann" style="margin:0"><b>Winning</b> — "Look at you. What did you pull off?" → What went your way? · sunglasses thumbs-up</p>
+        <p class="ann" style="margin:0"><b>Grateful</b> — "That's a good thing to be feeling." → Who or what for? · "Tell them" opens the share sheet</p>
+        <p class="ann" style="margin:0"><b>Buzzing</b> — "Tell me everything." → What's got you going?</p>
+      </div>
+    </div>
+    <p class="ann" style="width:640px">Same shape every time: one line from the panda, one question, one field. Burned out and Drained break the pattern deliberately: no question at all, just the panda being equally wrecked and a button that closes the app. Being asked anything is the problem in those two states. Serene asks what caused it — the one place worth collecting evidence, since a calm day the user can explain is repeatable.</p>
+  </div>
+</div>
+
+<div class="flowhd">Good things — a separate practice</div>
+<div class="row">
+  <div class="wf">
+    <div class="cap"><span class="pin">17</span>Three good things</div>
+    <div class="ph">
+      <div class="sb"><span>9:41</span><span>▮▮▮</span></div>
+      <p class="t">Three things that went well</p>
+      <p class="p">Small things count. One word is fine.</p>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div class="field" style="color:#1a1a1a">I sat through a hard moment today</div>
+        <div class="field">Second thing…</div>
+        <div class="field">Third thing…</div>
+      </div>
+      <div style="height:96px;border:2px solid #dcd6ca;border-radius:14px;display:flex;align-items:center;justify-content:center;gap:10px;padding:8px;background:#faf9f6"><img src="assets/face-highfive.png" alt="" style="height:72px;object-fit:contain"><span style="font:11.5px/1.4 ui-monospace,monospace;color:#8d8779">paw meets yours on save<br>once per entry, nothing louder</span></div>
+      <p class="p" style="font-size:14px;opacity:.66">When you're anxious, your brain keeps looking for bad things. This gives it good things to find too. Doing it often is what helps, not doing it perfectly.</p>
+      <div class="spread" style="display:flex;flex-direction:column;gap:9px">
+        <div class="btn f">Save</div>
+        <div class="nav" style="margin-top:2px"><div>Home</div><div class="on">Good things</div><div>Meditate</div><div>Journal</div></div>
+      </div>
+    </div>
+    <p class="ann">Its own tab, not a layer of the journal — it's a practice with its own habit, and burying it two taps deep means it rarely happens. The journal records how a day felt; this trains what gets noticed. The explanation says what the practice is for — giving an over-scanning alarm system the evidence it keeps missing — in terms the user can check against their own experience, rather than claiming to rewire anything. The journal's layer 2 still offers a shortcut into it, as do the panic recap and "I want to share my happiness", both of which pre-fill the first field.</p>
+  </div>
+
+  <div class="wf">
+    <div class="cap"><span class="pin">18</span>History</div>
+    <div class="ph">
+      <div class="sb"><span>9:41</span><span>▮▮▮</span></div>
+      <div class="pd" style="height:150px"><b>the den — fills out over time</b><span>one object added per entry<br>never empties or resets</span></div>
+      <p class="t">4 entries this week</p>
+      <div style="display:flex;gap:5px">
+        <div class="ln" style="flex:1;height:22px;border-radius:6px;background:#1a1a1a"></div>
+        <div class="ln" style="flex:1;height:22px;border-radius:6px;background:#1a1a1a"></div>
+        <div class="ln" style="flex:1;height:22px;border-radius:6px"></div>
+        <div class="ln" style="flex:1;height:22px;border-radius:6px;background:#1a1a1a"></div>
+        <div class="ln" style="flex:1;height:22px;border-radius:6px"></div>
+        <div class="ln" style="flex:1;height:22px;border-radius:6px;background:#1a1a1a"></div>
+        <div class="ln" style="flex:1;height:22px;border-radius:6px"></div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:7px">
+        <div class="card" style="font-size:15px;flex-direction:row;align-items:center;gap:9px"><img src="assets/face-panic.png" alt="" style="width:30px;height:30px;object-fit:contain"><span>Today — I sat through a hard moment<span style="display:block;font:14px 'Patrick Hand';opacity:.55">+2 more</span></span></div>
+        <div class="card" style="font-size:15px;flex-direction:row;align-items:center;gap:9px"><img src="assets/face-content.png" alt="" style="width:30px;height:30px;object-fit:contain"><span>Mon — Walked to the shop</span></div>
+      </div>
+      <div class="nav"><div>Home</div><div>Good things</div><div>Meditate</div><div class="on">Journal</div></div>
+    </div>
+    <p class="ann">Each day carries the face it was given. Gaps read as gaps, not failures — no streak counter, no "streak lost" copy. Patterns surface rarely and only when actionable, at most monthly: "Your low days tend to be Sundays", never "you've had 12 bad days".</p>
+  </div>
+
+  <div class="wf">
+    <div class="cap">Day 7 prompt</div>
+    <div class="ph">
+      <div class="sb"><span>9:41</span><span>▮▮▮</span></div>
+      <div class="pd" style="height:150px"><b>panda — steady, den behind</b></div>
+      <p class="t">A week in.</p>
+      <p class="p">Your notes are only on this phone. An account keeps them safe if you lose it.</p>
+      <div class="spread" style="display:flex;flex-direction:column;gap:8px">
+        <div class="btn f">Create an account</div>
+        <div class="btn">Not now</div>
+        <p class="p" style="font-size:12px;text-align:center">Asked once. "Not now" is remembered.</p>
+      </div>
+    </div>
+    <p class="ann">The only account ask in the product, and it's earned by seven days of data.</p>
+  </div>
+</div>
+
+</div>
+</div>
+</div>
+<p class="dv-next">Try next: "build the picker and the three new paths into the prototype" · "go with the six-face version" · "design the scribble pad properly"</p>
+</section>
+</x-dc>
+</body>
+</html>

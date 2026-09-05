@@ -21,8 +21,8 @@ void main() {
     await pumpApp(tester, location: verifyLocation);
 
     expect(find.textContaining('Resend in'), findsOneWidget);
-    expect(tester.widget<TextButton>(find.byType(TextButton)).onPressed,
-        isNull);
+    expect(
+        tester.widget<TextButton>(find.byType(TextButton)).onPressed, isNull);
   });
 
   testWidgets('resend re-enables once the cooldown expires', (tester) async {

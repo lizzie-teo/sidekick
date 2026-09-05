@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -5,6 +7,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:sidekick/app/core/app_router.dart';
 import 'package:sidekick/app/core/auth_service.dart';
 import 'package:sidekick/app/core/auth_state_service.dart';
+import 'package:sidekick/app/core/device_settings_service.dart';
 import 'package:sidekick/app/core/event_bus.dart';
 import 'package:sidekick/app/core/feature_registry.dart';
 import 'package:sidekick/app/core/logger_service.dart';
@@ -22,6 +25,10 @@ Future<void> setupServiceLocator() async {
   // Core services
   getIt.registerLazySingleton<LoggerService>(() => LoggerService());
   getIt.registerLazySingleton<EventBus>(() => EventBus());
+
+  getIt.registerLazySingleton<DeviceSettingsService>(
+    () => DeviceSettingsService(loggerService: getIt<LoggerService>()),
+  );
 
   // Supabase. Supabase.initialize() must already have run in main().
   getIt.registerLazySingleton<SupabaseClient>(() => Supabase.instance.client);
@@ -43,6 +50,13 @@ Future<void> setupServiceLocator() async {
         for (final module in featureModules) {
           await module.onSessionEnded();
         }
+
+        // The session ending does not mean the app is now signed out: it
+        // means the account the user was on is no longer theirs to write to.
+        // A fresh anonymous one puts them back where a first-time user
+        // stands, so Good things still saves and nothing on screen is
+        // half-working.
+        await getIt<AuthService>().ensureSession();
       },
     ),
   );
@@ -73,6 +87,15 @@ Future<void> setupServiceLocator() async {
   // AuthStateService must be listening before the router is first built, so a
   // returning user is already authenticated when the redirect first runs.
   getIt<AuthStateService>().initialize();
+
+  // Everyone gets a session on first open, so there is never a state where the
+  // app is running without somewhere to save to.
+  //
+  // Deliberately not awaited. It is a network call, and blocking the first
+  // frame on it would mean a slow or absent connection holds the app on a
+  // blank screen. Nothing is gated on the session, so the app opens either
+  // way, and ensureSession() is safe to call again from the first save.
+  unawaited(getIt<AuthService>().ensureSession());
 
   for (final module in featureModules) {
     await module.onAppStart();

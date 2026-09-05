@@ -1,0 +1,342 @@
+<title>Sidekick Home Poses Brief</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700&family=Nunito:ital,wght@0,400;0,600;0,700;1,400&family=Patrick+Hand&display=swap">
+<style>
+  :root {
+    --canvas: #F6F1E2;
+    --surface: #FFFFFF;
+    --surface-muted: #E2E8D6;
+    --border: #E0DBC6;
+    --hairline: #ECE7D4;
+    --ink: #2C3324;
+    --muted: #6F6E58;
+    --accent: #3D5232;
+    --on-accent: #F6F1E2;
+    --panic: #C2542A;
+    --note: #8B8A72;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --canvas: #1B2418;
+      --surface: #232E1E;
+      --surface-muted: #2E3B27;
+      --border: #3B4D33;
+      --hairline: #2E3B27;
+      --ink: #F2ECD9;
+      --muted: #CBD6BD;
+      --accent: #B6C795;
+      --on-accent: #1B2418;
+      --panic: #E08653;
+      --note: #9AA88C;
+    }
+  }
+  :root[data-theme="dark"] {
+    --canvas: #1B2418;
+    --surface: #232E1E;
+    --surface-muted: #2E3B27;
+    --border: #3B4D33;
+    --hairline: #2E3B27;
+    --ink: #F2ECD9;
+    --muted: #CBD6BD;
+    --accent: #B6C795;
+    --on-accent: #1B2418;
+    --panic: #E08653;
+    --note: #9AA88C;
+  }
+
+  body {
+    background: var(--canvas);
+    color: var(--ink);
+    font: 400 17px/1.65 "Nunito", "Segoe UI", system-ui, sans-serif;
+    margin: 0;
+    padding: 0 20px 96px;
+  }
+  main { max-width: 720px; margin: 0 auto; }
+
+  h1, h2, h3 {
+    font-family: "Baloo 2", "Nunito", system-ui, sans-serif;
+    line-height: 1.2;
+    text-wrap: balance;
+    margin: 0;
+  }
+  h1 { font-size: 40px; font-weight: 700; }
+  h2 { font-size: 27px; font-weight: 700; margin-top: 72px; }
+  h3 { font-size: 20px; font-weight: 600; margin-top: 40px; }
+  h2 .no { color: var(--panic); margin-right: 10px; }
+  p { margin: 16px 0; max-width: 62ch; }
+  ul, ol { margin: 16px 0; padding-left: 24px; max-width: 60ch; }
+  li { margin: 8px 0; }
+  strong { font-weight: 700; }
+  em { font-style: italic; }
+
+  .kicker {
+    font: 600 13px/1 "Nunito", system-ui, sans-serif;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--note);
+    margin: 64px 0 14px;
+  }
+  header .kicker { margin-top: 72px; }
+  .lede { font-size: 19px; color: var(--muted); max-width: 56ch; }
+
+  .facts {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    margin: 36px 0 0;
+  }
+  .facts > div { background: var(--surface); padding: 14px 16px; }
+  .facts dt {
+    font: 600 12px/1 "Nunito", system-ui, sans-serif;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--note);
+    margin: 0 0 6px;
+  }
+  .facts dd { margin: 0; font-size: 15px; }
+
+  .rule { border: 0; border-top: 1px solid var(--border); margin: 72px 0 0; }
+
+  .note {
+    font: 400 16px/1.5 "Patrick Hand", "Comic Sans MS", cursive;
+    color: var(--note);
+    margin: 12px 0 0;
+    max-width: 60ch;
+  }
+
+  .warn {
+    border-left: 3px solid var(--panic);
+    padding: 2px 0 2px 18px;
+    margin: 28px 0;
+    max-width: 58ch;
+  }
+  .warn p { margin: 8px 0; }
+
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 20px 0 8px;
+    font-size: 15px;
+  }
+  .tablewrap { overflow-x: auto; }
+  th {
+    text-align: left;
+    font: 600 12px/1.3 "Nunito", system-ui, sans-serif;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--note);
+    border-bottom: 2px solid var(--border);
+    padding: 8px 14px 8px 0;
+  }
+  td {
+    border-bottom: 1px solid var(--hairline);
+    padding: 10px 14px 10px 0;
+    vertical-align: top;
+  }
+  td:first-child, th:first-child { padding-left: 0; }
+  code {
+    font: 600 13.5px/1 ui-monospace, "SF Mono", Menlo, monospace;
+    background: var(--surface-muted);
+    padding: 2px 6px;
+    border-radius: 5px;
+    white-space: nowrap;
+  }
+  .num { font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .quote { font-style: italic; }
+
+  .flow {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    margin: 24px 0 6px;
+  }
+  .flow .st {
+    background: var(--surface);
+    border: 1.5px solid var(--accent);
+    border-radius: 999px;
+    padding: 7px 16px;
+    font: 600 14.5px/1.2 "Nunito", system-ui, sans-serif;
+    white-space: nowrap;
+  }
+  .flow .st.once { border-style: dashed; }
+  .flow .arrow { color: var(--note); font-size: 18px; }
+  .flow .grp {
+    border: 1.5px solid var(--border);
+    border-radius: 14px;
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .flow .grp .lbl {
+    font: 600 11px/1 "Nunito", system-ui, sans-serif;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--note);
+    margin-right: 4px;
+  }
+
+  .check { list-style: none; padding: 0; max-width: 62ch; }
+  .check li {
+    padding-left: 34px;
+    position: relative;
+    margin: 14px 0;
+  }
+  .check li::before {
+    content: "";
+    position: absolute;
+    left: 0; top: 3px;
+    width: 18px; height: 18px;
+    border: 2px solid var(--accent);
+    border-radius: 5px;
+  }
+
+  footer {
+    margin-top: 88px;
+    padding-top: 28px;
+    border-top: 1px solid var(--border);
+    color: var(--muted);
+    font-size: 15.5px;
+  }
+
+  @media print {
+    * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    body { padding: 0 4px 24px; font-size: 15px; }
+    h1 { font-size: 32px; }
+    h2 { font-size: 23px; margin-top: 44px; break-after: avoid; }
+    h3 { margin-top: 28px; break-after: avoid; }
+    .rule { margin-top: 44px; }
+    .kicker { margin-top: 36px; }
+    header .kicker { margin-top: 8px; }
+    .facts, .warn, table, .flow { break-inside: avoid; }
+    footer { margin-top: 44px; }
+  }
+</style>
+
+<main>
+<header>
+  <p class="kicker">Sidekick · Round three of work</p>
+  <h1>The Home panda — daily poses &amp; state machine brief</h1>
+  <p class="lede">Home is where the panda lives most of the time: one big card, the panda in a pose with a line of text under it, and <em>“Tap me when you need me”</em> beneath that. This brief covers the eight daily poses, what happens on a tap, and how the Rive file is wired so the app can pick the day's pose. Same two-part shape as the SOS brief.</p>
+
+  <dl class="facts">
+    <div><dt>Project</dt><dd>Sidekick — anxiety &amp; panic support</dd></div>
+    <div><dt>Tool</dt><dd>Rive, artboard “Home”</dd></div>
+    <div><dt>Panda size</dt><dd>~200 × 200pt in the card</dd></div>
+    <div><dt>Grounds</dt><dd>Card on cream #F6F1E2 · dark #1B2418</dd></div>
+  </dl>
+  <p class="note">One change from round one: the card no longer cycles a new pose every few seconds. It shows one pose per day. Slower, calmer, and the pose becomes “today's panda”.</p>
+</header>
+
+<hr class="rule">
+
+<h2><span class="no">1</span>Animation — the eight daily poses</h2>
+<p>Each day the app picks one of eight pose-and-line pairings and holds it all day. The pose has to read on its own — the text sits below it and might not be read at all. Round one's composition rules still apply: square-ish framing, panda centred, nothing important near the edges.</p>
+
+<h3>The eight pairings</h3>
+<p>The sketch names refer to my placeholder drawings in the wireframe pack — blocking, not style direction, as before.</p>
+<div class="tablewrap"><table>
+  <tr><th>#</th><th>Line under the pose</th><th>Sketch</th><th>Pose intent</th></tr>
+  <tr><td class="num">01</td><td class="quote">“You're doing better than you think.”</td><td><code>face-anxious</code></td><td>A little worried, but upright and here</td></tr>
+  <tr><td class="num">02</td><td class="quote">“I get anxious too. We can get through this together.”</td><td><code>face-curled</code></td><td>Curled up, tail wrapped round itself</td></tr>
+  <tr><td class="num">03</td><td class="quote">“Some days I feel like keeling over too. Let's just sit down.”</td><td><code>face-passout</code></td><td>Keeled right over, dramatic</td></tr>
+  <tr><td class="num">04</td><td class="quote">“Hiding is a valid plan. I'll be in here if you need me.”</td><td><code>face-hidebox</code></td><td>In a box, peeking out</td></tr>
+  <tr><td class="num">05</td><td class="quote">“Doing nothing still counts. Ask me how I know.”</td><td><code>face-facebook</code></td><td>Flat on its face, gloriously idle</td></tr>
+  <tr><td class="num">06</td><td class="quote">“Sometimes you just need to yell about it. I'll go first.”</td><td><code>face-mygod</code></td><td>Mid-yell, paws up at its cheeks</td></tr>
+  <tr><td class="num">07</td><td class="quote">“It never comes at a good time, does it. It still passes.”</td><td><code>face-toilet</code></td><td>Caught at the worst possible moment</td></tr>
+  <tr><td class="num">08</td><td class="quote">“Nothing's wrong right now. Let it be boring.”</td><td><code>face-content</code></td><td>Settled and quietly content</td></tr>
+</table></div>
+
+<h3>Each pose is a living still, not a performance</h3>
+<ul>
+  <li>Every pose gets a <strong>gentle idle loop</strong>: slow breathing on roughly a 4-second cycle, an occasional blink, maybe a tail settle. That's the whole budget.</li>
+  <li>Home has other things on it that matter more — the help button most of all. The panda must feel alive, <strong>never busy</strong>. If in doubt, do less; easing to near-still after a handful of cycles is a welcome option.</li>
+  <li>The comedy lives in the pose itself, not the motion. Pose 06 is mid-yell as a <em>held</em> pose — it does not actually yell on loop.</li>
+</ul>
+
+<h3>On tap — the panda answers</h3>
+<p>The whole card is the tap target, and tapping it opens the “How are you feeling?” screen. The app handles the card press (a gentle lift) and the navigation. What I want from you is the panda's part: <strong>a small acknowledgement the moment it's touched</strong> — the panda noticed you before the screen changes.</p>
+<ul>
+  <li>One short reaction per pose, in character for that pose: the box-hider peeks further out, the keeled-over one lifts its head, the yeller takes a breath. Your call on each — these are suggestions.</li>
+  <li><strong>Fast and small</strong>: well under a second, no anticipation wind-up. It plays while the next screen is already arriving, so the first few frames are the ones that count.</li>
+  <li>After the reaction, back to the idle without a visible jump.</li>
+  <li>This is the same job as the ear-twitch triggers in the current character file — a poke from outside, a flicker of life in response.</li>
+</ul>
+
+<h3>Not in this brief</h3>
+<ul>
+  <li>The four feeling illustrations on the “How are you feeling?” screen — round one, unchanged, still stills.</li>
+  <li>The “Play with red panda” sit-and-pet screen — that's its own piece of work and its own brief, once these poses are settled.</li>
+  <li>All text, the card itself, buttons, navigation — the app's job. You draw only the panda.</li>
+</ul>
+
+<hr class="rule">
+
+<h2><span class="no">2</span>State machine management</h2>
+<p>Same contract as the SOS file: the app loads the file, binds its view model, and drives it through named inputs. Here the machine is much simpler — one number picks the day's pose, one trigger pokes it.</p>
+
+<h3>The shape of it</h3>
+<div class="flow" aria-label="State diagram: Entry reads the pose number and enters one of eight pose idles. Each idle can play its tap reaction and return to the same idle.">
+  <span class="st">Entry</span>
+  <span class="arrow">→</span>
+  <span class="grp"><span class="lbl">pose 0–7</span>
+    <span class="st">Pose idle</span>
+    <span class="arrow">⇄</span>
+    <span class="st once">Tap reaction · one-shot</span>
+  </span>
+</div>
+<p class="note">Eight idles, each with its own reaction. The number decides which one; the trigger works on whichever pose is showing.</p>
+
+<h3>The inputs</h3>
+<p>Proposed names — same warning as before: these go into the app's code, so flag any change before the file ships, and please keep everything in plain English.</p>
+<div class="tablewrap"><table>
+  <tr><th>Name</th><th>Type</th><th>What it does</th></tr>
+  <tr><td><code>pose</code></td><td>number 0–7</td><td>Which daily pose shows, numbered as the table above (01 = 0 … 08 = 7). Set once, before play. Out-of-range values should land on pose 0, not on nothing.</td></tr>
+  <tr><td><code>poke</code></td><td>trigger</td><td>The tap reaction for whichever pose is showing.</td></tr>
+</table></div>
+
+<h3>Transition rules</h3>
+<div class="tablewrap"><table>
+  <tr><th>From</th><th>To</th><th>When</th><th>Rule</th></tr>
+  <tr><td>Entry</td><td>Pose idle</td><td>on load</td><td>Straight in, by <code>pose</code>. No entrance animation needed — the app fades the card in itself.</td></tr>
+  <tr><td>Pose idle</td><td>Reaction</td><td><code>poke</code></td><td>From any frame of the idle, immediately — no waiting for a loop boundary here, the whole point is instant response.</td></tr>
+  <tr><td>Reaction</td><td>Same pose idle</td><td>automatically</td><td>Blend back smoothly; the idle should not visibly restart.</td></tr>
+</table></div>
+<div class="warn">
+  <p><strong>Pokes don't stack.</strong> Someone anxious will tap three times fast. A <code>poke</code> that lands mid-reaction is simply ignored — the reaction finishes and returns to the idle. No queueing, no restarting, and definitely no speeding up, which would read as the panda getting agitated.</p>
+  <p><strong>The pose never changes on screen.</strong> The day's pose is set before play and stays. There is no on-screen morph from one pose to another to build — if the app ever changes <code>pose</code> mid-play, a hard cut is acceptable, because it should never happen where anyone can see it.</p>
+</div>
+
+<h3>Same three constraints from the app</h3>
+<ol>
+  <li><strong>First frame of every pose works as a still</strong> — “reduce motion” freezes each state on frame one, so all eight opening frames are posters.</li>
+  <li><strong>Idles loop seamlessly for minutes.</strong> Home can sit open a long time. No drift, no seam, no tic on the tenth repeat.</li>
+  <li><strong>No Rive listeners.</strong> The app detects the tap and fires <code>poke</code> from outside. Don't wire pointer events in the file.</li>
+</ol>
+<p>House rules carry over too: English names throughout, and a written list shipped with the file of every artboard, state machine and input name, spelled exactly. Whether these poses live in the same .riv as the SOS work or their own file is your call — the app selects by name either way, so the list is what matters.</p>
+
+<h3>Phasing</h3>
+<p>Same rhythm as round one: <strong>pick the three poses you'd most like to make and start there</strong>, with the <code>pose</code> and <code>poke</code> wiring in place from the first file. We review the three, settle the motion budget together, and then you take it to all eight — the remaining five should be additive, not a rebuild.</p>
+
+<hr class="rule">
+
+<h2><span class="no">✓</span>How I'll check the file</h2>
+<ul class="check">
+  <li>Set <code>pose</code> to each of 0–7: the right pose shows, and its first frame reads as a good still.</li>
+  <li>Set <code>pose</code> to 9: pose 0 shows — not a blank artboard.</li>
+  <li>Let each idle run five minutes: seamless, calm, nothing that becomes a tic.</li>
+  <li>Fire <code>poke</code> once on each pose: an in-character reaction, under a second, smooth return to the idle.</li>
+  <li>Fire <code>poke</code> five times fast: one clean reaction, no pile-up, no acceleration.</li>
+  <li>Every name matches the shipped list, letter for letter.</li>
+  <li>All eight poses read on the light card and on dark #1B2418.</li>
+</ul>
+
+<footer>
+  <p>Tell me which three poses you're starting with when you send the first file across, and shout early if any of the eight lines suggests a completely different pose to you than my sketch does — the line wins, not the sketch. Same review shape as always: work-in-progress before we meet, Wednesday or Friday.</p>
+</footer>
+</main>

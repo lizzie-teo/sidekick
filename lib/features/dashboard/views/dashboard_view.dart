@@ -1,11 +1,21 @@
 import 'package:flutter/material.dart';
 
-import 'package:sidekick/app/core/auth_service.dart';
+import 'package:sidekick/app/core/device_settings_service.dart';
 import 'package:sidekick/app/core/logger_service.dart';
 import 'package:sidekick/app/core/service_locator.dart';
-import 'package:sidekick/app/widgets/async_button.dart';
+import 'package:sidekick/app/widgets/sk_colors.dart';
+import 'package:sidekick/app/widgets/sk_invite_card.dart';
+import 'package:sidekick/app/widgets/sk_main_tab_bar.dart';
+import 'package:sidekick/app/widgets/sk_primary_button.dart';
+import 'package:sidekick/app/widgets/sk_scene_panel.dart';
+import 'package:sidekick/app/widgets/sk_sidekick.dart';
+import 'package:sidekick/app/widgets/sk_soft_button.dart';
+import 'package:sidekick/app/widgets/sk_text.dart';
 import 'package:sidekick/features/dashboard/viewmodels/dashboard_viewmodel.dart';
 
+// Home. The scene panel owns the top of the screen: the sidekick, one line,
+// and the single way into the panic flow. Below it the two soft buttons, the
+// day-one invitations, and the tab bar with the panic FAB.
 class DashboardView extends StatefulWidget {
   const DashboardView({super.key});
 
@@ -16,7 +26,7 @@ class DashboardView extends StatefulWidget {
 class _DashboardViewState extends State<DashboardView> {
   late final DashboardViewModel _viewModel = DashboardViewModel(
     loggerService: getIt<LoggerService>(),
-    authService: getIt<AuthService>(),
+    deviceSettingsService: getIt<DeviceSettingsService>(),
   );
 
   @override
@@ -33,61 +43,115 @@ class _DashboardViewState extends State<DashboardView> {
 
   @override
   Widget build(BuildContext context) {
+    final SkColors sk = context.sk;
+
     return Scaffold(
-      body: Center(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 400),
-            child: ValueListenableBuilder<DashboardViewModelState>(
-              valueListenable: _viewModel.state,
-              builder: (context, state, child) {
-                return Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    //
+      body: Stack(
+        children: [
+          //
 
-                    Text(
-                      'Dashboard',
-                      style: Theme.of(context).textTheme.headlineMedium,
-                      textAlign: TextAlign.center,
+          // The scene hugs its content: the sidekick, the line, the button.
+          // Whatever is left below it belongs to the cards, and a screen too
+          // short for all of it scrolls instead of clipping.
+          // The tab bar floats over the content, so when the page scrolls
+          // it slides under the glass rather than stopping at a solid band.
+          Positioned.fill(
+            child: SingleChildScrollView(
+              child: Column(
+                children: [
+                  SkScenePanel(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const SkSidekick(),
+                        const SizedBox(height: 14),
+                        ConstrainedBox(
+                          constraints: const BoxConstraints(maxWidth: 280),
+                          // Only the line depends on state, so only the line
+                          // is inside the builder. The sidekick above and the
+                          // button below are built once.
+                          child:
+                              ValueListenableBuilder<DashboardViewModelState>(
+                            valueListenable: _viewModel.state,
+                            builder: (context, state, child) {
+                              return Text(
+                                state.line,
+                                textAlign: TextAlign.center,
+                                style: SkText.sceneLine
+                                    .copyWith(color: sk.onScene),
+                              );
+                            },
+                          ),
+                        ),
+                        const SizedBox(height: 28),
+                        SkPrimaryButton(
+                          label: 'Tap me when you need me',
+                          compact: true,
+                          // The panic flow. Not built yet, so the button
+                          // holds its place without doing anything.
+                          onPressed: () {},
+                        ),
+                      ],
                     ),
-
-                    if (state.email.isNotEmpty) ...[
-                      const SizedBox(height: 8),
-                      Text(
-                        'Signed in as ${state.email}',
-                        style: Theme.of(context).textTheme.bodyMedium,
-                        textAlign: TextAlign.center,
-                      ),
-                    ],
-
-                    if (state.errors['general'] != null) ...[
-                      const SizedBox(height: 12),
-                      Text(
-                        state.errors['general']!,
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              color: Theme.of(context).colorScheme.error,
+                  ),
+                  Padding(
+                    padding: EdgeInsets.fromLTRB(
+                        20, 16, 20, 16 + SkMainTabBar.heightOf(context)),
+                    child: Column(
+                      children: [
+                        Row(
+                          children: [
+                            Expanded(
+                              child: SkSoftButton(
+                                label: 'Meditate',
+                                onPressed: () {},
+                              ),
                             ),
-                        textAlign: TextAlign.center,
-                      ),
-                    ],
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: SkSoftButton(
+                                label: 'Play',
+                                onPressed: () {},
+                              ),
+                            ),
+                          ],
+                        ),
 
-                    const SizedBox(height: 32),
+                        const SizedBox(height: 16),
 
-                    // Nothing navigates here. Signing out destroys the session,
-                    // and the router's redirect moves the user to /welcome.
-                    AsyncButton(
-                      onPressed: _viewModel.signOut,
-                      child: const Text('Sign out'),
+                        // Day one: no meditation done and no good things
+                        // jotted, which today is always true -- neither
+                        // feature exists yet. The empty state is two dashed
+                        // invitations. Real resume cards replace them once
+                        // there is history to show.
+                        SkInviteCard(
+                          title: 'Breathe for two minutes',
+                          // Meditation is not built yet.
+                          onTap: () {},
+                        ),
+
+                        const SizedBox(height: 12),
+
+                        SkInviteCard(
+                          title: 'Name one good thing',
+                          // Good things is not built yet.
+                          onTap: () {},
+                        ),
+                      ],
                     ),
-                  ],
-                );
-              },
+                  ),
+                ],
+              ),
             ),
           ),
-        ),
+
+          const Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: SkMainTabBar(selected: 0),
+          ),
+        ],
       ),
     );
   }

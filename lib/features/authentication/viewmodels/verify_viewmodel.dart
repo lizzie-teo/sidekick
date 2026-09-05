@@ -119,7 +119,8 @@ class VerifyViewModel extends ViewModel<VerifyViewModelState> {
         return;
       }
 
-      emit(current.copyWith(messages: {'general': 'A new code is on its way.'}));
+      emit(
+          current.copyWith(messages: {'general': 'A new code is on its way.'}));
       _startCooldown();
     } catch (e, s) {
       _loggerService.errorShort(e, s);

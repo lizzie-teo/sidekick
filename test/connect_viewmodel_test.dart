@@ -32,7 +32,8 @@ void main() {
 
     expect(sent, isFalse);
     expect(authService.otpSentTo, isEmpty);
-    expect(viewModel.state.value.errors['email'], 'Enter a valid email address.');
+    expect(
+        viewModel.state.value.errors['email'], 'Enter a valid email address.');
   });
 
   test('trims the address before sending', () async {
@@ -59,5 +60,4 @@ void main() {
     await viewModel.sendCode('someone@example.com');
     expect(viewModel.state.value.errors, isEmpty);
   });
-
 }

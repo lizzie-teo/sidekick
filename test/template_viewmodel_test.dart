@@ -17,7 +17,8 @@ void main() {
     viewModel.dispose();
   });
 
-  test('refresh reports a message without touching page loading state', () async {
+  test('refresh reports a message without touching page loading state',
+      () async {
     final viewModel = TemplateViewModel(loggerService: LoggerService());
 
     await viewModel.refresh();

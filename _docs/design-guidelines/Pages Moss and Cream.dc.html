@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  body{margin:0;background:#f2eee5}
+  a{color:#3d5232}a:hover{color:#2a3a22}
+  @keyframes pacer{0%{transform:scale(.62)}38.4%{transform:scale(1)}100%{transform:scale(.62)}}
+</style>
+</helmet>
+
+<section style="padding:56px 56px 80px;font-family:Nunito,system-ui,sans-serif;color:#2a2320">
+  <div style="display:flex;align-items:baseline;gap:14px;margin-bottom:8px;flex-wrap:wrap">
+    <h1 style="margin:0;font:700 36px/1.1 'Baloo 2',sans-serif">Sidekick — Moss &amp; cream</h1>
+    <span style="font:12px ui-monospace,monospace;letter-spacing:.12em;text-transform:uppercase;color:#8b8378">Theme 3C · MVP · every screen, both modes</span>
+  </div>
+  <p style="margin:0 0 10px;max-width:70ch;font-size:16px;line-height:1.6;color:#5f574d">Every Moss &amp; cream screen decided so far, in one place. Home, the breathing step of the panic flow, and Settings. Component specs and the token table live in <a href="Sidekick UI Kit Moss and Cream.dc.html">Sidekick UI Kit</a>.</p>
+  <p style="margin:0 0 40px;max-width:70ch;font-size:15px;line-height:1.6;color:#8b8378">The theme's one rule worth remembering: <strong style="color:#5f574d">action is two values</strong>. Deep moss <code style="font:13px ui-monospace,monospace">#3D5232</code> in light, gold <code style="font:13px ui-monospace,monospace">#D9A640</code> in dark, because moss disappears against the dark canvas. The panic button is <code style="font:13px ui-monospace,monospace">#C2542A</code> in both.</p>
+
+  <h2 style="margin:0 0 4px;font:700 24px 'Baloo 2',sans-serif">Home</h2>
+  <p style="margin:0 0 20px;max-width:64ch;font-size:15px;line-height:1.6;color:#5f574d">Scene header with the character, two derived buttons, list cards, tab bar with the panic FAB.</p>
+  <div style="display:flex;flex-wrap:wrap;gap:36px;align-items:flex-start;margin-bottom:56px">
+
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <span style="font:700 11px Nunito;letter-spacing:.1em;color:#8b8378">HOME · LIGHT</span>
+      <div data-screen-label="Home light" style="width:390px;height:844px;border-radius:38px;overflow:hidden;position:relative;background:#f6f1e2;box-shadow:0 24px 60px rgba(40,35,30,.22)">
+        <div style="position:absolute;inset:0;padding:0 20px 34px;box-sizing:border-box;display:flex;flex-direction:column;gap:16px;color:#2c3324">
+          <div style="flex:1;min-height:0;margin:0 -20px;border-radius:0 0 32px 32px;background:linear-gradient(170deg,#e6e6c8 0%,#cfd9ae 55%,#b6c795 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:70px 24px 28px">
+            <img src="assets/panda.png" alt="" style="height:250px;object-fit:contain;filter:drop-shadow(0 12px 20px rgba(0,0,0,.28))">
+            <p style="margin:0;text-align:center;font:600 22px/1.27 'Baloo 2',sans-serif;letter-spacing:-.01em;max-width:17ch;color:#33421f;text-wrap:pretty">You're doing better than you think.</p>
+            <span style="min-height:50px;box-sizing:border-box;display:grid;place-items:center;font:600 17px Nunito;color:#f6f1e2;background:#3d5232;border-radius:999px;padding:0 26px;box-shadow:0 6px 16px rgba(0,0,0,.22)">Tap me when you need me</span>
+          </div>
+          <div style="display:flex;gap:10px">
+            <div style="flex:1;border-radius:14px;background:#e2e8d6;min-height:50px;box-sizing:border-box;display:grid;place-items:center;padding:8px 12px;text-align:center;font:600 17px 'Baloo 2',sans-serif;color:#3d5232">Meditate</div>
+            <div style="flex:1;border-radius:14px;background:#e2e8d6;min-height:50px;box-sizing:border-box;display:grid;place-items:center;padding:8px 12px;text-align:center;font:600 17px 'Baloo 2',sans-serif;color:#3d5232">Play</div>
+          </div>
+          <div style="border-radius:20px;background:#ffffff;border:1px solid #e0dbc6;min-height:60px;box-sizing:border-box;padding:13px 16px;display:flex;align-items:center;gap:12px">
+            <div style="flex:1">
+              <p style="margin:0;font:600 17px 'Baloo 2',sans-serif">Carry on with Mountain</p>
+              <p style="margin:3px 0 0;font-size:13px;color:#8b8a72">8 min · you stopped at 2:10</p>
+            </div>
+            <svg width="18" height="18" style="flex:none" viewBox="0 0 24 24" fill="none" stroke="#adae94" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"></path></svg>
+          </div>
+          <div style="border-radius:20px;background:#ffffff;border:1px solid #e0dbc6;min-height:60px;box-sizing:border-box;padding:13px 16px;display:flex;align-items:center;gap:12px">
+            <div style="flex:1">
+              <p style="margin:0;font:600 17px 'Baloo 2',sans-serif">You noticed 7 good things this week</p>
+              <p style="margin:3px 0 0;font-size:13px;color:#8b8a72">Latest: the coffee guy remembered my name</p>
+            </div>
+            <svg width="18" height="18" style="flex:none" viewBox="0 0 24 24" fill="none" stroke="#adae94" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"></path></svg>
+          </div>
+          <div style="margin-top:2px;display:flex;align-items:center;gap:2px;border-top:1px solid #e0dbc6;padding-top:6px">
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:49px;gap:4px"><svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="#3d5232" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"></path><path d="M3 10a2 2 0 0 1 .709-1.528l7-6a2 2 0 0 1 2.582 0l7 6A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg><span style="font:600 10px Nunito;color:#3d5232">Home</span></div>
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:49px;gap:4px;opacity:.65"><svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="#2c3324" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z"></path><path d="M20 2v4"></path><path d="M22 4h-4"></path><circle cx="4" cy="20" r="2"></circle></svg><span style="font:10px Nunito">Good things</span></div>
+            <div style="flex:0 0 auto;margin:-24px 6px 0;width:62px;height:62px;border-radius:50%;background:#c2542a;color:#fff;display:grid;place-items:center;box-shadow:0 8px 20px rgba(194,84,42,.45),0 0 0 6px #f6f1e2"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="m4.93 4.93 4.24 4.24"></path><path d="m14.83 9.17 4.24-4.24"></path><path d="m14.83 14.83 4.24 4.24"></path><path d="m9.17 14.83-4.24 4.24"></path><circle cx="12" cy="12" r="4"></circle></svg></div>
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:49px;gap:4px;opacity:.65"><svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="#2c3324" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.8 19.6A2 2 0 1 0 14 16H2"></path><path d="M17.5 8a2.5 2.5 0 1 1 2 4H2"></path><path d="M9.8 4.4A2 2 0 1 1 11 8H2"></path></svg><span style="font:10px Nunito">Meditate</span></div>
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:49px;gap:4px;opacity:.65"><svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="#2c3324" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.925 20.056a6 6 0 0 0-11.851.001"></path><circle cx="12" cy="11" r="4"></circle><circle cx="12" cy="12" r="10"></circle></svg><span style="font:10px Nunito">Me</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <span style="font:700 11px Nunito;letter-spacing:.1em;color:#8b8378">HOME · DARK</span>
+      <div data-screen-label="Home dark" style="width:390px;height:844px;border-radius:38px;overflow:hidden;position:relative;background:#1b2418;box-shadow:0 24px 60px rgba(40,35,30,.22)">
+        <div style="position:absolute;inset:0;padding:0 20px 34px;box-sizing:border-box;display:flex;flex-direction:column;gap:16px;color:#f2ecd9">
+          <div style="flex:1;min-height:0;margin:0 -20px;border-radius:0 0 32px 32px;background:linear-gradient(170deg,#54704a 0%,#47603f 55%,#3a5035 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:70px 24px 28px">
+            <img src="assets/panda.png" alt="" style="height:250px;object-fit:contain;filter:drop-shadow(0 12px 20px rgba(0,0,0,.28))">
+            <p style="margin:0;text-align:center;font:600 22px/1.27 'Baloo 2',sans-serif;letter-spacing:-.01em;max-width:17ch;color:#eef3d9;text-wrap:pretty">You're doing better than you think.</p>
+            <span style="min-height:50px;box-sizing:border-box;display:grid;place-items:center;font:600 17px Nunito;color:#1b2418;background:#d9a640;border-radius:999px;padding:0 26px;box-shadow:0 6px 16px rgba(0,0,0,.22)">Tap me when you need me</span>
+          </div>
+          <div style="display:flex;gap:10px">
+            <div style="flex:1;border-radius:14px;background:#3b3520;min-height:50px;box-sizing:border-box;display:grid;place-items:center;padding:8px 12px;text-align:center;font:600 17px 'Baloo 2',sans-serif;color:#d9a640">Meditate</div>
+            <div style="flex:1;border-radius:14px;background:#3b3520;min-height:50px;box-sizing:border-box;display:grid;place-items:center;padding:8px 12px;text-align:center;font:600 17px 'Baloo 2',sans-serif;color:#d9a640">Play</div>
+          </div>
+          <div style="border-radius:20px;background:#3b4d33;border:1px solid #4d6243;min-height:60px;box-sizing:border-box;padding:13px 16px;display:flex;align-items:center;gap:12px">
+            <div style="flex:1">
+              <p style="margin:0;font:600 17px 'Baloo 2',sans-serif">Carry on with Mountain</p>
+              <p style="margin:3px 0 0;font-size:13px;color:#cbd6bd">8 min · you stopped at 2:10</p>
+            </div>
+            <svg width="18" height="18" style="flex:none" viewBox="0 0 24 24" fill="none" stroke="#9aa88c" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"></path></svg>
+          </div>
+          <div style="border-radius:20px;background:#3b4d33;border:1px solid #4d6243;min-height:60px;box-sizing:border-box;padding:13px 16px;display:flex;align-items:center;gap:12px">
+            <div style="flex:1">
+              <p style="margin:0;font:600 17px 'Baloo 2',sans-serif">You noticed 7 good things this week</p>
+              <p style="margin:3px 0 0;font-size:13px;color:#cbd6bd">Latest: the coffee guy remembered my name</p>
+            </div>
+            <svg width="18" height="18" style="flex:none" viewBox="0 0 24 24" fill="none" stroke="#9aa88c" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"></path></svg>
+          </div>
+          <div style="margin-top:2px;display:flex;align-items:center;gap:2px;border-top:1px solid #4d6243;padding-top:6px">
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:49px;gap:4px"><svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="#d9a640" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"></path><path d="M3 10a2 2 0 0 1 .709-1.528l7-6a2 2 0 0 1 2.582 0l7 6A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg><span style="font:600 10px Nunito;color:#d9a640">Home</span></div>
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:49px;gap:4px;opacity:.65"><svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="#f2ecd9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z"></path><path d="M20 2v4"></path><path d="M22 4h-4"></path><circle cx="4" cy="20" r="2"></circle></svg><span style="font:10px Nunito">Good things</span></div>
+            <div style="flex:0 0 auto;margin:-24px 6px 0;width:62px;height:62px;border-radius:50%;background:#c2542a;color:#fff;display:grid;place-items:center;box-shadow:0 8px 20px rgba(194,84,42,.45),0 0 0 6px #1b2418"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="m4.93 4.93 4.24 4.24"></path><path d="m14.83 9.17 4.24-4.24"></path><path d="m14.83 14.83 4.24 4.24"></path><path d="m9.17 14.83-4.24 4.24"></path><circle cx="12" cy="12" r="4"></circle></svg></div>
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:49px;gap:4px;opacity:.65"><svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="#f2ecd9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.8 19.6A2 2 0 1 0 14 16H2"></path><path d="M17.5 8a2.5 2.5 0 1 1 2 4H2"></path><path d="M9.8 4.4A2 2 0 1 1 11 8H2"></path></svg><span style="font:10px Nunito">Meditate</span></div>
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:49px;gap:4px;opacity:.65"><svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="#f2ecd9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.925 20.056a6 6 0 0 0-11.851.001"></path><circle cx="12" cy="11" r="4"></circle><circle cx="12" cy="12" r="10"></circle></svg><span style="font:10px Nunito">Me</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="width:360px;padding:22px 24px;border-radius:20px;background:#fff;border:1px solid #e2ded4">
+      <p style="margin:0 0 12px;font:11px ui-monospace,monospace;letter-spacing:.12em;color:#8b8378">HOME NOTES</p>
+      <p style="margin:0;font-size:15px;line-height:1.6;color:#5f574d">The scene gradient is the only place the theme goes full-bleed. Everything under it sits on the canvas at 20px gutters.</p>
+      <p style="margin:12px 0 0;font-size:15px;line-height:1.6;color:#5f574d">Meditate and Play are derived from the primary button: a paler cut of it as fill, labelled in the action colour. They are never the action colour themselves.</p>
+      <p style="margin:12px 0 0;font-size:15px;line-height:1.6;color:#5f574d">List cards are the lightest surface in the theme — pure white in light, a lifted moss step in dark.</p>
+    </div>
+  </div>
+
+  <h2 style="margin:0 0 4px;font:700 24px 'Baloo 2',sans-serif">Breathing</h2>
+  <p style="margin:0 0 20px;max-width:64ch;font-size:15px;line-height:1.6;color:#5f574d">Panic flow, step 6. The scene gradient takes the whole screen; the pacer ring runs 13s, 4 in / 6 out with a hold.</p>
+  <div style="display:flex;flex-wrap:wrap;gap:36px;align-items:flex-start;margin-bottom:56px">
+
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <span style="font:700 11px Nunito;letter-spacing:.1em;color:#8b8378">BREATHING · LIGHT</span>
+      <div data-screen-label="Breathing light" style="width:390px;height:844px;border-radius:38px;overflow:hidden;position:relative;background:linear-gradient(170deg,#e6e6c8 0%,#cfd9ae 55%,#b6c795 100%);box-shadow:0 24px 60px rgba(45,60,40,.18)">
+        <div style="position:absolute;inset:0;padding:50px 20px 34px;box-sizing:border-box;display:flex;flex-direction:column;color:#2c3324">
+          <div style="display:flex;flex-direction:row-reverse;align-items:center;justify-content:space-between;min-height:52px">
+            <div style="width:52px;height:52px;border-radius:50%;background:rgba(44,51,36,.12);display:grid;place-items:center">
+              <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#26301c" stroke-width="2" stroke-linecap="round"><path d="M11 5 6 9H2v6h4l5 4z"></path><path d="m23 9-6 6"></path><path d="m17 9 6 6"></path></svg>
+            </div>
+            <div style="width:52px;height:52px;border-radius:50%;background:rgba(44,51,36,.12);display:grid;place-items:center">
+              <svg width="27" height="27" viewBox="0 0 24 24" fill="none" stroke="#26301c" stroke-width="2.4" stroke-linecap="round"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>
+            </div>
+          </div>
+          <div style="flex:1;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px">
+            <div style="position:relative;width:300px;height:300px;display:grid;place-items:center">
+              <div style="position:absolute;inset:0;border-radius:50%;border:2px dashed rgba(61,82,50,.32)"></div>
+              <div style="position:absolute;inset:0;border-radius:50%;background:radial-gradient(circle,rgba(255,255,250,.7) 0%,rgba(255,255,250,0) 68%);animation:pacer 13s ease-in-out infinite"></div>
+              <img src="assets/panda.png" alt="" style="position:relative;height:206px;object-fit:contain;filter:drop-shadow(0 12px 18px rgba(40,55,35,.26))">
+            </div>
+            <p style="margin:0;text-align:center;font:600 34px/1.2 'Baloo 2',sans-serif;letter-spacing:-.015em;color:#26301c">In through your nose.</p>
+            <p style="margin:-6px 0 0;text-align:center;font:500 20px/1.45 Nunito;max-width:22ch;color:#20291a;text-wrap:pretty">I'm here. Let's breathe together.</p>
+          </div>
+          <div style="min-height:56px;box-sizing:border-box;display:grid;place-items:center;font:600 19px Nunito;color:#f6f1e2;background:#3d5232;border-radius:999px;padding:0 24px;box-shadow:0 6px 16px rgba(45,60,40,.28)">Next</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <span style="font:700 11px Nunito;letter-spacing:.1em;color:#8b8378">BREATHING · DARK</span>
+      <div data-screen-label="Breathing dark" style="width:390px;height:844px;border-radius:38px;overflow:hidden;position:relative;background:linear-gradient(170deg,#54704a 0%,#47603f 55%,#3a5035 100%);box-shadow:0 24px 60px rgba(15,30,15,.34)">
+        <div style="position:absolute;inset:0;padding:50px 20px 34px;box-sizing:border-box;display:flex;flex-direction:column;color:#f2ecd9">
+          <div style="display:flex;flex-direction:row-reverse;align-items:center;justify-content:space-between;min-height:52px">
+            <div style="width:52px;height:52px;border-radius:50%;background:rgba(242,236,217,.12);display:grid;place-items:center">
+              <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#f2ecd9" stroke-width="2" stroke-linecap="round"><path d="M11 5 6 9H2v6h4l5 4z"></path><path d="m23 9-6 6"></path><path d="m17 9 6 6"></path></svg>
+            </div>
+            <div style="width:52px;height:52px;border-radius:50%;background:rgba(242,236,217,.12);display:grid;place-items:center">
+              <svg width="27" height="27" viewBox="0 0 24 24" fill="none" stroke="#f2ecd9" stroke-width="2.4" stroke-linecap="round"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>
+            </div>
+          </div>
+          <div style="flex:1;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px">
+            <div style="position:relative;width:300px;height:300px;display:grid;place-items:center">
+              <div style="position:absolute;inset:0;border-radius:50%;border:2px dashed rgba(238,243,217,.3)"></div>
+              <div style="position:absolute;inset:0;border-radius:50%;background:radial-gradient(circle,rgba(238,243,217,.22) 0%,rgba(238,243,217,0) 68%);animation:pacer 13s ease-in-out infinite"></div>
+              <img src="assets/panda.png" alt="" style="position:relative;height:206px;object-fit:contain;filter:drop-shadow(0 12px 22px rgba(0,0,0,.4))">
+            </div>
+            <p style="margin:0;text-align:center;font:600 34px/1.2 'Baloo 2',sans-serif;letter-spacing:-.015em;color:#eef3d9">In through your nose.</p>
+            <p style="margin:-6px 0 0;text-align:center;font:400 20px/1.45 Nunito;max-width:22ch;color:#e4ecc9;text-wrap:pretty">I'm here. Let's breathe together.</p>
+          </div>
+          <div style="min-height:56px;box-sizing:border-box;display:grid;place-items:center;font:600 19px Nunito;color:#1b2418;background:#d9a640;border-radius:999px;padding:0 24px;box-shadow:0 6px 16px rgba(0,0,0,.28)">Next</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="width:360px;padding:22px 24px;border-radius:20px;background:#fff;border:1px solid #e2ded4">
+      <p style="margin:0 0 12px;font:11px ui-monospace,monospace;letter-spacing:.12em;color:#8b8378">BREATHING NOTES</p>
+      <p style="margin:0;font-size:15px;line-height:1.6;color:#5f574d">Close and mute are the only chrome. Both are 52px circles on a 12% ink wash, mirrored so close sits under the left thumb.</p>
+      <p style="margin:12px 0 0;font-size:15px;line-height:1.6;color:#5f574d">Next uses the same two action values as Home. Dark gold on dark moss is the higher-contrast pair of the two, which suits the screen a user reaches while panicking.</p>
+    </div>
+  </div>
+
+  <h2 style="margin:0 0 4px;font:700 24px 'Baloo 2',sans-serif">Settings</h2>
+  <p style="margin:0 0 20px;max-width:64ch;font-size:15px;line-height:1.6;color:#5f574d">The chrome-heavy screen: grouped lists, 56pt rows, toggles, values, a segmented picker, theme swatches and a destructive row. Two frames at the top of the list, one scrolled to the end.</p>
+  <div style="display:flex;flex-wrap:wrap;gap:36px;align-items:flex-start">
+
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <span style="font:700 11px Nunito;letter-spacing:.1em;color:#8b8378">SETTINGS · LIGHT</span>
+      <div data-screen-label="Settings light" style="width:390px;height:844px;border-radius:38px;overflow:hidden;position:relative;background:#f6f1e2;box-shadow:0 24px 60px rgba(40,35,30,.22)">
+        <div style="position:absolute;inset:0;display:flex;flex-direction:column;color:#2c3324">
+          <div style="flex:1;min-height:0;overflow:hidden;padding:50px 20px 0;box-sizing:border-box;display:flex;flex-direction:column;gap:22px">
+            <h2 style="margin:8px 0 0;font:700 34px/1.1 'Baloo 2',sans-serif">Me</h2>
+            <div style="border-radius:20px;background:#ffffff;border:1px solid #e0dbc6;padding:14px 16px;display:flex;align-items:center;gap:14px">
+              <div style="width:56px;height:56px;border-radius:50%;flex:none;background:linear-gradient(170deg,#e6e6c8,#b6c795);display:grid;place-items:center;overflow:hidden">
+                <img src="assets/panda.png" alt="" style="height:52px;object-fit:contain;transform:translateY(4px)">
+              </div>
+              <div style="flex:1;min-width:0">
+                <p style="margin:0;font:600 20px 'Baloo 2',sans-serif">Mochi</p>
+                <p style="margin:2px 0 0;font-size:13px;color:#8b8a72">Been with you 84 days</p>
+              </div>
+              <svg width="18" height="18" style="flex:none" viewBox="0 0 24 24" fill="none" stroke="#adae94" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"></path></svg>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <p style="margin:0 0 0 4px;font:600 13px Nunito;letter-spacing:.06em;text-transform:uppercase;color:#8b8a72">When you panic</p>
+              <div style="border-radius:20px;background:#ffffff;border:1px solid #e0dbc6;overflow:hidden">
+                <div style="min-height:56px;box-sizing:border-box;padding:10px 16px;display:flex;align-items:center;gap:12px;border-bottom:1px solid #ece7d4">
+                  <span style="flex:1;font-size:17px">Panic button on lock screen</span>
+                  <span style="flex:none;width:51px;height:31px;border-radius:999px;background:#c2542a;display:flex;align-items:center;justify-content:flex-end;padding:0 2px;box-sizing:border-box"><span style="width:27px;height:27px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.2)"></span></span>
+                </div>
+                <div style="min-height:56px;box-sizing:border-box;padding:10px 16px;display:flex;align-items:center;gap:12px;border-bottom:1px solid #ece7d4">
+                  <span style="flex:1;font-size:17px">Vibrate with the breathing</span>
+                  <span style="flex:none;width:51px;height:31px;border-radius:999px;background:#c2542a;display:flex;align-items:center;justify-content:flex-end;padding:0 2px;box-sizing:border-box"><span style="width:27px;height:27px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.2)"></span></span>
+                </div>
+                <div style="min-height:56px;box-sizing:border-box;padding:10px 16px;display:flex;align-items:center;gap:12px;border-bottom:1px solid #ece7d4">
+                  <span style="flex:1;font-size:17px">Breathing pace</span>
+                  <span style="font-size:17px;color:#8b8a72">4 in, 6 out</span>
+                  <svg width="18" height="18" style="flex:none" viewBox="0 0 24 24" fill="none" stroke="#adae94" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"></path></svg>
+                </div>
+                <div style="min-height:56px;box-sizing:border-box;padding:10px 16px;display:flex;align-items:center;gap:12px">
+                  <span style="flex:1;font-size:17px">Someone to call</span>
+                  <span style="font-size:17px;color:#8b8a72">Mum</span>
+                  <svg width="18" height="18" style="flex:none" viewBox="0 0 24 24" fill="none" stroke="#adae94" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"></path></svg>
+                </div>
+              </div>
+              <p style="margin:2px 4px 0;font-size:13px;line-height:1.45;color:#8b8a72">Shown at the end of the panic flow if things get worse instead of better.</p>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <p style="margin:0 0 0 4px;font:600 13px Nunito;letter-spacing:.06em;text-transform:uppercase;color:#8b8a72">Every day</p>
+              <div style="border-radius:20px;background:#ffffff;border:1px solid #e0dbc6;overflow:hidden">
+                <div style="min-height:56px;box-sizing:border-box;padding:10px 16px;display:flex;align-items:center;gap:12px;border-bottom:1px solid #ece7d4">
+                  <span style="flex:1;font-size:17px">Check in with me</span>
+                  <span style="flex:none;width:51px;height:31px;border-radius:999px;background:#c2542a;display:flex;align-items:center;justify-content:flex-end;padding:0 2px;box-sizing:border-box"><span style="width:27px;height:27px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.2)"></span></span>
+                </div>
+                <div style="min-height:56px;box-sizing:border-box;padding:10px 16px;display:flex;align-items:center;gap:12px;border-bottom:1px solid #ece7d4">
+                  <span style="flex:1;font-size:17px">At</span>
+                  <span style="font-size:17px;color:#8b8a72">8:30 pm</span>
+                  <svg width="18" height="18" style="flex:none" viewBox="0 0 24 24" fill="none" stroke="#adae94" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"></path></svg>
+                </div>
+                <div style="min-height:56px;box-sizing:border-box;padding:10px 16px;display:flex;align-items:center;gap:12px">
+                  <span style="flex:1;font-size:17px">Nudge me for good things</span>
+                  <span style="flex:none;width:51px;height:31px;border-radius:999px;background:#d8dcc6;display:flex;align-items:center;justify-content:flex-start;padding:0 2px;box-sizing:border-box"><span style="width:27px;height:27px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.2)"></span></span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div style="flex:none;padding:6px 20px 34px;display:flex;align-items:center;gap:2px;border-top:1px solid #e0dbc6;background:#f6f1e2">
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:49px;gap:4px;opacity:.65"><svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="#2c3324" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"></path><path d="M3 10a2 2 0 0 1 .709-1.528l7-6a2 2 0 0 1 2.582 0l7 6A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg><span style="font:10px Nunito">Home</span></div>
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:49px;gap:4px;opacity:.65"><svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="#2c3324" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z"></path><path d="M20 2v4"></path><path d="M22 4h-4"></path><circle cx="4" cy="20" r="2"></circle></svg><span style="font:10px Nunito">Good things</span></div>
+            <div style="flex:0 0 auto;margin:-24px 6px 0;width:62px;height:62px;border-radius:50%;background:#c2542a;color:#fff;display:grid;place-items:center;box-shadow:0 8px 20px rgba(194,84,42,.45),0 0 0 6px #f6f1e2"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="m4.93 4.93 4.24 4.24"></path><path d="m14.83 9.17 4.24-4.24"></path><path d="m14.83 14.83 4.24 4.24"></path><path d="m9.17 14.83-4.24 4.24"></path><circle cx="12" cy="12" r="4"></circle></svg></div>
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:49px;gap:4px;opacity:.65"><svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="#2c3324" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.8 19.6A2 2 0 1 0 14 16H2"></path><path d="M17.5 8a2.5 2.5 0 1 1 2 4H2"></path><path d="M9.8 4.4A2 2 0 1 1 11 8H2"></path></svg><span style="font:10px Nunito">Meditate</span></div>
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:49px;gap:4px"><svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="#3d5232" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.925 20.056a6 6 0 0 0-11.851.001"></path><circle cx="12" cy="11" r="4"></circle><circle cx="12" cy="12" r="10"></circle></svg><span style="font:600 10px Nunito;color:#3d5232">Me</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <span style="font:700 11px Nunito;letter-spacing:.1em;color:#8b8378">SETTINGS · DARK</span>
+      <div data-screen-label="Settings dark" style="width:390px;height:844px;border-radius:38px;overflow:hidden;position:relative;background:#1b2418;box-shadow:0 24px 60px rgba(15,30,15,.34)">
+        <div style="position:absolute;inset:0;display:flex;flex-direction:column;color:#f2ecd9">
+          <div style="flex:1;min-height:0;overflow:hidden;padding:50px 20px 0;box-sizing:border-box;display:flex;flex-direction:column;gap:22px">
+            <h2 style="margin:8px 0 0;font:700 34px/1.1 'Baloo 2',sans-serif">Me</h2>
+            <div style="border-radius:20px;background:#3b4d33;border:1px solid #4d6243;padding:14px 16px;display:flex;align-items:center;gap:14px">
+              <div style="width:56px;height:56px;border-radius:50%;flex:none;background:linear-gradient(170deg,#54704a,#3a5035);display:grid;place-items:center;overflow:hidden">
+                <img src="assets/panda.png" alt="" style="height:52px;object-fit:contain;transform:translateY(4px)">
+              </div>
+              <div style="flex:1;min-width:0">
+                <p style="margin:0;font:600 20px 'Baloo 2',sans-serif">Mochi</p>
+                <p style="margin:2px 0 0;font-size:13px;color:#cbd6bd">Been with you 84 days</p>
+              </div>
+              <svg width="18" height="18" style="flex:none" viewBox="0 0 24 24" fill="none" stroke="#9aa88c" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"></path></svg>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <p style="margin:0 0 0 4px;font:600 13px Nunito;letter-spacing:.06em;text-transform:uppercase;color:#cbd6bd">When you panic</p>
+              <div style="border-radius:20px;background:#3b4d33;border:1px solid #4d6243;overflow:hidden">
+                <div style="min-height:56px;box-sizing:border-box;padding:10px 16px;display:flex;align-items:center;gap:12px;border-bottom:1px solid #47593e">
+                  <span style="flex:1;font-size:17px">Panic button on lock screen</span>
+                  <span style="flex:none;width:51px;height:31px;border-radius:999px;background:#c2542a;display:flex;align-items:center;justify-content:flex-end;padding:0 2px;box-sizing:border-box"><span style="width:27px;height:27px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.35)"></span></span>
+                </div>
+                <div style="min-height:56px;box-sizing:border-box;padding:10px 16px;display:flex;align-items:center;gap:12px;border-bottom:1px solid #47593e">
+                  <span style="flex:1;font-size:17px">Vibrate with the breathing</span>
+                  <span style="flex:none;width:51px;height:31px;border-radius:999px;background:#c2542a;display:flex;align-items:center;justify-content:flex-end;padding:0 2px;box-sizing:border-box"><span style="width:27px;height:27px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.35)"></span></span>
+                </div>
+                <div style="min-height:56px;box-sizing:border-box;padding:10px 16px;display:flex;align-items:center;gap:12px;border-bottom:1px solid #47593e">
+                  <span style="flex:1;font-size:17px">Breathing pace</span>
+                  <span style="font-size:17px;color:#cbd6bd">4 in, 6 out</span>
+                  <svg width="18" height="18" style="flex:none" viewBox="0 0 24 24" fill="none" stroke="#9aa88c" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"></path></svg>
+                </div>
+                <div style="min-height:56px;box-sizing:border-box;padding:10px 16px;display:flex;align-items:center;gap:12px">
+                  <span style="flex:1;font-size:17px">Someone to call</span>
+                  <span style="font-size:17px;color:#cbd6bd">Mum</span>
+                  <svg width="18" height="18" style="flex:none" viewBox="0 0 24 24" fill="none" stroke="#9aa88c" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"></path></svg>
+                </div>
+              </div>
+              <p style="margin:2px 4px 0;font-size:13px;line-height:1.45;color:#cbd6bd">Shown at the end of the panic flow if things get worse instead of better.</p>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <p style="margin:0 0 0 4px;font:600 13px Nunito;letter-spacing:.06em;text-transform:uppercase;color:#cbd6bd">Every day</p>
+              <div style="border-radius:20px;background:#3b4d33;border:1px solid #4d6243;overflow:hidden">
+                <div style="min-height:56px;box-sizing:border-box;padding:10px 16px;display:flex;align-items:center;gap:12px;border-bottom:1px solid #47593e">
+                  <span style="flex:1;font-size:17px">Check in with me</span>
+                  <span style="flex:none;width:51px;height:31px;border-radius:999px;background:#c2542a;display:flex;align-items:center;justify-content:flex-end;padding:0 2px;box-sizing:border-box"><span style="width:27px;height:27px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.35)"></span></span>
+                </div>
+                <div style="min-height:56px;box-sizing:border-box;padding:10px 16px;display:flex;align-items:center;gap:12px;border-bottom:1px solid #47593e">
+                  <span style="flex:1;font-size:17px">At</span>
+                  <span style="font-size:17px;color:#cbd6bd">8:30 pm</span>
+                  <svg width="18" height="18" style="flex:none" viewBox="0 0 24 24" fill="none" stroke="#9aa88c" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"></path></svg>
+                </div>
+                <div style="min-height:56px;box-sizing:border-box;padding:10px 16px;display:flex;align-items:center;gap:12px">
+                  <span style="flex:1;font-size:17px">Nudge me for good things</span>
+                  <span style="flex:none;width:51px;height:31px;border-radius:999px;background:#4a5c41;display:flex;align-items:center;justify-content:flex-start;padding:0 2px;box-sizing:border-box"><span style="width:27px;height:27px;border-radius:50%;background:#e8e2cf;box-shadow:0 1px 3px rgba(0,0,0,.35)"></span></span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div style="flex:none;padding:6px 20px 34px;display:flex;align-items:center;gap:2px;border-top:1px solid #4d6243;background:#1b2418">
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:49px;gap:4px;opacity:.65"><svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="#f2ecd9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"></path><path d="M3 10a2 2 0 0 1 .709-1.528l7-6a2 2 0 0 1 2.582 0l7 6A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg><span style="font:10px Nunito">Home</span></div>
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:49px;gap:4px;opacity:.65"><svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="#f2ecd9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z"></path><path d="M20 2v4"></path><path d="M22 4h-4"></path><circle cx="4" cy="20" r="2"></circle></svg><span style="font:10px Nunito">Good things</span></div>
+            <div style="flex:0 0 auto;margin:-24px 6px 0;width:62px;height:62px;border-radius:50%;background:#c2542a;color:#fff;display:grid;place-items:center;box-shadow:0 8px 20px rgba(194,84,42,.45),0 0 0 6px #1b2418"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="m4.93 4.93 4.24 4.24"></path><path d="m14.83 9.17 4.24-4.24"></path><path d="m14.83 14.83 4.24 4.24"></path><path d="m9.17 14.83-4.24 4.24"></path><circle cx="12" cy="12" r="4"></circle></svg></div>
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:49px;gap:4px;opacity:.65"><svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="#f2ecd9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.8 19.6A2 2 0 1 0 14 16H2"></path><path d="M17.5 8a2.5 2.5 0 1 1 2 4H2"></path><path d="M9.8 4.4A2 2 0 1 1 11 8H2"></path></svg><span style="font:10px Nunito">Meditate</span></div>
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:49px;gap:4px"><svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="#d9a640" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.925 20.056a6 6 0 0 0-11.851.001"></path><circle cx="12" cy="11" r="4"></circle><circle cx="12" cy="12" r="10"></circle></svg><span style="font:600 10px Nunito;color:#d9a640">Me</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <span style="font:700 11px Nunito;letter-spacing:.1em;color:#8b8378">SETTINGS · SCROLLED</span>
+      <div data-screen-label="Settings scrolled" style="width:390px;height:844px;border-radius:38px;overflow:hidden;position:relative;background:#f6f1e2;box-shadow:0 24px 60px rgba(40,35,30,.22)">
+        <div style="position:absolute;inset:0;display:flex;flex-direction:column;color:#2c3324">
+          <div style="flex:none;padding:50px 20px 10px;background:#f6f1e2;border-bottom:1px solid #e0dbc6;display:flex;align-items:center;justify-content:center;min-height:44px;box-sizing:content-box">
+            <span style="font:600 17px 'Baloo 2',sans-serif">Me</span>
+          </div>
+          <div style="flex:1;min-height:0;overflow:hidden;padding:22px 20px 0;box-sizing:border-box;display:flex;flex-direction:column;gap:22px">
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <p style="margin:0 0 0 4px;font:600 13px Nunito;letter-spacing:.06em;text-transform:uppercase;color:#8b8a72">How it looks</p>
+              <div style="border-radius:20px;background:#ffffff;border:1px solid #e0dbc6;overflow:hidden">
+                <div style="padding:14px 16px 16px;border-bottom:1px solid #ece7d4;display:flex;flex-direction:column;gap:12px">
+                  <span style="font-size:17px">Theme</span>
+                  <div style="display:flex;gap:12px">
+                    <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:7px">
+                      <span style="width:100%;height:52px;border-radius:14px;background:linear-gradient(170deg,#e6e6c8,#cfd9ae 55%,#b6c795);box-shadow:0 0 0 2px #3d5232,0 0 0 5px rgba(61,82,50,.18)"></span>
+                      <span style="font:600 12px Nunito;color:#3d5232">Moss</span>
+                    </div>
+                    <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:7px">
+                      <span style="width:100%;height:52px;border-radius:14px;background:linear-gradient(170deg,#ffe1b0,#e8a05a 55%,#b96a3c);box-shadow:inset 0 0 0 1px rgba(0,0,0,.06)"></span>
+                      <span style="font:12px Nunito;color:#8b8a72">Harvest</span>
+                    </div>
+                    <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:7px">
+                      <span style="width:100%;height:52px;border-radius:14px;background:linear-gradient(170deg,#ffd8b4,#b48fd8 55%,#8f78e0);box-shadow:inset 0 0 0 1px rgba(0,0,0,.06)"></span>
+                      <span style="font:12px Nunito;color:#8b8a72">Dusk</span>
+                    </div>
+                    <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:7px">
+                      <span style="width:100%;height:52px;border-radius:14px;background:linear-gradient(170deg,#ffe9cf,#f8d3c2 55%,#ecc6d6);box-shadow:inset 0 0 0 1px rgba(0,0,0,.06)"></span>
+                      <span style="font:12px Nunito;color:#8b8a72">Paper</span>
+                    </div>
+                  </div>
+                </div>
+                <div style="min-height:56px;box-sizing:border-box;padding:12px 16px;display:flex;align-items:center;gap:12px">
+                  <span style="flex:none;font-size:17px">Light or dark</span>
+                  <div style="flex:1;display:flex;gap:3px;background:#ece7d4;border-radius:11px;padding:3px">
+                    <span style="flex:1;text-align:center;font:600 14px Nunito;padding:7px 0;border-radius:8px;color:#8b8a72">Light</span>
+                    <span style="flex:1;text-align:center;font:600 14px Nunito;padding:7px 0;border-radius:8px;color:#8b8a72">Dark</span>
+                    <span style="flex:1;text-align:center;font:600 14px Nunito;padding:7px 0;border-radius:8px;background:#ffffff;color:#2c3324;box-shadow:0 1px 3px rgba(45,60,40,.18)">Auto</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <p style="margin:0 0 0 4px;font:600 13px Nunito;letter-spacing:.06em;text-transform:uppercase;color:#8b8a72">Your stuff</p>
+              <div style="border-radius:20px;background:#ffffff;border:1px solid #e0dbc6;overflow:hidden">
+                <div style="min-height:56px;box-sizing:border-box;padding:10px 16px;display:flex;align-items:center;gap:12px;border-bottom:1px solid #ece7d4">
+                  <span style="flex:1;font-size:17px">Send me a copy of everything</span>
+                  <svg width="18" height="18" style="flex:none" viewBox="0 0 24 24" fill="none" stroke="#adae94" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"></path></svg>
+                </div>
+                <div style="min-height:56px;box-sizing:border-box;padding:10px 16px;display:flex;align-items:center;gap:12px">
+                  <span style="flex:1;font-size:17px;color:#b3311f">Delete everything</span>
+                </div>
+              </div>
+              <p style="margin:2px 4px 0;font-size:13px;line-height:1.45;color:#8b8a72">Everything you write stays on this phone. Deleting is immediate and can't be undone.</p>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <div style="border-radius:20px;background:#ffffff;border:1px solid #e0dbc6;overflow:hidden">
+                <div style="min-height:56px;box-sizing:border-box;padding:10px 16px;display:flex;align-items:center;gap:12px;border-bottom:1px solid #ece7d4">
+                  <span style="flex:1;font-size:17px">Tell us what's not working</span>
+                  <svg width="18" height="18" style="flex:none" viewBox="0 0 24 24" fill="none" stroke="#adae94" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"></path></svg>
+                </div>
+                <div style="min-height:56px;box-sizing:border-box;padding:10px 16px;display:flex;align-items:center;gap:12px">
+                  <span style="flex:1;font-size:17px">Crisis lines near you</span>
+                  <svg width="18" height="18" style="flex:none" viewBox="0 0 24 24" fill="none" stroke="#adae94" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"></path></svg>
+                </div>
+              </div>
+              <p style="margin:8px 4px 0;text-align:center;font-size:13px;color:#a8a893">Sidekick 1.0</p>
+            </div>
+          </div>
+          <div style="flex:none;padding:6px 20px 34px;display:flex;align-items:center;gap:2px;border-top:1px solid #e0dbc6;background:#f6f1e2">
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:49px;gap:4px;opacity:.65"><svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="#2c3324" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"></path><path d="M3 10a2 2 0 0 1 .709-1.528l7-6a2 2 0 0 1 2.582 0l7 6A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg><span style="font:10px Nunito">Home</span></div>
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:49px;gap:4px;opacity:.65"><svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="#2c3324" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z"></path><path d="M20 2v4"></path><path d="M22 4h-4"></path><circle cx="4" cy="20" r="2"></circle></svg><span style="font:10px Nunito">Good things</span></div>
+            <div style="flex:0 0 auto;margin:-24px 6px 0;width:62px;height:62px;border-radius:50%;background:#c2542a;color:#fff;display:grid;place-items:center;box-shadow:0 8px 20px rgba(194,84,42,.45),0 0 0 6px #f6f1e2"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="m4.93 4.93 4.24 4.24"></path><path d="m14.83 9.17 4.24-4.24"></path><path d="m14.83 14.83 4.24 4.24"></path><path d="m9.17 14.83-4.24 4.24"></path><circle cx="12" cy="12" r="4"></circle></svg></div>
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:49px;gap:4px;opacity:.65"><svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="#2c3324" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.8 19.6A2 2 0 1 0 14 16H2"></path><path d="M17.5 8a2.5 2.5 0 1 1 2 4H2"></path><path d="M9.8 4.4A2 2 0 1 1 11 8H2"></path></svg><span style="font:10px Nunito">Meditate</span></div>
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:49px;gap:4px"><svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="#3d5232" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.925 20.056a6 6 0 0 0-11.851.001"></path><circle cx="12" cy="11" r="4"></circle><circle cx="12" cy="12" r="10"></circle></svg><span style="font:600 10px Nunito;color:#3d5232">Me</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:20px;width:360px">
+      <div style="padding:22px 24px;border-radius:20px;background:#fff;border:1px solid #e2ded4">
+        <p style="margin:0 0 12px;font:11px ui-monospace,monospace;letter-spacing:.12em;color:#8b8378">SETTINGS NOTES</p>
+        <p style="margin:0;font-size:15px;line-height:1.6;color:#5f574d">Toggles are the panic orange when on, in both modes. It's the one control where the app's most urgent colour also means "yes, this is on", and it stays legible on every surface.</p>
+        <p style="margin:12px 0 0;font-size:15px;line-height:1.6;color:#5f574d">Row dividers use the hairline slot (ECE7D4 / 47593E), not the card border. Card borders at row scale read as a table.</p>
+        <p style="margin:12px 0 0;font-size:15px;line-height:1.6;color:#5f574d">Baloo 2 is display only — large title, the sidekick's name, card titles. Every setting row label is Nunito 17px.</p>
+      </div>
+      <div style="padding:22px 24px;border-radius:20px;background:#fff;border:1px solid #e2ded4">
+        <p style="margin:0 0 12px;font:11px ui-monospace,monospace;letter-spacing:.12em;color:#8b8378">STILL OPEN</p>
+        <p style="margin:0;font-size:15px;line-height:1.6;color:#5f574d">Delete (B3311F) and the panic FAB (C2542A) share the scrolled screen and nearly a hue. Resolved by pushing delete darker and redder, but worth a second look on a real device.</p>
+        <p style="margin:12px 0 0;font-size:15px;line-height:1.6;color:#5f574d">"Someone to call" is doing crisis work from inside a settings list. It may deserve its own screen.</p>
+      </div>
+    </div>
+  </div>
+</section>
+</x-dc>
+</body>
+</html>
