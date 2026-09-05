@@ -24,6 +24,12 @@ class _ConnectViewState extends State<ConnectView> {
   final TextEditingController _controller = TextEditingController();
 
   @override
+  void initState() {
+    super.initState();
+    _viewModel.init();
+  }
+
+  @override
   void dispose() {
     _controller.dispose();
     _viewModel.dispose();
@@ -32,15 +38,37 @@ class _ConnectViewState extends State<ConnectView> {
 
   // No session exists yet, so the redirect cannot move us. This step navigates
   // itself; verifying the code does not.
-  //
-  // push, not go: it leaves this screen underneath, which is what gives the
-  // verify screen somewhere to go back to when the address was mistyped.
   Future<void> _sendCode() async {
     final email = _controller.text.trim();
     final sent = await _viewModel.sendCode(email);
 
     if (sent && mounted) {
-      context.push('${Routes.verify}?email=${Uri.encodeComponent(email)}');
+      await _goVerify(email);
+    }
+  }
+
+  // push, not go: it leaves this screen underneath, which is what gives the
+  // verify screen somewhere to go back to when the address was mistyped.
+  //
+  // The await matters. This screen stays mounted underneath while the verify
+  // screen is open, so nothing on it rebuilds and init() does not run again --
+  // which is exactly when a code goes out and pendingEmail changes from
+  // nothing to something. Refreshing when the push completes is what puts the
+  // "I already have a code" line on screen for the user who came back.
+  Future<void> _goVerify(String email) async {
+    await context.push('${Routes.verify}?email=${Uri.encodeComponent(email)}');
+
+    if (mounted) {
+      _viewModel.init();
+    }
+  }
+
+  // Back to wherever the user came from -- the Me tab, or the offer after a
+  // first save. Nothing to pop when the redirect sent them here instead, so
+  // the arrow is left out rather than shown doing nothing.
+  void _back() {
+    if (context.canPop()) {
+      context.pop();
     }
   }
 
@@ -50,6 +78,15 @@ class _ConnectViewState extends State<ConnectView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: context.canPop()
+          ? AppBar(
+              leading: IconButton(
+                icon: const Icon(Icons.chevron_left),
+                tooltip: 'Back',
+                onPressed: _back,
+              ),
+            )
+          : null,
       body: GestureDetector(
         onTap: () => FocusScope.of(context).unfocus(),
         behavior: HitTestBehavior.opaque,
@@ -115,6 +152,24 @@ class _ConnectViewState extends State<ConnectView> {
                         onPressed: _sendCode,
                         child: const Text('Send code'),
                       ),
+
+                      // The way back to a code already sitting in the user's
+                      // inbox. Without it, someone who leaves the verify
+                      // screen is locked out for the length of the resend
+                      // cooldown while holding a code that still works.
+                      //
+                      // Shown only when Supabase says an address is waiting to
+                      // be confirmed, so it cannot lead to an empty screen.
+                      if (state.pendingEmail.isNotEmpty) ...[
+                        const SizedBox(height: 8),
+                        TextButton(
+                          onPressed: () => _goVerify(state.pendingEmail),
+                          child: Text(
+                            'I already have a code for ${state.pendingEmail}',
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      ],
                     ],
                   );
                 },

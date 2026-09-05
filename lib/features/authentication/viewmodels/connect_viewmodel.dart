@@ -21,6 +21,14 @@ class ConnectViewModel extends ViewModel<ConnectViewModelState> {
   // code arrives.
   static final RegExp _emailPattern = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$');
 
+  // A code may already be in the user's inbox: they got as far as the verify
+  // screen, backed out or closed the app, and came back here. Sending a second
+  // one is rate limited for five minutes, so without a way through they would
+  // be stuck holding a perfectly good code they cannot type in.
+  void init() {
+    emit(current.copyWith(pendingEmail: _authService.pendingEmail ?? ''));
+  }
+
   // Returns true when the code was sent, which is the view's cue to move to
   // the verify screen. On false, state.errors holds the message to show.
   Future<bool> sendCode(String rawEmail) async {
@@ -58,19 +66,25 @@ class ConnectViewModel extends ViewModel<ConnectViewModelState> {
 }
 
 class ConnectViewModelState {
+  // The address a code has already been sent to, or empty when there is none
+  // outstanding. Drives the way back to the verify screen.
+  final String pendingEmail;
   final Map<String, String> errors;
   final Map<String, String> messages;
 
   ConnectViewModelState({
+    this.pendingEmail = '',
     this.errors = const {},
     this.messages = const {},
   });
 
   ConnectViewModelState copyWith({
+    String? pendingEmail,
     Map<String, String>? errors,
     Map<String, String>? messages,
   }) {
     return ConnectViewModelState(
+      pendingEmail: pendingEmail ?? this.pendingEmail,
       errors: errors ?? this.errors,
       messages: messages ?? this.messages,
     );

@@ -66,4 +66,80 @@ void main() {
     expect(tester.takeException(), isNull);
     expect(find.byType(Scrollable), findsWidgets);
   });
+
+  // Leaving the verify screen must not lock the user out. A second code is
+  // rate limited for five minutes, so the one already in their inbox has to
+  // stay reachable.
+  testWidgets('offers the way back to a code already sent', (tester) async {
+    final authService = FakeAuthService()
+      ..userEmail = 'someone@example.com'
+      ..emailConfirmed = false;
+
+    final router = await pumpApp(
+      tester,
+      isAuthenticated: true,
+      authService: authService,
+      location: Routes.connect,
+    );
+
+    await tester.tap(find.text('I already have a code for someone@example.com'));
+    await tester.pumpAndSettle();
+
+    expect(router.state.uri.path, Routes.verify);
+    expect(find.text('Sent to someone@example.com'), findsOneWidget);
+  });
+
+  testWidgets('does not offer it when nothing is outstanding', (tester) async {
+    await pumpApp(tester, isAuthenticated: true, location: Routes.connect);
+
+    expect(find.textContaining('I already have a code'), findsNothing);
+  });
+
+  // The screen stays mounted underneath the verify screen, so nothing on it
+  // rebuilds while a code is being sent. Coming back has to refresh it, or the
+  // way back to the code is missing exactly when it is needed.
+  testWidgets('shows the way back after returning from the verify screen',
+      (tester) async {
+    final authService = FakeAuthService();
+
+    await pumpApp(
+      tester,
+      isAuthenticated: true,
+      authService: authService,
+      location: Routes.connect,
+    );
+
+    expect(find.textContaining('I already have a code'), findsNothing);
+
+    // Sending is what puts an address in flight.
+    await tester.enterText(find.byType(TextField), 'someone@example.com');
+    authService.emailConfirmed = false;
+    await tester.tap(find.text('Send code'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Sent to someone@example.com'), findsOneWidget);
+
+    // Back to Connect, the way a user correcting a typo would go.
+    await tester.tap(find.byTooltip('Back'));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.text('I already have a code for someone@example.com'),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('offers a way back to whoever sent the user here',
+      (tester) async {
+    final router = await pumpApp(
+      tester,
+      isAuthenticated: true,
+      location: Routes.connect,
+    );
+
+    await tester.tap(find.byTooltip('Back'));
+    await tester.pumpAndSettle();
+
+    expect(router.state.uri.path, Routes.home);
+  });
 }

@@ -43,8 +43,31 @@ class _VerifyViewState extends State<VerifyView> {
     super.dispose();
   }
 
-  // The one piece of navigation on this screen, and it is backwards: a mistyped
-  // address is only fixable on the screen that collected it.
+  // A correct code ends the account flow, so this screen takes the user out of
+  // it.
+  //
+  // This used to be left to the router, and that was right while signing in
+  // created a session: isAuthenticated moved, the refreshListenable fired and
+  // the redirect carried the user home. It stopped being right when everyone
+  // started arriving with a session already. Verifying now changes only
+  // hasAccount, and this screen is reached with push -- and go_router does not
+  // re-run the redirect over an imperatively pushed route when its
+  // refreshListenable fires. The user sat here watching nothing happen, then
+  // pressed Verify again and was told the code had expired. It had: they had
+  // just spent it.
+  //
+  // go, not pop: the account screens behind this one are no longer somewhere
+  // to be, and the guard would only bounce the user off them again.
+  Future<void> _verify() async {
+    final bool verified = await _viewModel.verify(_controller.text);
+
+    if (verified && mounted) {
+      context.go(Routes.home);
+    }
+  }
+
+  // The other piece of navigation, and it is backwards: a mistyped address is
+  // only fixable on the screen that collected it.
   //
   // Deep-linked straight here there is nothing to pop, so it falls back to the
   // step that should have come first rather than doing nothing.
@@ -112,7 +135,7 @@ class _VerifyViewState extends State<VerifyView> {
                           FilteringTextInputFormatter.digitsOnly
                         ],
                         textInputAction: TextInputAction.go,
-                        onSubmitted: (_) => _viewModel.verify(_controller.text),
+                        onSubmitted: (_) => _verify(),
                         decoration: InputDecoration(
                           labelText: 'Code',
                           border: const OutlineInputBorder(),
@@ -144,11 +167,8 @@ class _VerifyViewState extends State<VerifyView> {
 
                       const SizedBox(height: 24),
 
-                      // Nothing navigates forward here. A verified code produces
-                      // a session, and the router's redirect moves the user off
-                      // this screen.
                       AsyncButton(
-                        onPressed: () => _viewModel.verify(_controller.text),
+                        onPressed: _verify,
                         child: const Text('Verify'),
                       ),
 

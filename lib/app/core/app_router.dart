@@ -26,8 +26,10 @@ class AppRouter {
     return GoRouter(
       initialLocation: Routes.home,
       debugLogDiagnostics: false,
-      // Re-runs the redirect the moment a session appears or goes away.
-      refreshListenable: authStateService.isAuthenticated,
+      // Re-runs the redirect the moment either fact changes: a session
+      // appearing or going away, and an email being confirmed. The guard below
+      // reads both, so listening to only one of them leaves it stale.
+      refreshListenable: authStateService.changes,
       errorBuilder: (context, state) => const ErrorView(
         code: 'PAN-0404',
         message: 'That screen does not exist.',

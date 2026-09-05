@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import 'package:sidekick/app/core/auth_service.dart';
 import 'package:sidekick/app/core/logger_service.dart';
 
 // Two facts about the current user, kept apart on purpose.
@@ -44,6 +45,18 @@ class AuthStateService {
 
   ValueListenable<bool> get hasAccount => _hasAccount;
 
+  // Both facts as one listenable, for the router's refreshListenable.
+  //
+  // It must be both. The redirect reads hasAccount as well as isAuthenticated,
+  // and verifying a code changes only hasAccount -- everyone already has a
+  // session, so isAuthenticated never moves. Listening to that one alone left
+  // the router unaware that the account had arrived, so a user who entered a
+  // correct code sat on the verify screen watching nothing happen, pressed
+  // Verify again, and was told the code had expired. It had: they had just
+  // spent it.
+  late final Listenable changes =
+      Listenable.merge(<Listenable>[_isAuthenticated, _hasAccount]);
+
   StreamSubscription<AuthState>? _subscription;
 
   // Reads the restored session, then follows every change to it. Supabase
@@ -78,8 +91,9 @@ class AuthStateService {
   void _apply(Session? session) {
     final User? user = session?.user;
     final bool authenticated = session != null;
-    final bool account =
-        user != null && !user.isAnonymous && (user.email?.isNotEmpty ?? false);
+    // The shared rule, not a second copy of it. This service and AuthService
+    // must agree, and when each kept its own version they stopped agreeing.
+    final bool account = userHasAccount(user);
 
     if (authenticated != _isAuthenticated.value ||
         account != _hasAccount.value) {

@@ -11,6 +11,7 @@ import 'package:sidekick/app/core/logger_service.dart';
 import 'package:sidekick/app/core/service_locator.dart';
 import 'package:sidekick/app/widgets/theme.dart';
 import 'package:sidekick/data/services/configuration_service.dart';
+import 'package:sidekick/data/services/good_things_service.dart';
 
 import 'fakes.dart';
 
@@ -27,12 +28,16 @@ import 'fakes.dart';
 Future<GoRouter> pumpApp(
   WidgetTester tester, {
   String? location,
+  // Handed to the pushed route as its `extra`, which is how another screen
+  // pre-fills the first good thing.
+  Object? extra,
   bool isAuthenticated = false,
   bool hasAccount = false,
   AuthService? authService,
   AuthStateService? authStateService,
   ConfigurationService? configurationService,
   DeviceSettingsService? deviceSettingsService,
+  GoodThingsService? goodThingsService,
 }) async {
   // The shell mounts Home, and Home has a Rive animation on it. Rive's native
   // engine has to be loaded before that widget builds or it asserts. Safe to
@@ -57,6 +62,9 @@ Future<GoRouter> pumpApp(
   getIt.registerSingleton<DeviceSettingsService>(
     deviceSettingsService ?? FakeDeviceSettingsService(),
   );
+  getIt.registerSingleton<GoodThingsService>(
+    goodThingsService ?? FakeGoodThingsService(),
+  );
 
   final GoRouter router = AppRouter.create(
     loggerService: logger,
@@ -76,7 +84,7 @@ Future<GoRouter> pumpApp(
   // Pushed rather than gone to, so the screen underneath is still there and
   // context.pop() has somewhere to land -- the same stack the app builds.
   if (location != null) {
-    router.push(location);
+    router.push(location, extra: extra);
     await tester.pumpAndSettle();
   }
 

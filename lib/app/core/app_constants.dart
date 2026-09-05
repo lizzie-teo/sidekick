@@ -13,6 +13,11 @@ abstract class Routes {
   // route surface visible in one place.
   static const String home = '/';
   static const String goodThings = '/good-things';
+
+  // The long view, reached from Good things rather than from the tab bar.
+  // A child path so the back arrow returns to the entry form, which is where
+  // everyone arrives from.
+  static const String goodThingsHistory = '/good-things/history';
   static const String meditate = '/meditate';
   static const String me = '/me';
 
@@ -68,6 +73,12 @@ abstract class SettingsKeys {
   // Index of the pairing shown on Home last time it opened, so the next open
   // can pick a different one.
   static const String lastHomePairing = 'last_home_pairing';
+
+  // Whether the offer of an account has been made and answered. It is made
+  // once, after the first save, and a No is final -- so this records "asked",
+  // not "accepted". The standing door is the Me tab, which shows "Create an
+  // account" for as long as there is no email, and that is not gated on this.
+  static const String accountOfferAnswered = 'account_offer_answered';
 }
 
 // Keys in the _configuration table. Every one of these rows is expected to

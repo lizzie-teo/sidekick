@@ -9,7 +9,7 @@ Flutter application. Feature-first MVVM with a plugin-style feature registry.
 | Layer | Location | Rules |
 | --- | --- | --- |
 | App | `lib/app/` | Cross-cutting: routing, DI, logging, events, theme, shared views |
-| Data | `lib/data/` | Models and services. Currently the `_configuration` table only |
+| Data | `lib/data/` | Models and services. `_configuration` and `good_things` |
 | Features | `lib/features/` | Self-contained modules, one folder each |
 
 Dependencies point one way: Features -> Data -> (backend). Nothing in `lib/data/`
@@ -211,12 +211,35 @@ and `AuthStateService` exposes them separately:
 | Notifier | Means | Who asks |
 | --- | --- | --- |
 | `isAuthenticated` | There is a session | The router's `requiresSession` guard, and almost nothing else |
-| `hasAccount` | There is an email on the account | The router's `authScreens` guard, `MeViewModel`, anything user-facing |
+| `hasAccount` | There is a **confirmed** email on the account | The router's `authScreens` guard, `MeViewModel`, anything user-facing |
 
 Collapsing the two breaks both ends. A session test makes `/connect`
 unreachable -- everyone already has a session, so the redirect would bounce
 off the one screen that exists to change that. An email test would let a
 screen run with nothing to save to.
+
+**Confirmed, not merely typed.** Supabase writes the address onto the account
+the moment it is submitted and stamps `email_confirmed_at` only when the code
+is entered. Counting the first as an account makes the app claim something is
+safe when it is not, and the `authScreens` guard then throws the user off
+`/verify` before they can finish signing up.
+
+The rule lives once, as `userHasAccount(User?)` in `auth_service.dart`.
+`AuthService` and `AuthStateService` both call it. They used to hold a copy
+each, the copies drifted, and that is where the bug above came from.
+
+`pendingEmailOf(User?)` is its other half: the address a code is on its way
+to. Supabase puts a *first* address in `email` and a *changed* one in
+`new_email`, so both shapes are checked. `/connect` shows "I already have a
+code" whenever it returns something -- without it, someone who leaves the
+verify screen is locked out for the length of the resend cooldown while
+holding a code that still works.
+
+`signInWithOtp()` branches on **`hasAccount`, not `isAnonymous`**, for the
+same reason: attaching an address clears `is_anonymous` immediately while the
+address stays unconfirmed, so a user correcting a typo is neither anonymous
+nor finished. Branching on `isAnonymous` sent that state down the sign-in path
+and the wrong email template.
 
 Anonymous users hold the `authenticated` role, so RLS policies must read the
 `is_anonymous` claim rather than assume a real account.
@@ -269,15 +292,27 @@ because it holds no state.
 `/connect` is the screen that collects an email address and asks Supabase to
 send a one-time code. Named for what the user is doing, not for the field.
 
-**The router owns where the user is.** `AuthStateService.isAuthenticated` is
-the router's `refreshListenable`, so the redirect re-runs the instant the
-session changes. Consequences:
+**The router owns where the user is**, except where it cannot see. Its
+`refreshListenable` is `AuthStateService.changes`, which merges **both**
+notifiers: the redirect reads `hasAccount` as well as `isAuthenticated`, so
+listening to the session alone leaves it stale at exactly the moment an email
+arrives. Consequences:
 
-- `VerifyView` does **not** navigate on success. Verifying puts an email on
-  the account, and the redirect moves the user off the auth screens. Nothing
-  calls `context.go` on sign-in.
+- `VerifyView` **does** navigate on success, with `context.go(Routes.home)`.
+  This was once left to the redirect, and that was right while signing in
+  created a session. It stopped being right when everyone started arriving
+  with one. Verifying now changes only `hasAccount`, and `/verify` is reached
+  with `push` -- and `go_router` does not re-run its redirect over an
+  imperatively pushed route when the `refreshListenable` fires. The user sat
+  on the screen watching nothing happen, pressed Verify again, and was told
+  the code had expired. It had: they had just spent it.
 - `ConnectView` **does** navigate to `/verify`, because no email is attached
-  yet and the redirect cannot move anyone.
+  yet and the redirect cannot move anyone. It `await`s that push and re-runs
+  `init()` afterwards: it stays mounted underneath while the verify screen is
+  open, so nothing on it rebuilds during the one moment `pendingEmail` changes
+  from nothing to something. That refresh is what puts "I already have a code"
+  on screen for someone who came back to fix a typo -- without it they are held
+  by the resend cooldown while holding a code that still works.
 - Signing out navigates nowhere and redirects nowhere: no screen the user can
   be on requires an account, so the user stays put.
 
@@ -374,6 +409,56 @@ app runs with no session, and nothing can be saved.
 not in `AuthenticationModule`, because the router depends on `AuthStateService`
 whether or not the feature is in the registry.
 
+### Good things
+
+The first feature with a real server table, and the shape every later one
+copies.
+
+`GoodThingsService` lives in `lib/data/services/` and is registered in
+`service_locator.dart`, **not** in `GoodThingsModule`. Good things has its own
+tab, but it is not the only screen that touches the table: the panic recap,
+the journal's second layer and "I want to share my happiness" all write to it,
+and Home reads from it. A feature-owned service would mean deleting this
+feature breaks three others.
+
+Three things saved on one day are **three rows**, not one row with three
+columns. History shows them as separate lines, and someone who writes only one
+should not leave two empty columns behind. There is no day column either --
+the day is `created_at` read in the user's own timezone, and a stored date
+would be a second copy of the same fact, free to disagree with the first.
+
+Other screens hand it a first line through `GoodThingsArguments`, carried as
+GoRoute `extra`. Not a query parameter: the line is the user's own words, and
+those do not belong in a URL. `GoodThingsArguments.of(state.extra)` tolerates
+its absence, which is what a tab tap and a restored route both look like.
+
+**RLS is the only thing keeping one account out of another's entries**, so the
+service never filters by user on a read -- the filter is in the database,
+where it cannot be forgotten. `user_id` is still written on insert, because a
+row has to say whose it is before the policy can check it.
+
+The policies deliberately do **not** test the `is_anonymous` claim. Anonymous
+users hold the `authenticated` role, so `to authenticated` tests nothing on
+its own and `auth.uid() = user_id` does all the work. A policy that required a
+real account would silently block every save until the user gave an email,
+which is the gate this product decided against.
+
+**The offer of an account is made once, after the first save**, and only to
+someone with no email on their account. Both answers are final, and
+`SettingsKeys.accountOfferAnswered` records that it was *asked*, not what was
+said. Swiping the sheet away counts as an answer, or "once" would be a lie.
+The standing door afterwards is the Me tab, which is not gated on that flag.
+
+History must never grow a streak, a chart with gaps in it, or a comparison
+against last month. A quiet month would then read as a failed test, which is
+the opposite of what noticing good things is for. The month total is a count
+and nothing on the screen knows what any other month held.
+
+**`good_things` is in the cleanup job's `covered` list.** Adding another user
+table means editing `20260905_1030_anonymous_account_cleanup.sql` again --
+the function refuses to delete anything while a `public` table with a
+`user_id` column is missing from that list.
+
 ### Testing
 
 `test/` mirrors the thing under test, flat. Run with `flutter test`.
@@ -418,6 +503,9 @@ explicit call in the second phase of `setupServiceLocator()`.
 | `lib/app/core/auth_state_service.dart` | Signed-in or not, as the router's `refreshListenable` |
 | `lib/app/core/secure_local_storage.dart` | Session in the platform keystore |
 | `lib/app/core/device_settings_service.dart` | Small settings that live on the phone only |
+| `lib/data/services/good_things_service.dart` | Reads and writes the `good_things` table |
+| `lib/features/good_things/models/good_things_arguments.dart` | How another screen pre-fills the first line |
+| `lib/app/utilities/date_format_utils.dart` | "Today", "Yesterday", "5 September 2025" |
 | `lib/app/widgets/sk_main_tab_bar.dart` | The five slots and where each one goes |
 | `test/support/fakes.dart` | Fakes that `implements` services, so no real `SupabaseClient` is built |
 
@@ -448,16 +536,15 @@ Deliberately absent -- do not add without being asked:
 - No local database. No SQLite, no Drift.
 - No repository layer. It goes between viewmodels and data services when a
   backend and a local cache both exist.
-- `lib/data/` holds one table's worth of code: `_configuration`, its model and
-  its service. No domain tables yet.
+- `lib/data/` holds two tables' worth of code: `_configuration` and
+  `good_things`, each with its model and its service.
 - No connectivity or onboarding guards. The auth guard is in place; the redirect
   marks where the others land around it.
 - No Turnstile on `signInAnonymously()`. Required before release, not before
   then.
-- `lib/app/views/tab_placeholder_view.dart` and the two feature folders using
-  it (`good_things`, `meditate`) are scaffolding: real screens with nothing
-  behind them, so every tab leads somewhere. Delete the file when the last one
-  is replaced.
+- `lib/app/views/tab_placeholder_view.dart` and the one feature folder still
+  using it (`meditate`) are scaffolding: a real screen with nothing behind it,
+  so every tab leads somewhere. Delete the file when it is replaced in phase 2.
 - `StateScope` in `app_constants.dart` is a placeholder enum with nothing behind
   it yet. It marks the intended split between application-scoped and
   session-scoped state.

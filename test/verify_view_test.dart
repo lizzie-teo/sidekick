@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:sidekick/app/core/app_constants.dart';
@@ -82,5 +83,50 @@ void main() {
 
     expect(find.text('Enter the 6-digit code.'), findsOneWidget);
     expect(authService.tokensVerified, isEmpty);
+  });
+
+  // The screen is reached with push, and go_router does not re-run its
+  // redirect over a pushed route when the refreshListenable fires. Leaving it
+  // to the router left the user sitting here after a correct code, where
+  // pressing Verify again spent a code that was already gone.
+  testWidgets('a correct code takes the user out of the account flow',
+      (tester) async {
+    final authService = FakeAuthService();
+
+    final router = await pumpApp(
+      tester,
+      isAuthenticated: true,
+      authService: authService,
+      location: '${Routes.verify}?email=someone%40example.com',
+    );
+
+    expect(router.state.uri.path, Routes.verify);
+
+    await tester.enterText(find.byType(TextField), '123456');
+    await tester.tap(find.text('Verify'));
+    await tester.pumpAndSettle();
+
+    expect(authService.tokensVerified, <String>['123456']);
+    expect(router.state.uri.path, Routes.home);
+  });
+
+  testWidgets('a wrong code leaves the user here to try again',
+      (tester) async {
+    final authService = FakeAuthService()
+      ..verifyError = const AuthException('Token has expired or is invalid');
+
+    final router = await pumpApp(
+      tester,
+      isAuthenticated: true,
+      authService: authService,
+      location: '${Routes.verify}?email=someone%40example.com',
+    );
+
+    await tester.enterText(find.byType(TextField), '123456');
+    await tester.tap(find.text('Verify'));
+    await tester.pumpAndSettle();
+
+    expect(router.state.uri.path, Routes.verify);
+    expect(find.text('Token has expired or is invalid'), findsOneWidget);
   });
 }

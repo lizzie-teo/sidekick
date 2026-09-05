@@ -64,11 +64,19 @@ class AuthService {
   // create a second one and leave everything they had saved on the first,
   // unreachable.
   //
-  // Anonymous  -> attach this email to the account they already have.
-  // Has email  -> a normal sign-in on another device.
+  // No confirmed email -> attach this address to the account they already have.
+  // Confirmed email     -> a normal sign-in on another device.
+  //
+  // The test is "no confirmed email", not "anonymous". Attaching an address
+  // clears is_anonymous straight away, while the address itself stays
+  // unconfirmed until the code is entered -- so between the two screens the
+  // user is neither anonymous nor finished. Branching on isAnonymous sent
+  // that state down the sign-in path, which is the wrong call and the wrong
+  // email template. Someone who goes back and corrects a typo lands exactly
+  // there.
   Future<void> signInWithOtp(String email) async {
-    if (isAnonymous) {
-      _loggerService.debug('AuthService: signInWithOtp (attach to anonymous)');
+    if (!hasAccount) {
+      _loggerService.debug('AuthService: signInWithOtp (attach)');
       await _supabaseClient.auth.updateUser(UserAttributes(email: email));
       return;
     }
@@ -80,14 +88,14 @@ class AuthService {
   // Exchange an emailed code for a session, or for an email on the account.
   //
   // Which of the two it is comes from Supabase, not from a flag carried over
-  // from the screen before: an account with an unconfirmed address in
-  // newEmail is one mid-attach. Reading it back means the flow survives the
-  // app being closed between the two screens.
+  // from the screen before: an account with an address still unconfirmed is
+  // one mid-attach. Reading it back means the flow survives the app being
+  // closed between the two screens.
   Future<AuthResponse> verifyOtp({
     required String email,
     required String token,
   }) {
-    final bool isAttaching = currentUser?.newEmail == email;
+    final bool isAttaching = pendingEmail == email;
 
     _loggerService.debug(
       isAttaching
@@ -112,12 +120,11 @@ class AuthService {
   // makes it recoverable on a new phone. Everything the user sees about
   // "having an account" hangs off this, never off having a session: everyone
   // has a session from first open.
-  bool get hasAccount {
-    final User? user = currentUser;
-    return user != null &&
-        !user.isAnonymous &&
-        (user.email?.isNotEmpty ?? false);
-  }
+  bool get hasAccount => userHasAccount(currentUser);
+
+  // The address a code is currently on its way to, or null when there is none
+  // outstanding.
+  String? get pendingEmail => pendingEmailOf(currentUser);
 
   User? get currentUser => _supabaseClient.auth.currentUser;
 
@@ -141,4 +148,50 @@ class AuthService {
     _loggerService.debug('AuthService: signOut');
     return _supabaseClient.auth.signOut();
   }
+}
+
+// The two rules about a user's email, as plain functions on a User.
+//
+// They are here rather than inside AuthService because AuthStateService needs
+// the same answers from the User on an auth event, and it had its own copy of
+// the first one. The copies drifted, which is exactly the bug this pair is
+// written to prevent -- one of them counted an unconfirmed address as an
+// account and the router threw the user off the verify screen mid-sign-up.
+
+// True when there is a **confirmed** email on the account, which is the only
+// thing that makes it recoverable on a new phone.
+//
+// Confirmed, not merely typed. Supabase writes the address onto the account
+// the moment it is submitted and only stamps email_confirmed_at when the code
+// is entered. Counting the first as an account makes the app claim something
+// is safe when it is not, and bounces the user off /verify before they can
+// finish -- the router's authScreens guard reads exactly this.
+bool userHasAccount(User? user) =>
+    user != null &&
+    !user.isAnonymous &&
+    (user.email?.isNotEmpty ?? false) &&
+    user.emailConfirmedAt != null;
+
+// The address a code is on its way to, or null when there is none.
+//
+// Two shapes mean the same thing, and which one Supabase uses depends on
+// whether the account already had an address: new_email while an existing one
+// is being changed, and email itself while a first one is being attached.
+// Both mean "typed but not confirmed".
+String? pendingEmailOf(User? user) {
+  if (user == null) {
+    return null;
+  }
+
+  final String? changingTo = user.newEmail;
+  if (changingTo != null && changingTo.isNotEmpty) {
+    return changingTo;
+  }
+
+  final String? current = user.email;
+  if ((current?.isNotEmpty ?? false) && user.emailConfirmedAt == null) {
+    return current;
+  }
+
+  return null;
 }

@@ -12,6 +12,7 @@ import 'package:sidekick/app/core/event_bus.dart';
 import 'package:sidekick/app/core/feature_registry.dart';
 import 'package:sidekick/app/core/logger_service.dart';
 import 'package:sidekick/data/services/configuration_service.dart';
+import 'package:sidekick/data/services/good_things_service.dart';
 
 final GetIt getIt = GetIt.instance;
 
@@ -66,6 +67,14 @@ Future<void> setupServiceLocator() async {
     () => ConfigurationService(
       loggerService: getIt<LoggerService>(),
       supabaseClient: getIt<SupabaseClient>(),
+    ),
+  );
+
+  getIt.registerLazySingleton<GoodThingsService>(
+    () => GoodThingsService(
+      loggerService: getIt<LoggerService>(),
+      supabaseClient: getIt<SupabaseClient>(),
+      authService: getIt<AuthService>(),
     ),
   );
 

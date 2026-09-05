@@ -60,4 +60,35 @@ void main() {
     await viewModel.sendCode('someone@example.com');
     expect(viewModel.state.value.errors, isEmpty);
   });
+
+  // A code already sitting in the inbox has to stay reachable. Sending a
+  // second one is rate limited for five minutes, so a user who leaves the
+  // verify screen would otherwise be stuck holding a code that still works.
+  group('a code already on its way', () {
+    test('is offered when an address is waiting to be confirmed', () {
+      authService.userEmail = 'someone@example.com';
+      authService.emailConfirmed = false;
+
+      viewModel.init();
+
+      expect(viewModel.state.value.pendingEmail, 'someone@example.com');
+    });
+
+    test('is not offered once the address is confirmed', () {
+      authService.userEmail = 'someone@example.com';
+      authService.emailConfirmed = true;
+
+      viewModel.init();
+
+      expect(viewModel.state.value.pendingEmail, isEmpty);
+    });
+
+    test('is not offered when no address has been given', () {
+      authService.userEmail = null;
+
+      viewModel.init();
+
+      expect(viewModel.state.value.pendingEmail, isEmpty);
+    });
+  });
 }

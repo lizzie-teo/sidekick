@@ -39,12 +39,18 @@ language plpgsql
 -- be redirected at a different schema.
 security definer
 set search_path = public, auth, pg_temp
-as $$
+-- Named dollar tags, $fn$ and $job$ below, rather than bare $$.
+--
+-- The Supabase SQL editor parses a script before sending it, and its parser
+-- does not pair bare $$ correctly across a function body that also contains
+-- semicolons. It cuts the statement at the body's `end;`, appends its own
+-- trailer, and Postgres then reports an unterminated dollar-quoted string
+-- that is nowhere in this file. A distinct tag per body cannot be mispaired.
+as $fn$
 declare
   -- Tables whose rows mean "this account owns something", each of which has a
-  -- matching not exists clause in the delete below. Empty today: there are no
-  -- user tables yet, so every anonymous account genuinely owns nothing.
-  covered constant text[] := array[]::text[];
+  -- matching not exists clause in the delete below.
+  covered constant text[] := array['good_things'];
   uncovered text;
   deleted integer;
 begin
@@ -74,10 +80,10 @@ begin
     delete from auth.users u
     where u.is_anonymous is true
       and u.created_at < now() - interval '30 days'
-      -- One clause per table in `covered`. Phase 1 adds:
-      -- and not exists (
-      --   select 1 from public.good_things g where g.user_id = u.id
-      -- )
+      -- One clause per table in `covered`.
+      and not exists (
+        select 1 from public.good_things g where g.user_id = u.id
+      )
     returning u.id
   )
   select count(*) into deleted from removed;
@@ -86,7 +92,7 @@ begin
 
   return deleted;
 end;
-$$;
+$fn$;
 
 -- Nobody calls this from the app. Only the scheduler runs it, so no role is
 -- granted execute on it.
@@ -106,7 +112,7 @@ where exists (
 select cron.schedule(
   'delete-stale-anonymous-users',
   '20 3 * * *',
-  $$select public.delete_stale_anonymous_users();$$
+  $job$select public.delete_stale_anonymous_users();$job$
 );
 
 -- check -- the job is registered

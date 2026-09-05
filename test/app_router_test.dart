@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:sidekick/app/core/app_constants.dart';
 
+import 'support/fakes.dart';
 import 'support/pump_app.dart';
 
 // The redirect, and the one thing anonymous sessions could easily break.
@@ -45,5 +46,29 @@ void main() {
 
       expect(router.state.uri.path, path);
     }
+  });
+
+  // Verifying a code changes hasAccount and nothing else -- everyone already
+  // has a session, so isAuthenticated never moves. A router listening to only
+  // the session left the user sitting on the verify screen after a correct
+  // code, where pressing Verify again spent a code that was already gone.
+  testWidgets('an email arriving moves the user off the verify screen',
+      (tester) async {
+    final authState = FakeAuthStateService(isAuthenticated: true);
+
+    final router = await pumpApp(tester, authStateService: authState);
+
+    // go, not push: the redirect has to reconsider the location the user is
+    // standing on, not a route sitting on a stack above it.
+    router.go(Routes.verify);
+    await tester.pumpAndSettle();
+
+    expect(router.state.uri.path, Routes.verify);
+
+    // What a verified code looks like from the router's side.
+    authState.setHasAccount(true);
+    await tester.pumpAndSettle();
+
+    expect(router.state.uri.path, Routes.home);
   });
 }
