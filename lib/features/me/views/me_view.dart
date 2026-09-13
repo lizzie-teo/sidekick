@@ -96,8 +96,12 @@ class _MeViewState extends State<MeView> {
                             clipBehavior: Clip.antiAlias,
                             padding: const EdgeInsets.only(top: 6),
                             child: Image.asset(
-                              'assets/images/panda.png',
+                              'assets/images/panda-ok.png',
                               fit: BoxFit.contain,
+                              // A missing drawing leaves the circle rather
+                              // than dropping a broken-image box into it.
+                              errorBuilder: (context, error, stack) =>
+                                  const SizedBox.shrink(),
                             ),
                           ),
                           title: 'Mochi',

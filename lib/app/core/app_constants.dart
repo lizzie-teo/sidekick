@@ -21,10 +21,33 @@ abstract class Routes {
   static const String meditate = '/meditate';
   static const String me = '/me';
 
-  // The centre slot of the tab bar. It opens the feeling picker rather than
-  // the breathing, because the sidekick reacts to the face that was picked,
-  // so the pick has to happen first. Built in phase 4.
+  // The feeling picker. Reached from the Home CTA, which is the unhurried
+  // door: someone tapping "Tap me" has room for a question.
+  // The centre slot of the tab bar deliberately does not come here.
   static const String panic = '/panic';
+
+  // The guided breathing, and what the panic button in the tab bar opens
+  // directly. A child path of the picker because that is still one way in,
+  // but not the only one -- a back gesture from here lands wherever the user
+  // came from, which is the point of pushing it.
+  static const String breathe = '/panic/breathe';
+
+  // "What's happening in your body?" -- its own screen, reached from the
+  // picker's "Can't cope right now" and from nowhere else. It explains the
+  // sensation that was picked and then hands over to the breathing.
+  //
+  // The tab-bar panic button never comes here. It is pressed instead of
+  // waiting, and a question in front of relief is a gate.
+  static const String body = '/panic/body';
+
+  // Which sensation was picked on the body screen, carried to the breathing
+  // as `?sensation=<Sensation.name>`. The script's opening then explains that
+  // sensation instead of the general words.
+  //
+  // A query parameter rather than `extra` so the pick survives a restored
+  // route; the plain path -- no parameter, or one that names nothing -- is
+  // the general script, which is the safer thing to land on by accident.
+  static const String sensationQuery = 'sensation';
 
   // The four tab destinations, in bar order. The panic button is the fifth
   // slot but is not a tab: it is a route the tabs sit behind, not beside.

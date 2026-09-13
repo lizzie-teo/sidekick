@@ -6,7 +6,7 @@ void main() {
   testWidgets('shows the home scene', (tester) async {
     await pumpApp(tester, isAuthenticated: true);
 
-    expect(find.text('Tap me when you need me'), findsOneWidget);
+    expect(find.text('Tap me'), findsOneWidget);
     expect(find.text('Meditate'), findsWidgets);
   });
 

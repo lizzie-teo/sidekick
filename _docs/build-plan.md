@@ -302,6 +302,17 @@ end.
 | 4.3 | Breathing, counted — three breaths, Next advances the text |
 | 4.4 | Sensation picker — four sensations and Skip |
 | 4.5 | Sensation explained — one script each, then back to the breath |
+
+The words read over the breathing, and the rules for both doors into it, are
+in `_docs/affirmation-flow.md`.
+
+**Built in the other order.** 4.4 and 4.5 are one screen (`BodyView`) and it
+runs *before* 4.3, not after it — but only on the picker's path. Asking first
+turned out to be free there: somebody who reached the picker has already
+stopped and read a screen. The tab-bar panic button skips 4.4 and 4.5 entirely
+and opens on 4.3, because that button is pressed instead of waiting. Splitting
+the two doors is what let the question stop being a gate.
+
 | 4.6 | Softening lines — the counter is gone by now |
 | 4.7 | Encouraging words — nine lines, tap to continue |
 | 4.8 | Ground — five lines, then the two exits |

@@ -526,8 +526,220 @@ page scrolls under the glass, and each page keeps
 stays reachable. A bar in the shell would sit outside the inner Navigator that
 animates between routes and could do neither.
 
-The panic button opens the feeling picker, not the breathing: the sidekick
-reacts to the face that was picked, so the pick has to happen first.
+The panic button opens the **breathing**, not the feeling picker. It is
+pressed by someone who could not wait, and a question in front of the pacer is
+a gate. The picker is still there behind the Home CTA, which is the unhurried
+door and the only way to the three Play faces.
+
+The words themselves, the order they are read in and the rules behind both
+flows are written out in `_docs/affirmation-flow.md`. That document is the
+one to argue with; this section is the mechanics.
+
+**"Can't cope right now" and the panic button are two different flows.** They
+end on the same breathing screen, and nothing else about them is shared:
+
+| Door | Goes to | Asks "What's happening in your body?" |
+| --- | --- | --- |
+| The panic button in the tab bar | `Routes.breathe` | No |
+| "Can't cope right now" on the picker | `Routes.body` | Yes |
+
+The tab-bar button is pressed instead of waiting, so the pacer starts and the
+general words open the moment the lead-in ends. Nothing is put in front of
+them.
+
+The picker's door has already cost the user a screen and a choice, so a
+question there is not in anybody's way. `BodyView` asks it, on its own, with
+the sidekick idling rather than pacing:
+
+```
+Picker -> Can't cope right now
+            -> BodyView: "What's happening in your body?"
+                 -> a tile   -> Routes.breathe?sensation=<name>
+                 -> "Skip this" -> Routes.breathe
+```
+
+**The tap is the navigation.** Nothing is read on `BodyView` itself -- it has
+no viewmodel, because it holds no state. The tapped tile rides along to the
+breathing, and its two lines open the script there once the lead-in and the
+counted breaths are done. Naming the sensation and then sitting with it on a
+still screen would be noticing without settling: noticing the body is the
+opposite of avoiding it, but noticing on its own feeds the loop -- feel the
+heart thump, read it as danger, produce more adrenaline. The answer comes
+over the pacer, where the settling is.
+
+Both ways off `BodyView` lead to the breathing. It is a `pushReplacement`, so
+closing the breathing puts the user back on the picker rather than back on a
+question they have answered.
+
+`BreathingView.sensation` is the only thing the two doors change, and all it
+decides is the script's opening: the picked sensation's two lines
+(`Sensation.script`), or the general pair for everyone else -- the tab-bar
+button, "Skip this", a restored route. The script is ten lines either way,
+and the words the reader gets always belong to the tile they tapped. It is a
+query parameter (`Routes.sensationQuery`) so the pick survives a restored
+route, and unset -- the general script -- is the default, which is the safer
+thing to land on by accident.
+
+The answer is never stored and never compared across sessions. Logging it
+would turn normalising into monitoring, which feeds the fear it is there to
+settle.
+
+The startle from the animation brief is **deliberately not built**. In its
+place is a seven-second lead-in -- "I'm here." / "Let's breathe together." /
+"Ready..." -- so the first breath starts on a boundary rather than in the
+middle of one. A tap anywhere skips it.
+
+The beats are held long on purpose. They are read by someone whose attention
+is poor, and a line that is gone before it is taken in is worse than no line:
+it reads as the screen rushing them. The holds live in
+`BreathingViewModel.leadIn` and nowhere else.
+
+**The animation is the clock, and it says so out loud.** `assets/rive/character.riv`
+carries two custom trigger properties, `inhale` and `exhale`, keyed on the
+`Breathe` timeline and bound out to the `Character` view model. `SkCharacter`
+listens to them; nothing in Dart holds a breath timer.
+
+| Frame (of 480 at 48fps, 10.0s) | Trigger | Means |
+| --- | --- | --- |
+| 0 | `inhale` | a breath starts -- and, on every loop after the first, the one before it has just ended |
+| 186 (3.9s) | `exhale` | the out-breath starts |
+
+**The pace is set by the timeline's `fps`, not by its length.** Six breaths a
+minute wants a 10-second breath, and the obvious way there is 600 frames with
+`exhale` moved to 240. It is the wrong way: the editor cannot read trigger
+keyframes back, so their frames cannot be remapped with everything else and
+`exhale` would be left behind at 186. Dropping `fps` from 60 to 48 stretches
+480 frames to exactly 10.0s and moves nothing -- 3.875s in, 6.125s out, which
+is the 4-and-6 the evidence asks for to within an eighth of a second. `fps`
+here is the timeline's own rate for interpolating keyframes, not a render
+rate, so nothing about the drawing gets coarser.
+
+**The breath is counted in `onInhale`, not `onExhale`.** The timeline loops, so
+frame 0 is the only instant where a whole breath has actually been taken. An
+out-breath is the middle of a breath; counting there moved the number while
+the user was still breathing out. `BreathingState.hasInhaled` skips the very
+first one, which opens breath one rather than closing breath zero.
+
+They were declared on the view model but **never fired**, so the counter never
+moved and the script never opened in the real app -- tests passed throughout
+because they call `onInhale`/`onExhale` by hand. Anything added to that
+timeline must keep those two keys, or the screen goes silent again with
+nothing to show for it.
+
+**A trigger is keyed on its `fire` property, not on `propertyvalue`.** Each
+custom trigger in the `Breath` property group is an object with two keys:
+`fire` (869) and `propertyvalue` (870). Only `fire` is the one a timeline
+keyframe goes on. `propertyvalue` is what the data bind reads -- the two
+triggers are bound **out** (`toSource`) to `Character.inhale` and
+`Character.exhale` on key 870, and that half was right all along. Keying 870
+instead of 869 writes a keyframe that changes nothing, which is exactly how
+this stayed broken through a whole session: every read-back said the write
+had succeeded.
+
+**The only proof is the running app.** The editor's read-back cannot show a
+trigger firing, and the widget tests call `onInhale`/`onExhale` directly, so
+neither can tell a live trigger from a dead one. Verified on 13 September 2026
+by running on the simulator and watching the counter reach "Breath 2 of 2" and
+hand the line over to the words. Anything that touches the `Breathe` timeline
+has to be checked the same way.
+
+**Any editor session deletes the trigger keys, so Claude re-adds them before
+every export -- unprompted.** This is not a risk, it is what happens: editing
+other triggers (the twitch and jump work did it on 13 September 2026) silently
+removed the `inhale`/`exhale` keyframes from the `Breathe` timeline, and no
+read-back can show whether they survived, because the editor cannot list
+trigger keyframes at all. So the rule is re-add, not check. Whenever a session
+has touched `character.riv` in the Rive editor, before exporting: write the
+two keys again -- `inhale` `fire` (869) at frame 0, `exhale` `fire` (869) at
+frame 186, hold interpolation, on the `Breathe` timeline -- confirm the two
+`toSource` binds on key 870 still point at `Character.inhale` and
+`Character.exhale`, then export, copy to `assets/rive/character.riv`, and QA
+on the simulator. The file stays single on purpose: a separate "breathing
+copy" was considered and rejected, because the home character and the pacer
+would drift apart.
+
+**The breathing screen says one thing at a time, in one place.** One band of
+text does three jobs in turn, and the reader is never given two blocks to
+choose between:
+
+| Stage | What the band holds | Counter |
+| --- | --- | --- |
+| Lead-in | The three beats | No |
+| The counted set | `inhaleCue` / `exhaleCue`, `countedBreaths` breaths | Yes |
+| After it | The script, one line per Next | No |
+
+The words **take the cue's own line** rather than opening a block under her.
+Two things to read at the peak of a panic attack is one too many, and a block
+that appears below her would push her up the screen.
+
+The cue keeps being updated under the words even though nothing shows it. It
+is the pacer reporting, not the screen deciding, and stopping it would mean
+the line was wrong the moment the words ran out.
+
+**The sidekick must never shift.** She is the thing the user is breathing
+with; one that slides when a long line arrives has moved while they were
+trying to match her. Both screens are built so she cannot:
+
+- On the breathing screen every band except hers is a **fixed height** -- the
+  text band, the counter's band after the counter has gone, and both button
+  bands from the first frame. Her `Expanded` is therefore the same box at
+  every moment. Long text scrolls inside its band rather than growing it.
+- On the body screen she takes a **fixed share of the screen height**, not
+  whatever the question leaves her. The question and its tiles scroll below
+  her, so a short phone clips the list rather than squeezing her.
+
+Adding a row to either screen means taking the height out of one of those
+bands, not out of her.
+
+**The script is ten lines and it ends by saying so.** Four groups --
+`generalOpening` (or the sensation's own two lines), `softening`,
+`encouraging`, `closing` -- in `breathing_script.dart`, and the whole set is
+deliberately short. Working memory is measurably impaired during panic, which
+is why written coping cards work at all: they stand in for recall that is not
+available. A panic attack peaks inside ten minutes, so a script long enough to
+outlast the peak is one most people abandon in the middle. Length is the
+failure mode here, never brevity.
+
+**The closing must not congratulate.** "You did it" is a score, and somebody
+still panicking has then failed a test. The pair says the time has passed and
+removes the deadline, and nothing anywhere on this screen reports how it went.
+
+**The way out is three doors, and none of them is the wrong kind of leaving.**
+Leaving mid-panic must never read as failing, so no single door is made to
+carry every reason for going:
+
+| Door | Where | Says |
+| --- | --- | --- |
+| The X | Top-left, from the first frame | "abandon this" |
+| "That's enough for now" | A ghost button at the bottom, from the end of the lead-in | "I am going" |
+| "I'm alright now" | The outline button, on the last line only | "I am well enough to go" |
+
+Next used to simply vanish on the last line and leave the screen sitting
+there, which is a script that stopped rather than one that finished. It now
+changes label instead, and its band is the same height either way, so she
+still does not move.
+
+**The ghost button is off during the lead-in, and that is not a style
+choice.** A tap anywhere skips the lead-in, so a button at the bottom of the
+screen would swallow that tap -- somebody aiming low to skip would leave
+instead. Seven seconds with only the X is the lesser harm. It is on for
+everything after, the counted set included: that stage has no other control
+on purpose, but an exit is a door rather than a task.
+
+**Its label may not claim the session worked and may not read as quitting.**
+"That's enough for now" says the reader decided, and claims nothing about how
+they feel, so somebody still panicking can press it honestly. "Skip" or
+"Stop" would make leaving a failure; "I'm alright now" would be a lie
+anywhere but the last line.
+
+**The last thing said before the first breath is an instruction, not a beat.**
+`BreathingViewModel.leadIn` ends on "Small breaths. Not deep ones." Big
+chest-expanding breaths are what hyperventilation looks like: stretching the
+in-breath drops carbon dioxide and produces more breathlessness, dizziness and
+tingling -- the exact sensations the ten lines then explain away. It is the
+one sentence in the flow with a randomised trial behind it, and it is said
+once and never repeated. Nothing on this screen may ever say "deep breath".
+`_docs/affirmation-flow.md` holds the evidence.
 
 ## Not yet wired up
 
@@ -558,3 +770,19 @@ Deliberately absent -- do not add without being asked:
 When presenting implementation plans, **do not show code examples**. Use tables,
 sequence and architecture diagrams, bullet lists, and prose. Focus on
 architecture and design concepts, not implementation details.
+
+## The plan and the briefs are drafts, not orders
+
+`_docs/build-plan.md`, `_docs/briefs/` and `_docs/design-guidelines/` record
+decisions taken so far. They are not fixed and they are not complete. Screens,
+copy and flows in them are a starting point to argue with.
+
+So when a request touches one of them:
+
+- Say what the doc currently says, and where it says it.
+- Say whether you think it is right, and why, in your own judgement.
+- Name the risk or the trade-off you can see, even when you agree.
+- Bring alternatives worth considering, not just the one already written down.
+
+Do not treat "the plan says so" as the end of the discussion. The point of
+asking is to work out what is right, not to confirm what was written.

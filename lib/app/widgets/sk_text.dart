@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 
-// The named type scale from the UI kit. Baloo 2 is display only; everything
-// read as chrome is Nunito. Colour is applied at the use site with copyWith,
+// The named type scale from the UI kit. Lexend everywhere; display styles
+// keep their own name so a decorative face can come back as one change here.
+// Colour is applied at the use site with copyWith,
 // because the right colour depends on the surface the text sits on.
 abstract final class SkText {
-  static const String display = 'Baloo 2';
-  static const String body = 'Nunito';
+  static const String display = 'Lexend';
+  static const String body = 'Lexend';
 
   // Large screen titles ("Me").
   static const TextStyle largeTitle = TextStyle(

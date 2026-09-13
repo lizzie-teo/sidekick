@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
+import 'package:sidekick/app/core/app_constants.dart';
 import 'package:sidekick/app/core/device_settings_service.dart';
 import 'package:sidekick/app/core/logger_service.dart';
 import 'package:sidekick/app/core/service_locator.dart';
+import 'package:sidekick/app/widgets/sk_character.dart';
+import 'package:sidekick/app/widgets/sk_character_glow.dart';
 import 'package:sidekick/app/widgets/sk_colors.dart';
 import 'package:sidekick/app/widgets/sk_invite_card.dart';
 import 'package:sidekick/app/widgets/sk_main_tab_bar.dart';
 import 'package:sidekick/app/widgets/sk_primary_button.dart';
 import 'package:sidekick/app/widgets/sk_scene_panel.dart';
-import 'package:sidekick/app/widgets/sk_sidekick.dart';
 import 'package:sidekick/app/widgets/sk_soft_button.dart';
 import 'package:sidekick/app/widgets/sk_text.dart';
 import 'package:sidekick/features/dashboard/viewmodels/dashboard_viewmodel.dart';
@@ -63,7 +66,17 @@ class _DashboardViewState extends State<DashboardView> {
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const SkSidekick(),
+                        // The sidekick, drawn live by the Rive runtime. The
+                        // artboard carries her behaviour: she idles quietly,
+                        // her ears twitch when tapped, and tapping her body
+                        // starts a full breathing cycle -- so the screen is
+                        // calm until the user reaches for her.
+                        // The soft green pool of light that says where
+                        // she is standing. Decoration only -- it does
+                        // not change her size.
+                        const SkCharacterGlow(
+                          child: SkCharacter(height: 280),
+                        ),
                         const SizedBox(height: 14),
                         ConstrainedBox(
                           constraints: const BoxConstraints(maxWidth: 280),
@@ -85,11 +98,12 @@ class _DashboardViewState extends State<DashboardView> {
                         ),
                         const SizedBox(height: 28),
                         SkPrimaryButton(
-                          label: 'Tap me when you need me',
+                          label: 'Tap me',
                           compact: true,
-                          // The panic flow. Not built yet, so the button
-                          // holds its place without doing anything.
-                          onPressed: () {},
+                          // The way into the panic path: the feeling picker,
+                          // not the breathing. Pushed, so "Just looking"
+                          // comes straight back to Home.
+                          onPressed: () => context.push(Routes.panic),
                         ),
                       ],
                     ),

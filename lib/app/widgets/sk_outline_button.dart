@@ -11,21 +11,27 @@ class SkOutlineButton extends StatelessWidget {
   final String label;
   final VoidCallback? onPressed;
 
+  // Ink is right on the canvas and invisible on the scene gradient, so a
+  // screen sitting on the green hands in its own foreground colour -- the
+  // same escape hatch SkTextButton has, for the same reason.
+  final Color? color;
+
   const SkOutlineButton({
     super.key,
     required this.label,
     required this.onPressed,
+    this.color,
   });
 
   @override
   Widget build(BuildContext context) {
-    final SkColors sk = context.sk;
+    final Color fg = color ?? context.sk.ink;
 
     return SkDisabled(
       isDisabled: onPressed == null,
       child: SkPressable(
         onPressed: onPressed,
-        wash: sk.ink,
+        wash: fg,
         borderRadius: BorderRadius.circular(999),
         child: Container(
           constraints: const BoxConstraints(minHeight: 56),
@@ -34,9 +40,13 @@ class SkOutlineButton extends StatelessWidget {
           alignment: Alignment.center,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(999),
-            border: Border.all(color: sk.ink, width: 1.5),
+            border: Border.all(color: fg, width: 1.5),
           ),
-          child: Text(label, style: SkText.button.copyWith(color: sk.ink)),
+          child: Text(
+            label,
+            textAlign: TextAlign.center,
+            style: SkText.button.copyWith(color: fg),
+          ),
         ),
       ),
     );

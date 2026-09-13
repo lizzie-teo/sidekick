@@ -1,208 +1,222 @@
-# Handoff — phase 1 done, 5 September 2026
+# Handoff — the panic path, 13 September 2026 (second pass)
 
-Phase 1 of `_docs/build-plan.md` is built. `dart analyze` is clean and
-`flutter test` is **115 green** (58 before). The whole phase was tapped
-through on the iOS simulator.
+Phase 4 of `_docs/build-plan.md` is part built. `flutter analyze` is clean and
+`flutter test` is **158 green**.
 
-Phase 0's handoff is in git history if the anonymous-session design needs
-re-reading; the parts that still matter are folded into `CLAUDE.md`.
+The phase 1 handoff and the first phase 4 one are both in git history. The
+parts that still matter are folded into `CLAUDE.md`.
 
-## Run it before anything else
+**Read `_docs/affirmation-flow.md` first.** It is the working document for the
+whole panic path: the rules for both flows, the numbers, and the six decisions
+taken on 13 September. Four of them are now built; two are not, and both of
+the two are Rive work.
 
-Both migrations are already applied to the Supabase project. On a fresh
-project, run them in this order:
-
-1. `_supabase/migrations/20260905_1400_good_things.sql` — the table and its
-   four policies.
-2. `_supabase/migrations/20260905_1030_anonymous_account_cleanup.sql` — it now
-   lists `good_things` in `covered`. Until it is run, the nightly job sees a
-   user table it does not check, deletes nothing and logs a warning. That is
-   the guard doing its job, not a bug.
-
-Then:
+## Run it
 
 ```
 flutter run -d "iPhone 17 (1)" --dart-define-from-file=env.json
 ```
 
-## What landed
+Nothing new in Supabase. No migration to apply.
 
-| Step | What | Where |
+## The job for the next chat
+
+The Rive half of decisions 2 and 3. Neither touches Dart words.
+
+| # | Change | Where | Doc section |
+| --- | --- | --- | --- |
+| 1 | Make the glow breathe, and drop the in/out cue | `SkCharacterGlow`, `BreathingViewModel` | Decision 3 |
+
+The retime is done. Decision 3 is the last piece.
+
+### The breathing glow
+
+`SkCharacterGlow` paints a constant soft green pool behind her. It should grow
+on the in-breath and shrink on the out-breath, driven by the same two triggers
+the counter uses. Apple Watch Breathe is the reference — petals opening and
+closing, no words at all.
+
+Three rules, so it stays a pacer and not a decoration:
+
+1. **Legible without looking at it.** Peripheral vision is what is left at the
+   peak. Size and softness change; hue does not.
+2. **Never flashes or snaps.** Same ease as her belly.
+3. **Reduce Motion holds it still**, like `SkAnimatedImage` already does.
+
+When it lands, `inhaleCue` and `exhaleCue` come off the screen — the glow is
+the pacer and a line repeating "in" and "out" every few seconds is the second
+thing to read on a screen that should only ever have one. The viewmodel still
+tracks the cue; only the view stops showing it.
+
+**Keep the anti-hyperventilation line.** "Small breaths. Not deep ones." is
+said once, in the lead-in, and is not a cue. It stays.
+
+## What landed in the second half of this session
+
+### The breath is 10 seconds, at six a minute
+
+Decision 2, built — but **not** the way the decision described it.
+
+The obvious route was 600 frames with `exhale` moved to frame 240. It does not
+work: the editor cannot read trigger keyframes back, so `inhale` and `exhale`
+cannot be remapped along with the other 172 keyframes, and `exhale` would be
+left at 186 while the drawing moved on.
+
+Instead the timeline's **`fps` dropped from 60 to 48**. 480 frames at 48fps is
+exactly 10.0s and nothing on the timeline moves.
+
+| | Was | Is |
 | --- | --- | --- |
-| 1.1 | The table | `_supabase/migrations/20260905_1400_good_things.sql` |
-| 1.2 | Row-level security, four policies | same file |
-| 1.3 | `GoodThingModel` | `lib/data/models/entities/good_thing_model.dart` |
-| 1.4 | `GoodThingsService` | `lib/data/services/good_things_service.dart` |
-| 1.5 | Three good things — the entry form | `lib/features/good_things/views/good_things_view.dart` |
-| 1.6 | History, grouped by day, newest first | `.../views/good_things_history_view.dart` |
-| 1.7 | A pre-filled first line from elsewhere | `.../models/good_things_arguments.dart` |
-| 1.8 | The account offer, once, after the first save | `.../widgets/good_things_account_offer.dart` |
-| 1.9 | Browse by month | `GoodThingsHistoryViewModel.showMonth()` |
-| 1.10 | Warm totals | `GoodThingsHistoryView._totalLine()` |
-| 1.11 | A year ago today | `.../widgets/good_things_year_ago_card.dart` |
-| 1.12 | The quiet "no email on this account" line | top of History |
+| Breath | 8.0s | **10.0s** |
+| In | 3.1s | **3.9s** |
+| Out | 4.9s | **6.1s** |
+| Rate | 7.5 / min | **6.0 / min** |
 
-Two supporting pieces: `lib/app/utilities/date_format_utils.dart` (Today,
-Yesterday, 5 September 2025) and `GoodThingsDay`, which folds a month into
-days once in the viewmodel rather than on every scroll frame.
+Measured on a device by screenshotting every 0.35s and hashing the text band:
+3.9s in, 6.2s out, first word at 31.2s.
 
-`GoodThingsService` is registered in `service_locator.dart`, not in
-`GoodThingsModule`. Three other features will write to this table, so a
-feature-owned service would mean deleting Good things breaks them.
+`fps` is the timeline's own rate for interpolating keyframes, not a render
+rate. The drawing is no coarser.
 
-The full reasoning is in the **Good things** section of `CLAUDE.md`.
+### The lead-in is 11 seconds
 
-## Three decisions worth knowing about
+It read as rushing. The cause is that **a hold is not the time a line is
+legible**: the band crossfades over 400ms at each end, so about 0.8s of every
+beat is half-transparent text. The five-word third beat had the shortest
+reading time of the three.
 
-### The RLS policies do not test `is_anonymous`
+| Beat | Was | Is |
+| --- | --- | --- |
+| "I'm here." | 2.2s | 3.0s |
+| "Let's breathe together." | 2.2s | 3.5s |
+| "Small breaths. Not deep ones." | 2.6s | 4.5s |
 
-Step 1.2 says "checking `is_anonymous` where it matters". It was checked, and
-it matters that it is **left out**: everyone saves from first open, so a
-policy requiring a real account would silently block every save until the user
-gave an email — the gate this product decided against. `auth.uid() = user_id`
-does all the work, for anonymous and real accounts alike.
+Slow is affordable because one tap anywhere skips the whole thing.
 
-The trap the comment in the migration warns about is `to authenticated`, which
-tests nothing on its own: anonymous users hold that role too.
+### Box breathing was considered and rejected
 
-### The account offer counts a swipe as an answer
+4-4-4-4 is the wrong tool during an attack: the holds raise CO2 and rising CO2
+is what trips the suffocation alarm panic patients are hypersensitive to; even
+in-and-out gives up the long exhale that does the calming; four states is too
+much to track on impaired working memory; and she would stand still through
+both holds, which reads as the app breaking. The full argument is in
+`_docs/affirmation-flow.md`. It belongs on **Meditate**, not here.
 
-Swiping the sheet away sets the same flag as "Not now". Asking again on the
-next save would make "once" a lie, and the sheet has already said everything
-it has to say. The standing door is the Me tab, which is not gated on the flag.
+### The trigger keyframes were lost once, in the editor
 
-### The offer sheet is deliberately not awaited
+`inhale` and `exhale` were keyed, verified working, and then **were not in the
+file** when it was next exported — an editing session in the Rive editor did
+not keep them. They were re-added and re-verified.
 
-`AsyncButton` is in flight until the method it runs returns, so awaiting the
-sheet left Save spinning behind the offer. Blocking repeat taps is the
-button's job while the **save** runs, and by then the save is done. There is
-an `unawaited()` and a comment on it in `good_things_view.dart`.
+Treat this as a standing hazard: **after any session in the Rive editor, run
+the app and watch the counter.** Nothing else can tell you. `queryKeyFrames`
+does not list trigger keyframes at all, so "I checked and they are there" is
+not a thing that can be said from inside the editor.
 
-## Verified by hand on the simulator
+## What landed in the first half of this session
 
-Both migrations are in, and the whole of phase 1 was tapped through on the
-iOS simulator: first save, the account offer, "Not now" being final, History
-with its month arrows and warm total, the quiet no-email line, and attaching
-an email end to end.
+### The Rive triggers actually fire now
 
-## Three auth bugs found while testing, all fixed
+This was the blocker, and it is fixed and **verified on a device**.
 
-Anonymous sessions broke three assumptions that were fine while signing in
-created a session. None of them are phase 1 code; all three sat in the
-account flow and only showed up on a real device.
+The previous session added a `Breath` property group and bound both triggers
+out to the `Character` view model. That half was right. What was missing was
+the keyframes, and the reason they never landed is worth writing down:
 
-### "Has an account" counted an address that had only been typed
+**A trigger is keyed on its `fire` property (key 869), not `propertyvalue`
+(key 870).** `propertyvalue` is the key the data bind reads. A keyframe on it
+writes something that changes nothing, and every read-back — the editor's and
+the MCP tools' — still reports success.
 
-Supabase writes the address onto the account the moment it is submitted and
-stamps `email_confirmed_at` only when the code is entered. The old rule
-counted the first as an account -- so the app claimed the data was safe when
-it was not, and the router threw the user off `/verify` before they could
-finish.
+Added to `Breathe`, and this is the whole fix:
 
-The rule lived in `AuthService` and `AuthStateService` as a copy each, and the
-copies drifted. It is now one function, `userHasAccount(User?)`, called by
-both. `signInWithOtp()` branches on it too, rather than on `isAnonymous` --
-attaching an address clears `is_anonymous` immediately while leaving it
-unconfirmed, so someone correcting a typo was neither anonymous nor finished
-and went down the sign-in path with the wrong email template.
+| Object | Property | Frame | Value |
+| --- | --- | --- | --- |
+| `inhale` | `fire` (869) | 0 | true, hold |
+| `exhale` | `fire` (869) | 186 | true, hold |
 
-### A correct code left the user sitting on the verify screen
+`assets/rive/character.riv` re-exported, 34,872 → 34,901 bytes. The previous
+file is kept only in this session's scratchpad, not in git.
 
-Two faults on top of each other:
+**How it was verified, and how to verify it again.** Neither the editor nor
+the tests can tell a live trigger from a dead one: the editor cannot show a
+trigger firing, and the widget tests call `onInhale`/`onExhale` by hand. The
+only proof is the running app.
 
-1. The router's `refreshListenable` was `isAuthenticated` alone, but the
-   redirect reads `hasAccount`. Verifying changes only `hasAccount`, so the
-   router never looked again. It is now `AuthStateService.changes`, which
-   merges both.
-2. `go_router` does **not** re-run its redirect over an imperatively pushed
-   route when the refreshListenable fires, and `/verify` is reached with
-   `push`. So even the corrected trigger could not have moved anyone.
+1. Temporarily set `initialLocation` in `app_router.dart` to `Routes.breathe`
+   (`--route` does not work; go_router ignores the platform initial route).
+2. `flutter run` on the simulator.
+3. `xcrun simctl io booted screenshot` every 2.5s for half a minute.
+4. The cue must flip to "And slowly out.", the counter must reach
+   "Breath 2 of 2", and the words must take the line.
+5. Put `initialLocation` back.
 
-`VerifyView` therefore navigates on success now, with
-`context.go(Routes.home)`. The old comment saying it deliberately does not is
-gone -- that was right only while signing in created a session.
+Before the fix the counter sat on "Breath 1 of 2" forever and the cue never
+left "In through your nose.", while she breathed perfectly — the `Breathe`
+timeline was always running, so a moving sidekick proves nothing.
 
-The symptom was ugly: nothing happened, the user pressed Verify again, and was
-told the code had expired. It had. They had just spent it on the press that
-worked.
+### The five Dart changes
 
-### No way back to a code already sent
+| # | Change | Where |
+| --- | --- | --- |
+| 1 | `countedBreaths` 3 → 2 | `viewmodels/breathing_viewmodel.dart` |
+| 2 | Lead-in beat 3: "Ready…" → "Small breaths. Not deep ones." | `BreathingViewModel.leadIn` |
+| 3 | Script cut, 16 lines → 8 | `models/breathing_script.dart` |
+| 4 | `BreathingScript.closing`, the two closing lines | `models/breathing_script.dart` |
+| 5 | Next becomes "I'm alright now" on the last line | `views/breathing_view.dart` |
+| 6 | A ghost exit, "That's enough for now" | `views/breathing_view.dart`, `BreathingState.showsExit` |
 
-Leaving the verify screen stranded the user for the length of the resend
-cooldown while holding a code that still worked. `/connect` now shows "I
-already have a code for ..." whenever `pendingEmailOf(User?)` finds an address
-waiting, and it also has a back arrow, which it never had.
+The lead-in is still 7.0s. The beats were rebalanced to 2.2s / 2.2s / 2.6s
+rather than lengthened, because the longest sentence should hold longest and
+that is now the third beat.
 
-`ConnectView` `await`s its push to `/verify` and re-runs `init()` afterwards.
-It stays mounted underneath while the verify screen is open, so nothing on it
-rebuilds during the one moment the pending address appears.
+Which lines were cut, and why, is written out under decision 6 in
+`_docs/affirmation-flow.md`.
 
-## Two things about testing on a simulator
+### The screen has three ways out
 
-Neither is a bug. Both cost an hour today.
+Leaving mid-panic must never read as failing, so no one door carries every
+reason for going.
 
-**The Keychain survives deleting the app.** The session is stored there on
-purpose, so `simctl uninstall` clears the settings but leaves the user signed
-in -- including as a user that has since been deleted in Supabase, which looks
-signed in until the token needs refreshing. Sign out from the Me tab to clear
-it properly.
+| Door | Where | Says |
+| --- | --- | --- |
+| The X | Top-left, from the first frame | "abandon this" |
+| "That's enough for now" | Ghost button at the bottom, from the end of the lead-in | "I am going" |
+| "I'm alright now" | Outline button, last line only | "I am well enough to go" |
 
-**The Supabase SQL editor mangles bare `$$`.** Its parser cuts a function body
-at the first `end;`, appends its own trailer and produces "unterminated
-dollar-quoted string" pointing at a line that is fine. Named tags (`$fn$`,
-`$job$`) cannot be mispaired, and the cleanup migration now uses them.
+The ghost button is **off during the lead-in**, and that is the one thing not
+to change casually: a tap anywhere skips the lead-in, so a button at the
+bottom would swallow it and somebody aiming low to skip would leave instead.
+It is on for the counted set, which has no other control on purpose — an exit
+is a door rather than a task.
 
-## Known and outstanding
+Its band is 44 high and reserved from the first frame, like every other band
+except hers.
 
-**Email to iCloud addresses does not arrive.** Supabase reports the send as
-`200` and Brevo spends three seconds on it; gmail addresses receive the code
-and `lizzie.teo@icloud.com` never did, junk folder included. It is a sender
-reputation problem -- SPF and DKIM on the Brevo sending domain -- not the app
-and not the template. Plenty of users will be on iCloud, so this has to be
-sorted before release.
+### Six tests were added
 
-## Still open from phase 0
+`test/breathing_viewmodel_test.dart` now pins the script's shape: that it ends
+on the closing pair, that the last line is where the named way out appears,
+and that it is ten lines (eight after the body screen). Three more pin the
+ghost exit: off during the lead-in, on for the counted set, still on at the
+last line. One existing test was counting two literal breaths and now counts
+`countedBreaths - 1`.
 
-1. ~~**The third email template.**~~ Done. All three templates use
-   `{{ .Token }}`, and "Confirm email" is switched on.
-2. **Turnstile on `signInAnonymously()`.** `TODO(launch)` in `auth_service.dart`.
-   Required before release, not before then.
-3. **SPF and DKIM for the Brevo sender**, per the iCloud problem above.
-   Required before release.
+## Known gaps
 
-Anonymous sign-ins are on. The cleanup job is scheduled and its dry run
-returns 0.
-
-## The one decision still needed
-
-**Does the journal's first layer move up?**
-
-The two-tap daily entry is the loop the retention research points at, and it
-currently sits in phase 7 behind everything else. The case for moving only
-layer 1 to sit after Meditate is in "Open decisions" in the build plan. The
-eleven scripts and the quiet screen stay in phase 7 either way.
-
-This needs an answer before phase 2 finishes.
-
-## Pick up here
-
-Phase 2 — Meditate, from `_docs/build-plan.md`. It is the MVP: the largest
-thing that needs no drawings, and it builds the breathing pacer that the panic
-path reuses.
-
-`lib/app/views/tab_placeholder_view.dart` now has one user left,
-`lib/features/meditate/`. Delete the file when phase 2 replaces it.
-
-The session-complete screen hands off to Good things with
-`GoodThingsArguments.open(context)` — that is what step 1.7 was built for.
-
-## Reading order for a new session
-
-1. `CLAUDE.md` — architecture, the MVVM contract, what is deliberately absent
-2. `_docs/build-plan.md` — the plan, the research and every decision
-3. `_docs/design-guidelines/Sidekick Wireframes.dc.html` — every screen
-4. `_docs/briefs/` — the two Rive briefs, for phase 8
-
-## To start the next chat
-
-> Read `_docs/handoff.md` and start phase 2.
+- **The glow does not breathe yet.** Decision 3. See the job above.
+- **The longest script line may not fit its band.** The words band is 160
+  high and scrolls. On one captured frame the first general-opening line was
+  showing only three of its five lines with no scroll affordance. Worth a look
+  before trusting long lines to scroll politely.
+- **The cue crossfade is still 400ms**, which is a snap next to a 10s breath.
+  Slowing it would make the swap ease like she does; it also eats legible
+  time, so it is a trade, not a free win.
+- **Neither bottom button was tapped on a device.** Both were seen on screen
+  at the right stage, and `isLastLine` / `showsExit` are covered by tests, but
+  the screenshot burst cannot tap. Worth one manual run to check both leave.
+- **Steps 4.8 to 4.10 of the build plan are not built:** Ground, crisis
+  resources, and the recap that pre-fills Good things.
+- **Play is untouched.** The three non-panic faces on the picker select and
+  then stop. Phase 5.
+- **`meditate` is still `tab_placeholder_view.dart`.**

@@ -14,7 +14,16 @@ class SkTextButton extends StatelessWidget {
   final String label;
   final VoidCallback? onPressed;
 
-  const SkTextButton({super.key, required this.label, required this.onPressed});
+  // Muted reads as quiet on the canvas but nearly vanishes on the scene
+  // gradient, so a screen that sits on the green hands in its own colour.
+  final Color? color;
+
+  const SkTextButton({
+    super.key,
+    required this.label,
+    required this.onPressed,
+    this.color,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -29,7 +38,7 @@ class SkTextButton extends StatelessWidget {
         child: Text(
           label,
           style: SkText.rowLabel.copyWith(
-            color: sk.muted,
+            color: color ?? sk.muted,
             fontSize: 15,
             fontWeight: FontWeight.w600,
           ),

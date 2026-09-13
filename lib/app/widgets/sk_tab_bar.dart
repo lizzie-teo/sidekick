@@ -189,10 +189,17 @@ class _PanicFab extends StatelessWidget {
             shape: BoxShape.circle,
             border: Border.all(color: ring, width: 6),
           ),
-          child: const Icon(
-            Icons.support,
-            size: 30,
-            color: Color(0xFFFFFFFF),
+          // Labelled like the four tabs are. It is the most important
+          // control on the bar and the only one that is an icon with no
+          // word under it, so without this a screen reader announces it as
+          // nothing at all.
+          child: Semantics(
+            label: 'Breathe with me',
+            child: const Icon(
+              Icons.support,
+              size: 30,
+              color: Color(0xFFFFFFFF),
+            ),
           ),
         ),
       ),

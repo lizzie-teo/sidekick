@@ -31,6 +31,12 @@ class SkColors extends ThemeExtension<SkColors> {
   final List<Color> scene;
   final Color onScene;
 
+  // The pool of light the sidekick stands in. A separate slot because the
+  // scene's own deepest stop is the colour already under her -- painting with
+  // it shows nothing. This one is a step darker than the whole gradient in
+  // light mode, and a step lighter in dark, so she lifts off either way.
+  final Color sceneGlow;
+
   const SkColors({
     required this.canvas,
     required this.surface,
@@ -48,6 +54,7 @@ class SkColors extends ThemeExtension<SkColors> {
     required this.panic,
     required this.scene,
     required this.onScene,
+    required this.sceneGlow,
   });
 
   static const SkColors light = SkColors(
@@ -67,6 +74,7 @@ class SkColors extends ThemeExtension<SkColors> {
     panic: Color(0xFFC2542A),
     scene: [Color(0xFFE6E6C8), Color(0xFFCFD9AE), Color(0xFFB6C795)],
     onScene: Color(0xFF33421F),
+    sceneGlow: Color(0xFF6E8C55),
   );
 
   static const SkColors dark = SkColors(
@@ -89,6 +97,7 @@ class SkColors extends ThemeExtension<SkColors> {
     panic: Color(0xFFC2542A),
     scene: [Color(0xFF54704A), Color(0xFF47603F), Color(0xFF3A5035)],
     onScene: Color(0xFFEEF3D9),
+    sceneGlow: Color(0xFF86A86A),
   );
 
   // The scene gradient ready to use as a decoration fill.
@@ -118,6 +127,7 @@ class SkColors extends ThemeExtension<SkColors> {
     Color? panic,
     List<Color>? scene,
     Color? onScene,
+    Color? sceneGlow,
   }) {
     return SkColors(
       canvas: canvas ?? this.canvas,
@@ -136,6 +146,7 @@ class SkColors extends ThemeExtension<SkColors> {
       panic: panic ?? this.panic,
       scene: scene ?? this.scene,
       onScene: onScene ?? this.onScene,
+      sceneGlow: sceneGlow ?? this.sceneGlow,
     );
   }
 
@@ -162,6 +173,7 @@ class SkColors extends ThemeExtension<SkColors> {
           Color.lerp(scene[i], other.scene[i], t)!,
       ],
       onScene: Color.lerp(onScene, other.onScene, t)!,
+      sceneGlow: Color.lerp(sceneGlow, other.sceneGlow, t)!,
     );
   }
 }

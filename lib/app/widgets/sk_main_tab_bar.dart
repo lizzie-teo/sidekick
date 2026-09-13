@@ -41,6 +41,16 @@ class SkMainTabBar extends StatelessWidget {
     router.go(path);
   }
 
+  // The panic route is pushed, not gone to, because it is not a tab: it opens
+  // over whichever tab the user was on, and closing it puts them back there
+  // rather than on Home.
+  void _push(BuildContext context, String path) {
+    final GoRouter? router = GoRouter.maybeOf(context);
+    if (router == null) return;
+
+    router.push(path);
+  }
+
   @override
   Widget build(BuildContext context) {
     return SkTabBar(
@@ -50,10 +60,11 @@ class SkMainTabBar extends StatelessWidget {
         if (index == selected) return;
         _go(context, Routes.tabs[index]);
       },
-      // The feeling picker, not the breathing. The sidekick reacts to the face
-      // that was picked, so the pick comes first. Built in phase 4; until then
-      // the route does not exist and the button is deliberately inert.
-      onPanic: () {},
+      // Straight into the breathing, with no question in front of it. This
+      // button is pressed by someone who could not wait, so the fastest thing
+      // it can do is start pacing. The feeling picker is still there behind
+      // the Home CTA, for the calmer arrival that has room for a question.
+      onPanic: () => _push(context, Routes.breathe),
     );
   }
 }

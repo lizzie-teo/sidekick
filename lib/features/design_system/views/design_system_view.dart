@@ -104,7 +104,7 @@ class DesignSystemView extends StatelessWidget {
 
               DesignSystemSection(
                 title: 'Type',
-                description: 'Baloo 2 for display, Nunito for everything else.',
+                description: 'Lexend for everything, display and body.',
                 children: [
                   Text('Me', style: SkText.largeTitle.copyWith(color: sk.ink)),
                   const SizedBox(height: 8),
@@ -151,7 +151,7 @@ class DesignSystemView extends StatelessWidget {
                   const SizedBox(height: 12),
                   Center(
                     child: SkPrimaryButton(
-                      label: 'Tap me when you need me',
+                      label: 'Tap me',
                       compact: true,
                       onPressed: () {},
                     ),
@@ -299,7 +299,7 @@ class SkScenePanelDemo extends StatelessWidget {
           ),
           const SizedBox(height: 14),
           SkPrimaryButton(
-            label: 'Tap me when you need me',
+            label: 'Tap me',
             compact: true,
             onPressed: () {},
           ),

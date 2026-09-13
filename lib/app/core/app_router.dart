@@ -24,7 +24,7 @@ class AppRouter {
     required AuthStateService authStateService,
   }) {
     return GoRouter(
-      initialLocation: Routes.home,
+      initialLocation: Routes.breathe,
       debugLogDiagnostics: false,
       // Re-runs the redirect the moment either fact changes: a session
       // appearing or going away, and an email being confirmed. The guard below
