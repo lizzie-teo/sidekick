@@ -23,13 +23,13 @@ import 'package:rive/rive.dart' as rive;
 // The artboard carries its own behaviour, so every placement gets it
 // for free: she idles (blinking, tail swaying); a tap on one ear gives that
 // ear its own quick itchy flick (EarTwitchLeft / EarTwitchRight); a tap on
-// her body alternates between SayHi (a wave, big happy eyes, a head tilt)
-// and the whole-body EarTwitch -- the state machine remembers the turn purely
-// in which of its two idle states she rests in (Idle vs IdleAfterHi), so
-// there is no stored value anywhere to go stale; a tap anywhere else on her
-// plays the whole-body EarTwitch. The hit areas live in the Rive file as
-// listeners, so no gesture code here decides which part was touched. Screens
-// do not drive any of that; they only listen.
+// her face plays SayHi (a wave, big happy eyes, a head tilt); a tap
+// anywhere else on her -- body, arms, legs, tail, hair, ribbon -- plays the
+// whole-body Jump. The trigger names inside the file predate that layout:
+// the face fires `tapTorso` and everything else fires `tapEar`, so read the
+// listener's target, not its trigger's name. The hit areas live in the Rive
+// file as listeners, so no gesture code here decides which part was touched.
+// Screens do not drive any of that; they only listen.
 //
 // The Breathe timeline is the clock for the breathing exercise. It fires the
 // `inhale` and `exhale` triggers on the Character view model at the moment

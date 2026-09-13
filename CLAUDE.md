@@ -658,6 +658,30 @@ on the simulator. The file stays single on purpose: a separate "breathing
 copy" was considered and rejected, because the home character and the pacer
 would drift apart.
 
+**A tap hits every shape under the finger, and transition order picks the
+winner.** The hit areas overlap -- the face sits on top of the hair and the
+body -- and a tap does not stop at the top shape: every listener whose shape
+is under the finger fires in the same frame. One face tap therefore fires the
+face trigger *and* the hair/body trigger together, and the state machine
+breaks the tie by evaluating a state's outgoing transitions in the order they
+were created. The editor neither shows that order nor lets anyone drag it,
+and the MCP tools cannot rewrite it either (`transitionorder` is a fractional
+index they refuse to set). The file is currently arranged so the specific
+reactions -- SayHi on the face, the two ear twitches -- are checked before
+the catch-all Jump, done by swapping the contents of existing transitions
+rather than reordering them. Two rules follow:
+
+- The trigger names are stale on purpose: the face fires `tapTorso` and
+  everything else fires `tapEar`, because renaming them was riskier than
+  living with the names. Read a listener's target, not its trigger's name.
+- **Any new tap reaction must be proven against the overlap, not just alone.**
+  A new transition lands at the bottom of the evaluation order, where the
+  overlap's `tapEar` outranks it, and nothing in the editor looks wrong. After
+  adding one, run `simulateStateMachine` firing the new trigger *and* `tapEar`
+  in the same frame, and check the new state wins -- from `Idle` and from
+  `IdleAfterHi` both. Face taps jumped instead of saying hi for exactly this
+  reason (found and fixed 14 September 2026).
+
 **The breathing screen says one thing at a time, in one place.** One band of
 text does three jobs in turn, and the reader is never given two blocks to
 choose between:
