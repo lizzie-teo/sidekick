@@ -43,10 +43,15 @@ class _FeelingPickerViewState extends State<FeelingPickerView> {
     // and then hands over to the breathing. This user has already stopped to
     // read a screen, so the question is not in anybody's way -- the tab-bar
     // panic button skips all of it. Pushed, not gone to, so the back gesture
-    // returns here. Where the three Play faces lead is phase 5; those
+    // returns here.
+    //
+    // Wound up leads to the scribble pad, pushed for the same reason.
+    // Where Low and Actually okay lead is the rest of phase 5; those
     // screens do not exist yet, so picking one stops here.
     if (feeling == Feeling.cantCope) {
       context.push(Routes.body);
+    } else if (feeling == Feeling.woundUp) {
+      context.push(Routes.scribble);
     }
   }
 

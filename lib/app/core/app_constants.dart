@@ -49,6 +49,11 @@ abstract class Routes {
   // the general script, which is the safer thing to land on by accident.
   static const String sensationQuery = 'sensation';
 
+  // Wound up -- scribble it out. Reached from the picker's Wound up face,
+  // pushed so that leaving lands back on the picker. Nothing drawn on it is
+  // ever saved, which is the point of the screen.
+  static const String scribble = '/play/scribble';
+
   // The four tab destinations, in bar order. The panic button is the fifth
   // slot but is not a tab: it is a route the tabs sit behind, not beside.
   static const List<String> tabs = <String>[

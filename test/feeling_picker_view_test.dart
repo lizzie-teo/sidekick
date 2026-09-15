@@ -81,13 +81,13 @@ void main() {
     await tester.pumpAndSettle();
     expect(_filledButtons(tester), 1);
 
-    // Picking again moves the mark rather than adding a second one. Two Play
-    // faces are used because the panic face now navigates to the breathing
-    // screen, whose Rive runtime cannot load in a widget test. The list
+    // Picking again moves the mark rather than adding a second one. The two
+    // faces that still stay on this screen are used: the panic face leads to
+    // the breathing, and Wound up now leads to the scribble pad. The list
     // scrolls, so the lower button must be brought on screen before the tap.
-    await tester.ensureVisible(find.text(Feeling.woundUp.label));
+    await tester.ensureVisible(find.text(Feeling.actuallyOkay.label));
     await tester.pumpAndSettle();
-    await tester.tap(find.text(Feeling.woundUp.label));
+    await tester.tap(find.text(Feeling.actuallyOkay.label));
     await tester.pumpAndSettle();
     expect(_filledButtons(tester), 1);
   });
