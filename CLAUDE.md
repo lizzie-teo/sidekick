@@ -595,24 +595,41 @@ it reads as the screen rushing them. The holds live in
 `BreathingViewModel.leadIn` and nowhere else.
 
 **The animation is the clock, and it says so out loud.** `assets/rive/character.riv`
-carries two custom trigger properties, `inhale` and `exhale`, keyed on the
-`Breathe` timeline and bound out to the `Character` view model. `SkCharacter`
-listens to them; nothing in Dart holds a breath timer.
+carries two Rive **events**, `inhale` and `exhale`, keyed on the `Breathe`
+timeline. The state machine reports each one as the playhead crosses it, and
+`SkCharacter` listens with `stateMachine.addEventListener`; nothing in Dart
+holds a breath timer.
 
-| Frame (of 480 at 48fps, 10.0s) | Trigger | Means |
+| Frame (of 480 at 48fps, 10.0s) | Event | Means |
 | --- | --- | --- |
 | 0 | `inhale` | a breath starts -- and, on every loop after the first, the one before it has just ended |
 | 186 (3.9s) | `exhale` | the out-breath starts |
 
+**Events replaced view-model trigger keyframes on 15 September 2026, and the
+editor is the reason.** The old design keyed the `Breath` property group's
+triggers on their `fire` property (key 869) -- a keyframe kind the Rive
+editor can neither show nor list. The editor rewrites a timeline from what
+it can see, so every editor session silently deleted the two keys and the
+breathing screen went quiet, which forced a standing "re-add the keys before
+every export" rule. Event keys are ordinary, visible timeline keys: the
+editor preserves them, and a missing one can be seen at a glance. **That
+rule is dead.** What remains is: anything added to the `Breathe` timeline
+must keep the two event keys, and after any editor session, glance at the
+timeline to see they are still there. The old trigger properties
+`inhale`/`exhale` still exist in the file with their `toSource` binds; they
+are unused and harmless, kept because deleting them is riskier than ignoring
+them. The file stays single on purpose: a separate "breathing copy" was
+considered and rejected, because the home character and the pacer would
+drift apart.
+
 **The pace is set by the timeline's `fps`, not by its length.** Six breaths a
-minute wants a 10-second breath, and the obvious way there is 600 frames with
-`exhale` moved to 240. It is the wrong way: the editor cannot read trigger
-keyframes back, so their frames cannot be remapped with everything else and
-`exhale` would be left behind at 186. Dropping `fps` from 60 to 48 stretches
-480 frames to exactly 10.0s and moves nothing -- 3.875s in, 6.125s out, which
-is the 4-and-6 the evidence asks for to within an eighth of a second. `fps`
-here is the timeline's own rate for interpolating keyframes, not a render
-rate, so nothing about the drawing gets coarser.
+minute wants a 10-second breath, and 480 frames at 48fps is exactly that --
+3.875s in, 6.125s out, which is the 4-and-6 the evidence asks for to within
+an eighth of a second. `fps` here is the timeline's own rate for
+interpolating keyframes, not a render rate, so nothing about the drawing
+gets coarser. (The rate was dropped from 60 in the trigger era, when trigger
+keys could not be remapped with a length change; event keys remap normally,
+but there is no reason to touch a pace that is right.)
 
 **The breath is counted in `onInhale`, not `onExhale`.** The timeline loops, so
 frame 0 is the only instant where a whole breath has actually been taken. An
@@ -620,43 +637,13 @@ out-breath is the middle of a breath; counting there moved the number while
 the user was still breathing out. `BreathingState.hasInhaled` skips the very
 first one, which opens breath one rather than closing breath zero.
 
-They were declared on the view model but **never fired**, so the counter never
-moved and the script never opened in the real app -- tests passed throughout
-because they call `onInhale`/`onExhale` by hand. Anything added to that
-timeline must keep those two keys, or the screen goes silent again with
-nothing to show for it.
-
-**A trigger is keyed on its `fire` property, not on `propertyvalue`.** Each
-custom trigger in the `Breath` property group is an object with two keys:
-`fire` (869) and `propertyvalue` (870). Only `fire` is the one a timeline
-keyframe goes on. `propertyvalue` is what the data bind reads -- the two
-triggers are bound **out** (`toSource`) to `Character.inhale` and
-`Character.exhale` on key 870, and that half was right all along. Keying 870
-instead of 869 writes a keyframe that changes nothing, which is exactly how
-this stayed broken through a whole session: every read-back said the write
-had succeeded.
-
-**The only proof is the running app.** The editor's read-back cannot show a
-trigger firing, and the widget tests call `onInhale`/`onExhale` directly, so
-neither can tell a live trigger from a dead one. Verified on 13 September 2026
-by running on the simulator and watching the counter reach "Breath 2 of 2" and
-hand the line over to the words. Anything that touches the `Breathe` timeline
-has to be checked the same way.
-
-**Any editor session deletes the trigger keys, so Claude re-adds them before
-every export -- unprompted.** This is not a risk, it is what happens: editing
-other triggers (the twitch and jump work did it on 13 September 2026) silently
-removed the `inhale`/`exhale` keyframes from the `Breathe` timeline, and no
-read-back can show whether they survived, because the editor cannot list
-trigger keyframes at all. So the rule is re-add, not check. Whenever a session
-has touched `character.riv` in the Rive editor, before exporting: write the
-two keys again -- `inhale` `fire` (869) at frame 0, `exhale` `fire` (869) at
-frame 186, hold interpolation, on the `Breathe` timeline -- confirm the two
-`toSource` binds on key 870 still point at `Character.inhale` and
-`Character.exhale`, then export, copy to `assets/rive/character.riv`, and QA
-on the simulator. The file stays single on purpose: a separate "breathing
-copy" was considered and rejected, because the home character and the pacer
-would drift apart.
+**The only proof is still the running app.** The widget tests call
+`onInhale`/`onExhale` by hand, so they pass whether or not the file delivers
+a single event. Verified on 15 September 2026 by running on the simulator
+and watching `inhale`/`exhale` print from `SkCharacter` across several
+loops. Anything that touches the `Breathe` timeline has to be checked the
+same way -- the editor's timeline now shows whether the keys exist, but only
+the app shows that they fire.
 
 **A tap hits every shape under the finger, and transition order picks the
 winner.** The hit areas overlap -- the face sits on top of the hair and the

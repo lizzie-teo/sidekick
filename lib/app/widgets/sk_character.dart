@@ -31,11 +31,14 @@ import 'package:rive/rive.dart' as rive;
 // file as listeners, so no gesture code here decides which part was touched.
 // Screens do not drive any of that; they only listen.
 //
-// The Breathe timeline is the clock for the breathing exercise. It fires the
-// `inhale` and `exhale` triggers on the Character view model at the moment
-// each phase starts, and [onInhale]/[onExhale] surface those here so cue text
-// can never drift from the motion. Timing changes are made in the Rive file,
-// not in Dart.
+// The Breathe timeline is the clock for the breathing exercise. It keys two
+// Rive *events* -- `inhale` at frame 0, `exhale` at frame 186 -- and the
+// state machine reports them as the playhead crosses, so cue text can never
+// drift from the motion. Timing changes are made in the Rive file, not in
+// Dart. Events replaced the old view-model trigger keyframes on purpose:
+// trigger keys were invisible to the Rive editor, which silently deleted
+// them on every editing session; event keys are shown on the timeline, so
+// the editor preserves them and a missing one can be seen at a glance.
 class SkCharacter extends StatefulWidget {
   const SkCharacter({
     super.key,
@@ -72,10 +75,6 @@ class _SkCharacterState extends State<SkCharacter> {
   rive.File? _file;
   rive.RiveWidgetController? _controller;
   rive.ViewModelInstance? _viewModel;
-
-  // Held so removeListener in dispose detaches the exact objects listened to.
-  rive.ViewModelInstanceTrigger? _inhale;
-  rive.ViewModelInstanceTrigger? _exhale;
 
   @override
   void initState() {
@@ -130,10 +129,7 @@ class _SkCharacterState extends State<SkCharacter> {
     final rive.ViewModelInstance viewModel =
         controller.dataBind(rive.DataBind.auto());
 
-    _inhale = viewModel.trigger('inhale');
-    _exhale = viewModel.trigger('exhale');
-    _inhale?.addListener(_onInhale);
-    _exhale?.addListener(_onExhale);
+    controller.stateMachine.addEventListener(_onRiveEvent);
 
     setState(() {
       _controller = controller;
@@ -149,10 +145,7 @@ class _SkCharacterState extends State<SkCharacter> {
   // before the objects they are attached to are gone. The file is not
   // touched: it outlives every controller made from it.
   void _detach() {
-    _inhale?.removeListener(_onInhale);
-    _exhale?.removeListener(_onExhale);
-    _inhale = null;
-    _exhale = null;
+    _controller?.stateMachine.removeEventListener(_onRiveEvent);
 
     _viewModel?.dispose();
     _viewModel = null;
@@ -160,16 +153,17 @@ class _SkCharacterState extends State<SkCharacter> {
     _controller = null;
   }
 
-  void _onInhale(bool _) {
-    // ignore: avoid_print
-    print('RIVEDIAG inhale');
-    widget.onInhale?.call();
-  }
-
-  void _onExhale(bool _) {
-    // ignore: avoid_print
-    print('RIVEDIAG exhale');
-    widget.onExhale?.call();
+  void _onRiveEvent(rive.Event event) {
+    switch (event.name) {
+      case 'inhale':
+        // ignore: avoid_print
+        print('RIVEDIAG inhale');
+        widget.onInhale?.call();
+      case 'exhale':
+        // ignore: avoid_print
+        print('RIVEDIAG exhale');
+        widget.onExhale?.call();
+    }
   }
 
   @override
