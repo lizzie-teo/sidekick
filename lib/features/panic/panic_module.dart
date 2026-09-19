@@ -44,8 +44,8 @@ class PanicModule extends FeatureModule {
             // A name that matches nothing -- or no parameter at all -- is the
             // general script, so a restored route or a deep link can never
             // arrive holding words that belong to a tile nobody tapped.
-            sensation: Sensation.values.asNameMap()[
-                state.uri.queryParameters[Routes.sensationQuery]],
+            sensation: Sensation.values
+                .asNameMap()[state.uri.queryParameters[Routes.sensationQuery]],
           ),
         ),
       ];

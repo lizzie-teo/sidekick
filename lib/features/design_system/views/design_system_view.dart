@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart' show CupertinoIcons;
+import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -248,6 +249,23 @@ class DesignSystemView extends StatelessWidget {
                 ],
               ),
 
+              // Debug builds only, and the route behind it is registered the
+              // same way -- see DesignSystemModule. It is not part of the
+              // catalogue: the halo is a thing being tuned, not a component
+              // anyone should copy yet.
+              //
+              // maybeOf rather than context.push: this screen is also shown
+              // from lib/preview.dart, which has no GoRouter. The preview
+              // has its own card for the lab, so nothing is lost there.
+              if (kDebugMode)
+                Center(
+                  child: SkTextButton(
+                    label: 'Shader lab (debug)',
+                    onPressed: () =>
+                        GoRouter.maybeOf(context)?.push(Routes.shaderLab),
+                  ),
+                ),
+
               Center(
                 child: SkTextButton(
                   label: 'Back',
@@ -344,16 +362,11 @@ class _ListGroupDemoState extends State<_ListGroupDemo> {
           ),
         ),
         SkRow(
-          label: 'Breathing pace',
-          value: '4 in, 6 out',
+          label: 'Check in with me at',
+          value: '8:30 pm',
           chevron: true,
           onTap: () {},
         ),
-        SkRow(
-            label: 'Someone to call',
-            value: 'Mum',
-            chevron: true,
-            onTap: () {}),
         SkRow(label: 'Delete everything', destructive: true, onTap: () {}),
       ],
     );

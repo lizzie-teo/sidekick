@@ -4,9 +4,10 @@ import 'package:go_router/go_router.dart';
 import 'package:sidekick/app/core/app_constants.dart';
 import 'package:sidekick/app/core/device_settings_service.dart';
 import 'package:sidekick/app/core/logger_service.dart';
+import 'package:sidekick/app/core/notification_service.dart';
 import 'package:sidekick/app/core/service_locator.dart';
+import 'package:sidekick/app/core/theme_service.dart';
 import 'package:sidekick/app/widgets/sk_character.dart';
-import 'package:sidekick/app/widgets/sk_character_glow.dart';
 import 'package:sidekick/app/widgets/sk_colors.dart';
 import 'package:sidekick/app/widgets/sk_invite_card.dart';
 import 'package:sidekick/app/widgets/sk_main_tab_bar.dart';
@@ -15,6 +16,7 @@ import 'package:sidekick/app/widgets/sk_scene_panel.dart';
 import 'package:sidekick/app/widgets/sk_soft_button.dart';
 import 'package:sidekick/app/widgets/sk_text.dart';
 import 'package:sidekick/features/dashboard/viewmodels/dashboard_viewmodel.dart';
+import 'package:sidekick/features/dashboard/widgets/affirmation_sheet.dart';
 
 // Home. The scene panel owns the top of the screen: the sidekick, one line,
 // and the single way into the panic flow. Below it the two soft buttons, the
@@ -30,18 +32,46 @@ class _DashboardViewState extends State<DashboardView> {
   late final DashboardViewModel _viewModel = DashboardViewModel(
     loggerService: getIt<LoggerService>(),
     deviceSettingsService: getIt<DeviceSettingsService>(),
+    themeService: getIt<ThemeService>(),
+    notificationService: getIt.isRegistered<NotificationService>()
+        ? getIt<NotificationService>()
+        : null,
   );
 
   @override
   void initState() {
     super.initState();
+
+    // Arriving from a tapped check-in opens the explanation on top of Home.
+    //
+    // Watched rather than read once, because a tap can arrive two ways: as a
+    // cold start, where the viewmodel finds it during init, and as a tap on
+    // an app that was already in the background, where this screen is already
+    // built and nothing would otherwise run again.
+    _viewModel.openExplanation.addListener(_openExplanation);
+
     _viewModel.init();
   }
 
   @override
   void dispose() {
+    _viewModel.openExplanation.removeListener(_openExplanation);
     _viewModel.dispose();
     super.dispose();
+  }
+
+  // Opened after the frame, because the request can arrive during a build --
+  // the viewmodel emits it from init(), and pushing a route mid-build throws.
+  void _openExplanation() {
+    final String? line = _viewModel.openExplanation.value;
+    if (line == null) return;
+
+    _viewModel.explanationOpened();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      AffirmationSheet.show(context, line);
+    });
   }
 
   @override
@@ -71,11 +101,22 @@ class _DashboardViewState extends State<DashboardView> {
                         // her ears twitch when tapped, and tapping her body
                         // starts a full breathing cycle -- so the screen is
                         // calm until the user reaches for her.
-                        // The soft green pool of light that says where
-                        // she is standing. Decoration only -- it does
-                        // not change her size.
-                        const SkCharacterGlow(
-                          child: SkCharacter(height: 280),
+                        //
+                        // She stands on the scene gradient with nothing
+                        // behind her. A pool of light was tried and taken
+                        // out -- see SkColors for why it cannot work.
+                        //
+                        // Wrapped in its own builder because only the skin
+                        // depends on state here -- the layout around her is
+                        // built once.
+                        ValueListenableBuilder<DashboardViewModelState>(
+                          valueListenable: _viewModel.state,
+                          builder: (context, state, child) {
+                            return SkCharacter(
+                              height: 280,
+                              skin: state.character.skin,
+                            );
+                          },
                         ),
                         const SizedBox(height: 14),
                         ConstrainedBox(
@@ -87,11 +128,21 @@ class _DashboardViewState extends State<DashboardView> {
                               ValueListenableBuilder<DashboardViewModelState>(
                             valueListenable: _viewModel.state,
                             builder: (context, state, child) {
-                              return Text(
-                                state.line,
-                                textAlign: TextAlign.center,
-                                style: SkText.sceneLine
-                                    .copyWith(color: sk.onScene),
+                              // Tappable, so the explanation is reachable
+                              // without waiting for an evening alert. Nothing
+                              // marks it as a button: somebody who only wants
+                              // to read the line should not be handed a thing
+                              // to press.
+                              return GestureDetector(
+                                behavior: HitTestBehavior.opaque,
+                                onTap: () => AffirmationSheet.show(
+                                    context, state.line),
+                                child: Text(
+                                  state.line,
+                                  textAlign: TextAlign.center,
+                                  style: SkText.sceneLine
+                                      .copyWith(color: sk.onScene),
+                                ),
                               );
                             },
                           ),
@@ -124,8 +175,16 @@ class _DashboardViewState extends State<DashboardView> {
                             const SizedBox(width: 10),
                             Expanded(
                               child: SkSoftButton(
-                                label: 'Play',
-                                onPressed: () {},
+                                label: 'Scribble',
+                                // The scribble pad, straight from Home. It
+                                // used to be reachable only behind the
+                                // picker's Wound up face, which is two
+                                // screens and a self-diagnosis away from
+                                // something that is just a surface to
+                                // scribble on. Pushed, so both of the pad's
+                                // doors come back here.
+                                onPressed: () =>
+                                    context.push(Routes.scribble),
                               ),
                             ),
                           ],
@@ -133,19 +192,10 @@ class _DashboardViewState extends State<DashboardView> {
 
                         const SizedBox(height: 16),
 
-                        // Day one: no meditation done and no good things
-                        // jotted, which today is always true -- neither
-                        // feature exists yet. The empty state is two dashed
-                        // invitations. Real resume cards replace them once
-                        // there is history to show.
-                        SkInviteCard(
-                          title: 'Breathe for two minutes',
-                          // Meditation is not built yet.
-                          onTap: () {},
-                        ),
-
-                        const SizedBox(height: 12),
-
+                        // Day one: no good things jotted, which today is
+                        // always true -- the feature does not exist yet. The
+                        // empty state is a dashed invitation. A real resume
+                        // card replaces it once there is history to show.
                         SkInviteCard(
                           title: 'Name one good thing',
                           // Good things is not built yet.

@@ -1,8 +1,11 @@
 import 'dart:async';
 
+import 'package:sidekick/app/core/app_constants.dart';
+import 'package:sidekick/app/core/device_settings_service.dart';
 import 'package:sidekick/app/core/view_model.dart';
 import 'package:sidekick/features/panic/models/breathing_script.dart';
 import 'package:sidekick/features/panic/models/sensation.dart';
+import 'package:sidekick/features/panic/services/panic_voice.dart';
 
 // The breathing screen's sequence: the lead-in, the cue line, the counted
 // breaths and the script read over them.
@@ -44,12 +47,35 @@ import 'package:sidekick/features/panic/models/sensation.dart';
 // to start on. It is skippable by tapping, because eleven seconds is a long
 // time to a person who pressed this button rather than waiting -- and being
 // skippable is what lets the beats be slow enough to read.
+//
+// **The voice reads what the band shows, and never anything else.** There is
+// one recording per beat, per cue and per script line, and the one player in
+// PanicVoice can only hold one of them at a time -- so the rule "one thing at
+// a time, in one place" survives being spoken out loud.
 class BreathingViewModel extends ViewModel<BreathingState> {
-  BreathingViewModel({this.sensation}) : super(const BreathingState());
+  BreathingViewModel({
+    this.sensation,
+    PanicVoice? voice,
+    DeviceSettingsService? deviceSettingsService,
+  })  : _voice = voice ?? const SilentPanicVoice(),
+        _deviceSettingsService = deviceSettingsService,
+        super(const BreathingState()) {
+    // Registered here rather than in start(), so a screen torn down before it
+    // ever started still lets the player go.
+    addTeardown(_voice.dispose);
+  }
 
   // The tile tapped on the body screen, or null for the general script. See
   // the note above the class.
   final Sensation? sensation;
+
+  // Silent by default, so a viewmodel test is a viewmodel test and not an
+  // audio test.
+  final PanicVoice _voice;
+
+  // Optional for the same reason. Without it the voice is simply on, which is
+  // the default anyway.
+  final DeviceSettingsService? _deviceSettingsService;
 
   // The lead-in, one beat per line, with how long each stays up.
   //
@@ -90,11 +116,28 @@ class BreathingViewModel extends ViewModel<BreathingState> {
   // first affirmation moves from 23s to 27s, which is the number decision 1
   // brought down -- taken knowingly, because a line gone before it is read
   // helps nobody at any speed.
-  static const List<({String line, Duration hold})> leadIn =
-      <({String line, Duration hold})>[
-    (line: "I'm here.", hold: Duration(milliseconds: 3000)),
-    (line: "Let's breathe together.", hold: Duration(milliseconds: 3500)),
-    (line: 'Small breaths. Not deep ones.', hold: Duration(milliseconds: 4500)),
+  //
+  // Each beat carries its own recording. The holds are all longer than the
+  // clip that goes with them -- 1.3s of voice inside a 3.0s hold, and so on --
+  // so the line is still on screen after the voice has finished it. That gap
+  // is the point: the reader hears it, then gets a moment with it.
+  static const List<({String line, Duration hold, String clip})> leadIn =
+      <({String line, Duration hold, String clip})>[
+    (
+      line: "I'm here.",
+      hold: Duration(milliseconds: 3000),
+      clip: 'assets/audio/01-A1-speed070.mp3',
+    ),
+    (
+      line: "Let's breathe together.",
+      hold: Duration(milliseconds: 3500),
+      clip: 'assets/audio/02-A2-speed075.mp3',
+    ),
+    (
+      line: 'Small breaths.',
+      hold: Duration(milliseconds: 4500),
+      clip: 'assets/audio/03-A3-speed070.mp3',
+    ),
   ];
 
   Timer? _beat;
@@ -110,7 +153,22 @@ class BreathingViewModel extends ViewModel<BreathingState> {
   static const int countedBreaths = 2;
 
   static const String inhaleCue = 'In through your nose.';
+
+  // **This was shortened to "Out through your mouth." on 19 September 2026 and
+  // put back the same day, when the recordings arrived.** The shortening was
+  // right on its own terms -- the out-breath is already six seconds long and
+  // the animation is what sets it, so "slowly" described what her body was
+  // doing rather than asking for anything, and a shorter line is read in one
+  // glance. But the screen is read out loud now, and B2 was recorded from the
+  // brief. A line whose words differ from the voice saying them is a worse
+  // failure than a line that takes a moment longer to read: the reader is
+  // trying to follow one instruction and is given two slightly different ones.
+  // Nothing about the pace changed either way.
   static const String exhaleCue = 'Out slowly, through your mouth.';
+
+  // The two cue recordings.
+  static const String inhaleClip = 'assets/audio/04-B1-speed082.mp3';
+  static const String exhaleClip = 'assets/audio/05-B2-speed082.mp3';
 
   // Called once, from the view's initState. The lead-in runs on timers rather
   // than on the animation, because the sidekick is not breathing yet and so
@@ -120,7 +178,51 @@ class BreathingViewModel extends ViewModel<BreathingState> {
     _isStarted = true;
 
     addTeardown(() => _beat?.cancel());
+
+    // **The lead-in does not wait for this read.** Somebody arriving here
+    // pressed a button rather than waiting, so the first beat goes up on the
+    // same frame and the stored answer is applied when it lands -- a few
+    // milliseconds later, from the phone's own store. Defaulting to on and
+    // correcting is the right way round: the cost of a wrong guess is a
+    // fraction of a second of voice, and the cost of waiting is a blank screen
+    // in front of a panic attack.
+    unawaited(_loadVoiceSetting());
+
     _showBeat(0);
+  }
+
+  Future<void> _loadVoiceSetting() async {
+    final bool? stored = await _deviceSettingsService
+        ?.getBool(SettingsKeys.panicVoiceEnabled);
+    if (stored == null || stored == current.isVoiceOn) return;
+
+    emit(current.copyWith(isVoiceOn: stored));
+    if (!stored) unawaited(_voice.stop());
+  }
+
+  // The speaker button, top right. It takes effect on the spot -- somebody
+  // reaching for it wants the room to be quiet now, not at the next line.
+  void toggleVoice() {
+    final bool next = !current.isVoiceOn;
+    emit(current.copyWith(isVoiceOn: next));
+
+    unawaited(_deviceSettingsService?.setBool(
+      SettingsKeys.panicVoiceEnabled,
+      next,
+    ));
+
+    if (next) {
+      // Back on mid-line would mean starting a clip the reader is halfway
+      // through reading, so it waits for the next thing said.
+      return;
+    }
+    unawaited(_voice.stop());
+  }
+
+  // Everything spoken on this screen goes through here.
+  void _say(String clip) {
+    if (!current.isVoiceOn) return;
+    unawaited(_voice.play(clip));
   }
 
   void _showBeat(int index) {
@@ -130,6 +232,7 @@ class BreathingViewModel extends ViewModel<BreathingState> {
     }
 
     emit(current.copyWith(cue: leadIn[index].line, leadInIndex: index));
+    _say(leadIn[index].clip);
 
     _beat?.cancel();
     _beat = Timer(leadIn[index].hold, () => _showBeat(index + 1));
@@ -140,6 +243,9 @@ class BreathingViewModel extends ViewModel<BreathingState> {
     if (!current.isLeadIn) return;
 
     _beat?.cancel();
+    // The beat being read is over, so the voice reading it is over too. A
+    // skipped line still talking is the screen not listening.
+    unawaited(_voice.stop());
     _beginBreathing();
   }
 
@@ -172,6 +278,7 @@ class BreathingViewModel extends ViewModel<BreathingState> {
     // The first in-breath opens breath one rather than closing breath zero.
     if (!current.hasInhaled) {
       emit(current.copyWith(cue: inhaleCue, hasInhaled: true));
+      _sayCue(inhaleClip);
       return;
     }
 
@@ -188,6 +295,15 @@ class BreathingViewModel extends ViewModel<BreathingState> {
       breathCount: breaths,
       lines: opensWords ? _script : null,
     ));
+
+    // The words take the band on this very breath, so they take the voice with
+    // it. Saying the cue here and the opening a moment later would be the one
+    // thing this screen never does: two things at once.
+    if (opensWords) {
+      _say(_clips.first);
+    } else {
+      _sayCue(inhaleClip);
+    }
   }
 
   // Called when the Rive timeline starts an out-breath. It moves the cue and
@@ -196,16 +312,33 @@ class BreathingViewModel extends ViewModel<BreathingState> {
     if (current.isLeadIn) return;
 
     emit(current.copyWith(cue: exhaleCue));
+    _sayCue(exhaleClip);
+  }
+
+  // The cue is spoken only while the cue is what the band is showing: the
+  // counted set, and an extension after the script. Under the words it keeps
+  // being updated but stays quiet -- it is the pacer reporting, not the screen
+  // deciding, and a voice reading it there would be talking over the line the
+  // reader is on.
+  void _sayCue(String clip) {
+    if (current.showsWords) return;
+    _say(clip);
   }
 
   List<String> get _script => BreathingScript.forSensation(sensation);
+
+  List<String> get _clips => BreathingScript.clipsForSensation(sensation);
 
   // Next. Advances one line and stops at the last one -- the script ends by
   // running out, not by throwing the user somewhere.
   void next() {
     if (current.isLastLine) return;
 
-    emit(current.copyWith(lineIndex: current.lineIndex + 1));
+    final int index = current.lineIndex + 1;
+    emit(current.copyWith(lineIndex: index));
+
+    final List<String> clips = _clips;
+    if (index < clips.length) _say(clips[index]);
   }
 
   // "Keep breathing with me", offered on the last line only. The closing
@@ -257,6 +390,11 @@ class BreathingState {
   // band hands back to the cue.
   final bool isExtended;
 
+  // Whether the recorded voice speaks. On unless the reader turned it off on
+  // this or an earlier visit; the speaker button in the top right is the only
+  // thing that changes it. See SettingsKeys.panicVoiceEnabled.
+  final bool isVoiceOn;
+
   const BreathingState({
     this.isLoading = false,
     this.errors = const {},
@@ -269,6 +407,7 @@ class BreathingState {
     this.lines = const <String>[],
     this.lineIndex = 0,
     this.isExtended = false,
+    this.isVoiceOn = true,
   });
 
   // The line on screen, or null while the lead-in still has the space.
@@ -284,12 +423,12 @@ class BreathingState {
   // the moment the reader hands the band back with "Keep breathing with me".
   bool get showsWords => lines.isNotEmpty && !isExtended;
 
-  // The counter belongs to the counted breaths only. It goes when the words
-  // arrive, because by then the screen is about words rather than reps, and a
-  // number left running turns settling into a test that can be failed. It
-  // tests the lines rather than showsWords so it cannot come back during an
-  // extension, which is the same test in a quieter shape.
-  bool get showsCount => !isLeadIn && lines.isEmpty;
+  // **There is no counter on this screen, and there is no state for one.**
+  // "Breath 1 of 2" was removed on 19 September 2026: it was the second thing
+  // to read on a screen whose whole rule is that there is only ever one, and
+  // a number in front of somebody mid-panic reads as a target whether or not
+  // it was meant as one. The counted set still exists -- `countedBreaths`
+  // still decides when the words open -- it is simply no longer reported.
 
   // The quiet way out, on screen from the end of the lead-in to the end of
   // the script.
@@ -318,6 +457,7 @@ class BreathingState {
     List<String>? lines,
     int? lineIndex,
     bool? isExtended,
+    bool? isVoiceOn,
   }) {
     return BreathingState(
       isLoading: isLoading ?? this.isLoading,
@@ -331,6 +471,7 @@ class BreathingState {
       lines: lines ?? this.lines,
       lineIndex: lineIndex ?? this.lineIndex,
       isExtended: isExtended ?? this.isExtended,
+      isVoiceOn: isVoiceOn ?? this.isVoiceOn,
     );
   }
 }

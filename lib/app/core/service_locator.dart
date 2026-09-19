@@ -4,6 +4,7 @@ import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import 'package:sidekick/app/core/app_constants.dart';
 import 'package:sidekick/app/core/app_router.dart';
 import 'package:sidekick/app/core/auth_service.dart';
 import 'package:sidekick/app/core/auth_state_service.dart';
@@ -11,6 +12,8 @@ import 'package:sidekick/app/core/device_settings_service.dart';
 import 'package:sidekick/app/core/event_bus.dart';
 import 'package:sidekick/app/core/feature_registry.dart';
 import 'package:sidekick/app/core/logger_service.dart';
+import 'package:sidekick/app/core/notification_service.dart';
+import 'package:sidekick/app/core/theme_service.dart';
 import 'package:sidekick/data/services/configuration_service.dart';
 import 'package:sidekick/data/services/good_things_service.dart';
 
@@ -29,6 +32,17 @@ Future<void> setupServiceLocator() async {
 
   getIt.registerLazySingleton<DeviceSettingsService>(
     () => DeviceSettingsService(loggerService: getIt<LoggerService>()),
+  );
+
+  getIt.registerLazySingleton<NotificationService>(
+    () => NotificationService(
+      loggerService: getIt<LoggerService>(),
+      deviceSettingsService: getIt<DeviceSettingsService>(),
+    ),
+  );
+
+  getIt.registerLazySingleton<ThemeService>(
+    () => ThemeService(deviceSettingsService: getIt<DeviceSettingsService>()),
   );
 
   // Supabase. Supabase.initialize() must already have run in main().
@@ -97,6 +111,25 @@ Future<void> setupServiceLocator() async {
   // returning user is already authenticated when the redirect first runs.
   getIt<AuthStateService>().initialize();
 
+  // Awaited, unlike ensureSession below: these are local reads, so the cost
+  // is a few ms, and the win is that the first frame is already in the
+  // user's chosen appearance rather than flashing the default and swapping.
+  await getIt<ThemeService>().initialize();
+
+  // Awaited for the same reason -- local reads, and the Me tab's reminder rows
+  // would otherwise show the defaults for a frame and then swap.
+  //
+  // This also tops the booked run of alerts back up to a fortnight, which is
+  // why it is on every open rather than only the first: a notification's
+  // words are fixed when it is booked, so the run has to be laid down again
+  // to stay ahead of the reader.
+  await getIt<NotificationService>().initialize();
+
+  // Awaited for the same reason: a local read, and the Me tab's day count is
+  // wrong for the life of the install if the stamp is skipped on the one open
+  // that should have written it.
+  await _stampFirstOpen();
+
   // Everyone gets a session on first open, so there is never a state where the
   // app is running without somewhere to save to.
   //
@@ -112,6 +145,25 @@ Future<void> setupServiceLocator() async {
 
   getIt<LoggerService>().debug(
     'ServiceLocator: ready with ${featureModules.length} feature module(s)',
+  );
+}
+
+// Writes the day this install was first opened, once, and never again.
+//
+// Read-then-write rather than a plain write: the value has to be the first
+// open, not the latest one. A failed read returns null, which stamps today
+// and restarts the count -- the lesser harm, since the alternative is a write
+// on every open, which resets it every time.
+Future<void> _stampFirstOpen() async {
+  final DeviceSettingsService settings = getIt<DeviceSettingsService>();
+
+  final String? stamped =
+      await settings.getString(SettingsKeys.firstOpenedAt);
+  if (stamped != null) return;
+
+  await settings.setString(
+    SettingsKeys.firstOpenedAt,
+    DateTime.now().toIso8601String(),
   );
 }
 

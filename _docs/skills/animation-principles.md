@@ -27,9 +27,9 @@ Rules for this setup:
 
 - **The Rive desktop app must be open**, with a file open and an artboard created.
   If tool calls fail with a connection error, say so and stop — don't retry blindly.
-- **Changes are staged, not applied.** After a prompt is processed, the user types
-  **`End Prompt`** to let the changes land in the file. Tell them when you're at that point;
-  never claim the file has changed before that step.
+- **Changes land in the open document straight away.** There is no staging step and no
+  `End Prompt` panel in this version of the desktop app. Confirm an edit by reading it
+  back (`queryKeyFrames`, `query_property_values`); never ask the user to commit it.
 - MCP is desktop-only (macOS and Windows). It does not work in the browser editor.
 
 What the editor MCP can do:
@@ -232,6 +232,112 @@ Make the point of the shot unmistakable.
 
 ---
 
+## Mechanics the 12 principles leave out
+
+The 12 principles say *what* good motion contains. These say *how the body actually works*
+and *in what order to build it*. Source: Chris Webster, *Animation: The Mechanics of Motion*
+(Focal Press, 2005) — `_docs/skills/Animation_Mechanics_Motion.pdf`.
+
+### Timing has three levels, not one
+
+"Timing" gets used for three different things. Separate them or you will fix the wrong one.
+
+| Level | Covers | In this project |
+| --- | --- | --- |
+| **Pacing** | How whole scenes sit against each other | The lead-in, then the counted set, then the script |
+| **Phrasing** | One action made of several parts, each at its own speed | SayHi: the look up, the wave, the settle |
+| **Timing** | How long one single move takes | The wave's 8 frames |
+
+A reaction that feels flat is usually a **phrasing** problem, not a timing one. Every part
+moves at the same speed, so the whole thing reads as one block. Fix it by giving each part of
+the action its own duration, not by making everything faster.
+
+### Build in order: primary, then secondary, then tertiary
+
+- **Primary** — the part that drives the action. Hips and chest in a weight shift. The head in
+  a look. Animate this alone first and check it reads.
+- **Secondary** — parts that assist but do not start it. Arms. A head bob. Add these next.
+- **Tertiary** — parts that only get carried along. Tail, ears, hair, fur. Add these last.
+
+Do not start on the tail. A tail keyed before the hips is keyed against nothing.
+
+The tiers also tell you what to cut under time pressure. Tertiary motion is the cheapest thing
+to drop and the last thing anyone misses.
+
+### Drag and follow-through are two different lags
+
+Your rig needs both, and they are not the same bug when one is missing.
+
+- **Drag** — the part starts *late*. The head begins turning; the ear has not moved yet.
+- **Follow-through** — the part stops *late*. The head has stopped; the ear is still swinging.
+
+A chain with follow-through but no drag snaps into motion and then trails out. It reads as a
+part that is loose at the end and welded at the start. Offset the keys at **both** ends of the
+move, not just the end.
+
+### Balance is a pass/fail check, not a taste call
+
+The mass must sit over whatever is holding it up. If it does not, the pose is wrong — not
+stylised, wrong. The viewer reads it as falling even if nothing else is off.
+
+- Find the supporting point (the feet, or one foot). Draw a vertical line up from it. The bulk
+  of the body must straddle that line.
+- **Adding weight moves the whole body.** Something held in front pushes the body back to
+  compensate. Something held to one side tips the body the other way. The shift belongs in the
+  spine and hips, not in the arms.
+- **Low mass is stable, high mass is not.** A crouched pose is inherently settled. A tall,
+  stretched pose is inherently tense. Use that instead of adding motion to convey either.
+
+### Mass decides how a move starts and stops
+
+Newton, applied to keys:
+
+- **Light things reach full speed almost at once, and stop almost at once.** Short ease in,
+  short ease out, low overshoot.
+- **Heavy things start slowly and then keep going.** Long ease in, long overshoot, slow settle.
+- A part can be big and still light. Fur, a tail, a loose sleeve — large on screen, almost no
+  mass, so they drag a lot and settle late.
+
+Mismatch here is what makes a character feel like it is made of the wrong material. If she
+looks like a balloon, her body is easing like a balloon.
+
+### The take — a four-beat recipe for surprise
+
+Anticipation is planned. A **take** is the version driven by surprise, and it has a fixed shape:
+
+1. **Rest** — the pose before anything happens.
+2. **Down** — a compress away from the surprise. Squash. 2–4 frames.
+3. **Out** — the extreme, snapped to. Stretch. 2–4 frames.
+4. **Settle** — back to a new rest, with the trailing parts arriving late.
+
+This is the default skeleton for any tap reaction. If a reaction feels cheap, check which of
+the four beats is missing. It is almost always beat 2.
+
+### Line of action
+
+One single curve drawn through the whole body, from head to base. Every strong key pose has
+one. It is the pose's spine, and it should be readable before any detail exists.
+
+- Before keying a pose, decide its curve: a C leaning forward, a C leaning back, an S.
+- If two poses in a sequence share the same curve, the sequence has no dynamic. Change one.
+- Weak poses are usually a straight line of action. Straight means neutral means nothing.
+
+Useful for fast, whole-body moves (Jump, SayHi). Less useful for close, slow work on a face.
+
+### Straight-line motion is sometimes the right answer
+
+Principle 6 says arcs, always. That is the right default and it is not the whole truth.
+
+A deliberate straight line between two keys, with the eases stripped out, reads as **hard and
+mechanical** — which is exactly right for a scared, stiff head turn, or for a snappy comic
+beat that wants all the weight on the poses and none on the travel.
+
+The condition is that the two key poses must be strong enough to carry it alone. With weak
+poses a straight line just looks broken. Use it on purpose or not at all — never by accident,
+which is what an untouched default interpolation gives you.
+
+---
+
 ## State machines for characters
 
 - **One layer per concern**: base locomotion/pose on layer 1, breathing on layer 2, blinks on
@@ -275,10 +381,18 @@ Run this list against what you built, and report honestly on any you couldn't sa
 - [ ] Bound properties are named for the host app, not for the rig's internals.
 - [ ] Verified with `--verify` / `inspect` and looked at with a screenshot at shipping size.
 - [ ] Checked at the smallest size it will actually be used.
+- [ ] Built primary first, then secondary, then tertiary — not tail-first.
+- [ ] Chains are offset at **both** ends: they start late (drag) and stop late (follow-through).
+- [ ] The mass sits over the supporting point in every key pose.
+- [ ] Eases match the part's mass — light parts snap, heavy parts carry on.
+- [ ] Each key pose has a line of action, and consecutive poses don't share the same curve.
+- [ ] The action has phrasing — its parts don't all move at one speed.
+- [ ] Any straight-line motion is deliberate, not a default interpolation left untouched.
 
 ## Failure modes to avoid
 
-- Claiming the Rive file changed before the user has run `End Prompt` (editor MCP).
+- Claiming the `.riv` in `assets/` changed when only the open document did — it does
+  not move until the file is exported and copied across.
 - Guessing property or type names instead of looking them up.
 - Building the whole rig in one pass and handing over something unreviewable.
 - Adding keys to fix spacing when the fix is an interpolation curve.
@@ -303,3 +417,7 @@ Run this list against what you built, and report honestly on any you couldn't sa
 - Reduced motion — https://rive.app/docs/editor/accessibility/reduced-motion
 - 12 principles (source for this file's principle list) —
   https://www.pluralsight.com/resources/blog/software-development/understanding-12-principles-animation
+- Chris Webster, *Animation: The Mechanics of Motion* (Focal Press, 2005) — source for
+  "Mechanics the 12 principles leave out". Local copy:
+  `_docs/skills/Animation_Mechanics_Motion.pdf`. Chapters 1–3 are the useful ones; skip the
+  flip-book, dope-sheet, lip-sync and film-format material, none of which applies in Rive.

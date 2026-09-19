@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:sidekick/app/core/app_constants.dart';
+import 'package:sidekick/app/core/service_locator.dart';
+import 'package:sidekick/app/core/theme_service.dart';
 import 'package:sidekick/app/widgets/sk_colors.dart';
 import 'package:sidekick/app/widgets/sk_text.dart';
 import 'package:sidekick/app/widgets/sk_text_button.dart';
@@ -43,10 +45,20 @@ class _FeelingPickerViewState extends State<FeelingPickerView> {
     // and then hands over to the breathing. This user has already stopped to
     // read a screen, so the question is not in anybody's way -- the tab-bar
     // panic button skips all of it. Pushed, not gone to, so the back gesture
-    // returns here. Where the three Play faces lead is phase 5; those
-    // screens do not exist yet, so picking one stops here.
+    // returns here.
+    //
+    // Wound up leads to "Tighten, and stop", the first of the three Play
+    // faces. It used to lead to the scribble pad, and that was on the wrong
+    // side of the anger evidence -- a hard, fast scribble raises arousal, and
+    // muscle relax-and-release lowers it. The pad still exists, reached from
+    // the Play button on Home by somebody who is not angry.
+    //
+    // The other two faces are still phase 5; those screens do not exist yet,
+    // so picking one stops here.
     if (feeling == Feeling.cantCope) {
       context.push(Routes.body);
+    } else if (feeling == Feeling.woundUp) {
+      context.push(Routes.tighten);
     }
   }
 
@@ -89,26 +101,38 @@ class _FeelingPickerViewState extends State<FeelingPickerView> {
               // The buttons scroll if the phone is short. The panic button is
               // first in the list as well as largest, so it is the first thing
               // reached by touch and by a screen reader.
+              // One listener for all four faces. The character is the only
+              // thing on this screen that can change from somewhere else --
+              // the Me tab -- and every face has to be the same character, so
+              // it is read once here rather than four times further down.
               Expanded(
-                child: SingleChildScrollView(
-                  child: Column(
-                    children: [
-                      FeelingButton(
-                        feeling: Feeling.cantCope,
-                        isSelected: picked == Feeling.cantCope,
-                        onPressed: () => _pick(Feeling.cantCope),
+                child: ValueListenableBuilder<SidekickCharacter>(
+                  valueListenable: getIt<ThemeService>().character,
+                  builder: (BuildContext context, SidekickCharacter character,
+                      Widget? child) {
+                    return SingleChildScrollView(
+                      child: Column(
+                        children: [
+                          FeelingButton(
+                            feeling: Feeling.cantCope,
+                            character: character,
+                            isSelected: picked == Feeling.cantCope,
+                            onPressed: () => _pick(Feeling.cantCope),
+                          ),
+                          const SizedBox(height: 14),
+                          for (final Feeling feeling in Feeling.play) ...[
+                            FeelingButton(
+                              feeling: feeling,
+                              character: character,
+                              isSelected: picked == feeling,
+                              onPressed: () => _pick(feeling),
+                            ),
+                            const SizedBox(height: 10),
+                          ],
+                        ],
                       ),
-                      const SizedBox(height: 14),
-                      for (final Feeling feeling in Feeling.play) ...[
-                        FeelingButton(
-                          feeling: feeling,
-                          isSelected: picked == feeling,
-                          onPressed: () => _pick(feeling),
-                        ),
-                        const SizedBox(height: 10),
-                      ],
-                    ],
-                  ),
+                    );
+                  },
                 ),
               ),
 

@@ -44,6 +44,9 @@ class SkCharacter extends StatefulWidget {
     super.key,
     this.height,
     this.startBreathing = false,
+    this.skin = 0,
+    this.pose,
+    this.poseSerial = 0,
     this.onInhale,
     this.onExhale,
   });
@@ -64,6 +67,32 @@ class SkCharacter extends StatefulWidget {
   // the firing, so the order the two land in does not matter.
   final bool startBreathing;
 
+  // Which character the artboard shows: 0 is the girl, 1 is the ragdoll cat.
+  // Written to the `skin` number on the file's Character view model; the
+  // Skin state machine layer switches the Solo to match, live.
+  final double skin;
+
+  // A trigger to fire on this artboard, named by a screen that is driving her
+  // rather than listening to her. The wound-up script is the only caller: it
+  // owns its own clock, so it says "tighten your hands now" instead of being
+  // told when a breath started. See TightenPose.
+  //
+  // **An unknown name is a no-op, on purpose.** `trigger(name)` returns null
+  // when the file has no such trigger, so a screen can be built and shipped
+  // before its poses are animated. That is what lets the Rive session be the
+  // last piece of work rather than the first.
+  //
+  // It cannot reach the pacer: `startBreathe` is fired from its own field
+  // above, and nothing stops a caller naming it here -- but the pacer screen
+  // passes no pose at all, so the two never meet.
+  final String? pose;
+
+  // Bumped by the caller every time [pose] should fire, including when it is
+  // the same trigger as last time. A trigger is a moment rather than a value,
+  // so watching the name alone would silently swallow a repeat -- and the
+  // wound-up script fires its one stop trigger four times.
+  final int poseSerial;
+
   final VoidCallback? onInhale;
   final VoidCallback? onExhale;
 
@@ -72,6 +101,11 @@ class SkCharacter extends StatefulWidget {
 }
 
 class _SkCharacterState extends State<SkCharacter> {
+  // Longer than the 100 ms every transition in the file's `Skin` layer runs
+  // for, so the swap is finished rather than part-way. It also advances the
+  // idle by the same amount, which costs nothing -- the idle loops.
+  static const double _skinSettleSeconds = 0.2;
+
   rive.File? _file;
   rive.RiveWidgetController? _controller;
   rive.ViewModelInstance? _viewModel;
@@ -92,10 +126,27 @@ class _SkCharacterState extends State<SkCharacter> {
     if (widget.startBreathing && !oldWidget.startBreathing) {
       _startBreathing();
     }
+
+    if (widget.poseSerial != oldWidget.poseSerial) {
+      _firePose();
+    }
+
+    if (widget.skin != oldWidget.skin) {
+      _applySkin();
+    }
   }
 
   void _startBreathing() =>
       _viewModel?.trigger(SkCharacter.startTrigger)?.trigger();
+
+  void _firePose() {
+    final String? pose = widget.pose;
+    if (pose == null) return;
+
+    _viewModel?.trigger(pose)?.trigger();
+  }
+
+  void _applySkin() => _viewModel?.number('skin')?.value = widget.skin;
 
   Future<void> _load() async {
     // The Rive runtime is a native library, and widget tests have no native
@@ -131,13 +182,35 @@ class _SkCharacterState extends State<SkCharacter> {
 
     controller.stateMachine.addEventListener(_onRiveEvent);
 
-    setState(() {
-      _controller = controller;
-      _viewModel = viewModel;
-    });
+    _controller = controller;
+    _viewModel = viewModel;
+
+    // The file may finish decoding after the first build, so the current
+    // skin is applied here as well as on change -- whichever lands last wins,
+    // same as startBreathing below.
+    _applySkin();
+
+    // **Settled before she is ever painted, or the wrong character shows.**
+    // The `Skin` layer starts in the girl's state and every transition out of
+    // it lasts 100 ms, so a cat user saw the girl cross-fade away each time a
+    // screen opened -- most visibly on the panic button, which is pressed
+    // often and lands straight on her. Advancing the machine past that
+    // transition here means the first frame drawn is already the right
+    // character. The second call is the one that crosses the transition; the
+    // first only lets the machine read the number just written.
+    controller.stateMachine.advanceAndApply(0);
+    controller.stateMachine.advanceAndApply(_skinSettleSeconds);
+
+    setState(() {});
 
     if (widget.startBreathing) {
       _startBreathing();
+    }
+
+    // Same reason as above: the file may finish decoding after the script has
+    // already asked for a pose, so whichever lands last does the firing.
+    if (widget.poseSerial > 0) {
+      _firePose();
     }
   }
 

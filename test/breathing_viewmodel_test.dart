@@ -1,9 +1,31 @@
 import 'package:fake_async/fake_async.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:sidekick/app/core/app_constants.dart';
 import 'package:sidekick/features/panic/models/breathing_script.dart';
 import 'package:sidekick/features/panic/models/sensation.dart';
+import 'package:sidekick/features/panic/services/panic_voice.dart';
 import 'package:sidekick/features/panic/viewmodels/breathing_viewmodel.dart';
+
+import 'support/fakes.dart';
+
+// The recorded voice, written down rather than played. `said` is every asset
+// the viewmodel asked for, in order, so a test can assert on what was spoken
+// and when.
+class FakePanicVoice implements PanicVoice {
+  final List<String> said = <String>[];
+  int stops = 0;
+  bool isDisposed = false;
+
+  @override
+  Future<void> play(String asset) async => said.add(asset);
+
+  @override
+  Future<void> stop() async => stops++;
+
+  @override
+  Future<void> dispose() async => isDisposed = true;
+}
 
 // The breathing sequence, tested straight: construct, call, assert on state.
 // No service locator and no widget tree -- the viewmodel takes at most the
@@ -400,44 +422,215 @@ void main() {
       expect(state().cue, BreathingViewModel.inhaleCue);
     });
 
-    test('brings no counter back and keeps both doors open', () {
+    test('keeps both doors open', () {
       readToLastLine();
       viewModel.keepBreathing();
 
-      expect(state().showsCount, isFalse,
-          reason: 'an extension with a number on it is a test');
       expect(state().showsExit, isTrue);
       expect(state().isLastLine, isTrue,
           reason: 'the view reads this to keep "I\'m alright now" up');
     });
   });
 
-  group('the counter', () {
+  // There is no counter on this screen any more -- "Breath 1 of 2" was taken
+  // off on 19 September 2026 as a second thing to read. The counted set it
+  // used to report is still tested above, through the moment the words open.
+  group('the counted set', () {
     setUp(() {
       arrive();
       firstInhale();
     });
 
-    test('is not on screen during the lead-in', () {
-      final BreathingViewModel vm = BreathingViewModel();
-      vm.start();
-
-      expect(vm.state.value.showsCount, isFalse);
-
-      vm.dispose();
-    });
-
-    test('runs for the counted set and then goes', () {
-      expect(state().showsCount, isTrue);
+    test('holds the cue until the counted breaths are done', () {
+      expect(state().showsWords, isFalse);
 
       for (int i = 0; i < BreathingViewModel.countedBreaths; i++) {
         breathe();
       }
 
-      expect(state().showsCount, isFalse,
-          reason: 'a number left running turns settling into a test');
       expect(state().showsWords, isTrue,
-          reason: 'the counter goes because the words took the line');
+          reason: 'the words take the line once the counted set is done');
+    });
+  });
+
+  // The recorded voice. The rule it exists to keep is the screen's own: one
+  // thing at a time, in one place -- so the voice says whatever the band is
+  // showing and never anything else.
+  group('the voice', () {
+    late FakePanicVoice voice;
+    late FakeDeviceSettingsService settings;
+    late BreathingViewModel vm;
+
+    setUp(() {
+      voice = FakePanicVoice();
+      settings = FakeDeviceSettingsService();
+      vm = BreathingViewModel(voice: voice, deviceSettingsService: settings);
+    });
+
+    tearDown(() => vm.dispose());
+
+    // Past the lead-in and onto the pacer, for the groups that start there.
+    void toPacer() {
+      vm.skipLeadIn();
+      vm.onInhale();
+      voice.said.clear();
+      voice.stops = 0;
+    }
+
+    void toWords() {
+      toPacer();
+      for (int i = 0; i < BreathingViewModel.countedBreaths; i++) {
+        vm.onExhale();
+        vm.onInhale();
+      }
+    }
+
+    test('reads the lead-in beats, one clip per beat', () {
+      fakeAsync((async) {
+        vm.start();
+
+        for (final beat in BreathingViewModel.leadIn) {
+          expect(voice.said.last, beat.clip);
+          async.elapse(beat.hold);
+        }
+      });
+    });
+
+    test('stops mid-beat when the reader skips the lead-in', () {
+      vm.start();
+      vm.skipLeadIn();
+
+      expect(voice.stops, greaterThan(0),
+          reason: 'a skipped line still talking is the screen not listening');
+    });
+
+    test('reads the in and out cues while the cue has the band', () {
+      toPacer();
+
+      vm.onExhale();
+      expect(voice.said.last, BreathingViewModel.exhaleClip);
+
+      vm.onInhale();
+      expect(voice.said.last, BreathingViewModel.inhaleClip);
+    });
+
+    test('goes quiet on the cue once the words take the band', () {
+      toWords();
+      voice.said.clear();
+
+      vm.onExhale();
+      vm.onInhale();
+
+      expect(voice.said, isEmpty,
+          reason: 'the cue under the words is the pacer reporting, and a '
+              'voice reading it would talk over the line being read');
+    });
+
+    test('opens the words with the sensation clip, not the cue', () {
+      toPacer();
+      for (int i = 0; i < BreathingViewModel.countedBreaths; i++) {
+        vm.onExhale();
+        vm.onInhale();
+      }
+
+      expect(voice.said.last, BreathingScript.generalOpeningClips.first,
+          reason: 'the words take the band on this breath, so they take the '
+              'voice with it');
+    });
+
+    // The opening pairs arrived as one file each, which made the second line
+    // audible only by not interrupting the first. They were cut in two, so
+    // every line now has a clip and Next always speaks.
+    test('reads one clip per line, the opening pair included', () {
+      toWords();
+      final List<String> clips = BreathingScript.clipsForSensation(null);
+
+      for (int i = 1; i < clips.length; i++) {
+        voice.said.clear();
+        vm.next();
+
+        expect(voice.said, <String>[clips[i]],
+            reason: 'line $i is its own recording');
+      }
+    });
+
+    test('every sensation opens on its own recording', () {
+      for (final Sensation sensation in Sensation.values) {
+        final FakePanicVoice picked = FakePanicVoice();
+        final BreathingViewModel model =
+            BreathingViewModel(sensation: sensation, voice: picked);
+        model.skipLeadIn();
+        model.onInhale();
+        for (int i = 0; i < BreathingViewModel.countedBreaths; i++) {
+          model.onExhale();
+          model.onInhale();
+        }
+
+        expect(picked.said.last, sensation.voiceClips.first);
+
+        picked.said.clear();
+        model.next();
+        expect(picked.said, <String>[sensation.voiceClips.last],
+            reason: 'the second half of the pair is its own file now');
+
+        model.dispose();
+      }
+    });
+
+    test('is on by default, because most readers are not in an office', () {
+      expect(vm.state.value.isVoiceOn, isTrue);
+    });
+
+    test('the button silences it on the spot and remembers the answer',
+        () async {
+      toPacer();
+      vm.toggleVoice();
+
+      expect(vm.state.value.isVoiceOn, isFalse);
+      expect(voice.stops, greaterThan(0));
+
+      voice.said.clear();
+      vm.onExhale();
+      expect(voice.said, isEmpty);
+
+      await Future<void>.delayed(Duration.zero);
+      expect(settings.values[SettingsKeys.panicVoiceEnabled], isFalse);
+    });
+
+    test('the button brings it back for the next thing said, not this one',
+        () {
+      toPacer();
+      vm.toggleVoice();
+      vm.toggleVoice();
+      voice.said.clear();
+
+      expect(vm.state.value.isVoiceOn, isTrue);
+      vm.onExhale();
+      expect(voice.said, <String>[BreathingViewModel.exhaleClip]);
+    });
+
+    // The read is not waited for: the first beat goes up on the same frame,
+    // and a stored "off" catches up a moment later. A blank screen in front of
+    // a panic attack costs more than a fraction of a second of voice.
+    test('a remembered off is applied without holding the lead-in back',
+        () async {
+      settings.values[SettingsKeys.panicVoiceEnabled] = false;
+      vm.start();
+
+      expect(vm.state.value.cue, BreathingViewModel.leadIn.first.line,
+          reason: 'the beat is up before the setting has been read');
+
+      await Future<void>.delayed(Duration.zero);
+
+      expect(vm.state.value.isVoiceOn, isFalse);
+      expect(voice.stops, greaterThan(0));
+    });
+
+    test('the player is let go with the screen', () {
+      vm.start();
+      vm.dispose();
+
+      expect(voice.isDisposed, isTrue);
     });
   });
 }

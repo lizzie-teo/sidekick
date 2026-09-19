@@ -8,7 +8,9 @@ import 'package:sidekick/app/core/auth_service.dart';
 import 'package:sidekick/app/core/auth_state_service.dart';
 import 'package:sidekick/app/core/device_settings_service.dart';
 import 'package:sidekick/app/core/logger_service.dart';
+import 'package:sidekick/app/core/notification_service.dart';
 import 'package:sidekick/app/core/service_locator.dart';
+import 'package:sidekick/app/core/theme_service.dart';
 import 'package:sidekick/app/widgets/theme.dart';
 import 'package:sidekick/data/services/configuration_service.dart';
 import 'package:sidekick/data/services/good_things_service.dart';
@@ -64,6 +66,22 @@ Future<GoRouter> pumpApp(
   );
   getIt.registerSingleton<GoodThingsService>(
     goodThingsService ?? FakeGoodThingsService(),
+  );
+
+  // The real service over the fake settings: it is a plain notifier holder,
+  // so faking it would only duplicate it. initialize() is awaited so values a
+  // test primed into the settings fake are already applied at first build.
+  final ThemeService themeService =
+      ThemeService(deviceSettingsService: getIt<DeviceSettingsService>());
+  await themeService.initialize();
+  getIt.registerSingleton<ThemeService>(themeService);
+
+  // The reminder rows on the Me tab read from this. The fake stubs only the
+  // two calls that reach the platform.
+  getIt.registerSingleton<NotificationService>(
+    FakeNotificationService(
+      deviceSettingsService: getIt<DeviceSettingsService>(),
+    ),
   );
 
   final GoRouter router = AppRouter.create(

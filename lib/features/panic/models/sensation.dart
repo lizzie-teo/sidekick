@@ -22,6 +22,10 @@ enum Sensation {
           "That's all it's doing.",
       "It feels awful. It isn't hurting you. It slows down on its own.",
     ],
+    voiceClips: <String>[
+      'assets/audio/06-C1a-speed082.mp3',
+      'assets/audio/06-C1b-speed082.mp3',
+    ],
   ),
   cantBreathe(
     label: "I can't get a full breath",
@@ -30,6 +34,10 @@ enum Sensation {
           'You are still taking in all the air you need.',
       'Reaching for a bigger breath makes it tighter. A long, slow breath '
           'out is what loosens it.',
+    ],
+    voiceClips: <String>[
+      'assets/audio/07-C2a-speed082.mp3',
+      'assets/audio/07-C2b-speed082.mp3',
     ],
   ),
   faint(
@@ -40,6 +48,10 @@ enum Sensation {
       'The light-headed feeling is fast breathing, not a warning. It eases '
           'as the out-breath gets longer.',
     ],
+    voiceClips: <String>[
+      'assets/audio/08-C3a-speed088.mp3',
+      'assets/audio/08-C3b-speed088.mp3',
+    ],
   ),
   tingling(
     label: 'My hands are tingling',
@@ -47,6 +59,10 @@ enum Sensation {
       'Breathing fast changes the mix of gases in your blood, and that makes '
           'hands, feet and lips tingle.',
       'It is harmless, and it fades within a few minutes of slower breathing.',
+    ],
+    voiceClips: <String>[
+      'assets/audio/09-C4a-speed082.mp3',
+      'assets/audio/09-C4b-speed082.mp3',
     ],
   );
 
@@ -59,5 +75,20 @@ enum Sensation {
   // the pacer once the counted breaths are done.
   final List<String> script;
 
-  const Sensation({required this.label, required this.script});
+  // One recording per line of `script`, in the same order.
+  //
+  // The pair was read as one performance and arrived as one file, which made
+  // the second line a line with no voice of its own -- it could only be heard
+  // by not interrupting the first. It is cut in two now, on the silence the
+  // reader left between the sentences, so a line and its recording are one
+  // thing again. The originals are kept in `assets/audio/_source/`, which is
+  // not bundled: a folder entry in pubspec.yaml takes the files directly
+  // inside it and no deeper.
+  final List<String> voiceClips;
+
+  const Sensation({
+    required this.label,
+    required this.script,
+    required this.voiceClips,
+  });
 }
