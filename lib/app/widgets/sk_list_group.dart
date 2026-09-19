@@ -70,6 +70,12 @@ class SkListGroup extends StatelessWidget {
 // widget (usually SkToggle), and a chevron. Destructive turns the label red.
 class SkRow extends StatelessWidget {
   final String label;
+
+  // A second line under the label, for something the row has to say about
+  // itself -- a setting the phone is refusing, a consequence of the toggle
+  // beside it. Null on almost every row, and it takes no height when it is.
+  final String? caption;
+
   final String? value;
   final Widget? trailing;
   final bool chevron;
@@ -79,6 +85,7 @@ class SkRow extends StatelessWidget {
   const SkRow({
     super.key,
     required this.label,
+    this.caption,
     this.value,
     this.trailing,
     this.chevron = false,
@@ -96,11 +103,24 @@ class SkRow extends StatelessWidget {
       child: Row(
         children: [
           Expanded(
-            child: Text(
-              label,
-              style: SkText.rowLabel.copyWith(
-                color: destructive ? sk.destructive : sk.ink,
-              ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  label,
+                  style: SkText.rowLabel.copyWith(
+                    color: destructive ? sk.destructive : sk.ink,
+                  ),
+                ),
+                if (caption != null) ...[
+                  const SizedBox(height: 4),
+                  Text(
+                    caption!,
+                    style: SkText.caption.copyWith(color: sk.muted),
+                  ),
+                ],
+              ],
             ),
           ),
           if (value != null) ...[

@@ -3,6 +3,33 @@ import 'package:flutter/material.dart';
 // The app's colour slots, from _docs/design-guidelines. Widgets read these
 // through context.sk, never a hex literal, so a theme swap replaces one
 // object and nothing else.
+//
+// **There is deliberately no pool, glow or shadow behind the sidekick, and
+// adding one back will not fix her contrast.** There used to be a `sceneGlow`
+// slot and an `SkCharacterGlow` widget; both were measured, built, looked at
+// on the simulator on 19 September 2026, and taken out. The reason is the
+// characters, not the colours:
+//
+// | Character | Lightest part | Darkest part |
+// | --- | --- | --- |
+// | Girl | dress, luminance 0.97 | hair, 0.14 |
+// | Cat | fur, 0.97 | points, 0.02 |
+//
+// Each one spans nearly the whole range from white to black, so every
+// backdrop matches some part of her, and the two want opposite pools. The
+// measured ceiling for one pool colour serving both is 1.9:1; the girl alone
+// wants a near-black pool and the cat a mid tone. Worse, the two ends are in
+// tension with how it looks:
+//
+// - Strong enough to reach 2-3:1, the pool renders as a hard dark egg behind
+//   her and, on Home, covered a word of the tagline underneath.
+// - Soft enough to look calm, it falls back to 1.0-1.5:1, which is where it
+//   started -- because a half-faded pool blends with the scene into a mid
+//   brown, the exact tone of the girl's hair.
+//
+// No setting is both. If her contrast needs fixing, the separation has to
+// travel with her silhouette -- an outline or rim in the Rive file, whose
+// colour the theme can drive -- not sit behind her in a box.
 @immutable
 class SkColors extends ThemeExtension<SkColors> {
   // Surfaces.
@@ -31,12 +58,6 @@ class SkColors extends ThemeExtension<SkColors> {
   final List<Color> scene;
   final Color onScene;
 
-  // The pool of light the sidekick stands in. A separate slot because the
-  // scene's own deepest stop is the colour already under her -- painting with
-  // it shows nothing. This one is a step darker than the whole gradient in
-  // light mode, and a step lighter in dark, so she lifts off either way.
-  final Color sceneGlow;
-
   const SkColors({
     required this.canvas,
     required this.surface,
@@ -54,7 +75,6 @@ class SkColors extends ThemeExtension<SkColors> {
     required this.panic,
     required this.scene,
     required this.onScene,
-    required this.sceneGlow,
   });
 
   static const SkColors light = SkColors(
@@ -74,7 +94,6 @@ class SkColors extends ThemeExtension<SkColors> {
     panic: Color(0xFFC2542A),
     scene: [Color(0xFFE6E6C8), Color(0xFFCFD9AE), Color(0xFFB6C795)],
     onScene: Color(0xFF33421F),
-    sceneGlow: Color(0xFF6E8C55),
   );
 
   static const SkColors dark = SkColors(
@@ -97,7 +116,6 @@ class SkColors extends ThemeExtension<SkColors> {
     panic: Color(0xFFC2542A),
     scene: [Color(0xFF54704A), Color(0xFF47603F), Color(0xFF3A5035)],
     onScene: Color(0xFFEEF3D9),
-    sceneGlow: Color(0xFF86A86A),
   );
 
   // The scene gradient ready to use as a decoration fill.
@@ -127,7 +145,6 @@ class SkColors extends ThemeExtension<SkColors> {
     Color? panic,
     List<Color>? scene,
     Color? onScene,
-    Color? sceneGlow,
   }) {
     return SkColors(
       canvas: canvas ?? this.canvas,
@@ -146,7 +163,6 @@ class SkColors extends ThemeExtension<SkColors> {
       panic: panic ?? this.panic,
       scene: scene ?? this.scene,
       onScene: onScene ?? this.onScene,
-      sceneGlow: sceneGlow ?? this.sceneGlow,
     );
   }
 
@@ -173,7 +189,6 @@ class SkColors extends ThemeExtension<SkColors> {
           Color.lerp(scene[i], other.scene[i], t)!,
       ],
       onScene: Color.lerp(onScene, other.onScene, t)!,
-      sceneGlow: Color.lerp(sceneGlow, other.sceneGlow, t)!,
     );
   }
 }

@@ -6,6 +6,7 @@ import 'package:sidekick/app/core/auth_service.dart';
 import 'package:sidekick/app/core/auth_state_service.dart';
 import 'package:sidekick/app/core/device_settings_service.dart';
 import 'package:sidekick/app/core/logger_service.dart';
+import 'package:sidekick/app/core/notification_service.dart';
 import 'package:sidekick/data/models/entities/configuration_model.dart';
 import 'package:sidekick/data/models/entities/good_thing_model.dart';
 import 'package:sidekick/data/services/configuration_service.dart';
@@ -294,4 +295,48 @@ class FakeGoodThingsService implements GoodThingsService {
 
     return matched;
   }
+}
+
+// The real NotificationService over a fake settings store, with the two calls
+// that touch the platform stubbed out.
+//
+// It extends rather than implements because everything else on the service --
+// the notifiers, the setters, the write-through -- is ordinary Dart worth
+// exercising. Only the plugin calls have to go.
+//
+// `granted` is what the permission prompt answers. A test flips it to false to
+// cover the refusal path, which is the one branch that decides whether a
+// settings row is allowed to say a reminder is on.
+class FakeNotificationService extends NotificationService {
+  bool granted;
+
+  // How many times the alerts were re-booked, so a test can prove a setter
+  // re-schedules rather than only writing a preference.
+  int refreshCount = 0;
+
+  FakeNotificationService({
+    required super.deviceSettingsService,
+    this.granted = true,
+  }) : super(loggerService: SilentLoggerService());
+
+  @override
+  Future<bool> requestPermission() async => granted;
+
+  @override
+  Future<void> refresh() async {
+    refreshCount++;
+  }
+
+  // The tap notifier is overridden rather than reached into, so a test can
+  // deliver a tap that only the plugin could otherwise produce.
+  final ValueNotifier<ReminderTap?> _tapped = ValueNotifier<ReminderTap?>(null);
+
+  @override
+  ValueListenable<ReminderTap?> get tapped => _tapped;
+
+  @override
+  void clearTap() => _tapped.value = null;
+
+  // Stands in for a tap on a real alert.
+  void pretendTapped(ReminderTap tap) => _tapped.value = tap;
 }

@@ -9,9 +9,13 @@ import 'package:sidekick/app/widgets/sk_colors.dart';
 // from the ColorScheme. The ColorScheme below only keeps stray Material
 // widgets (dialogs, text selection) on-palette.
 
-ThemeData appTheme() => _themeFrom(SkColors.light, Brightness.light);
+// Called with a palette's colours. The defaults keep harnesses that do not
+// care about palettes -- tests, the preview -- on the standard one.
+ThemeData appTheme([SkColors sk = SkColors.light]) =>
+    _themeFrom(sk, Brightness.light);
 
-ThemeData appDarkTheme() => _themeFrom(SkColors.dark, Brightness.dark);
+ThemeData appDarkTheme([SkColors sk = SkColors.dark]) =>
+    _themeFrom(sk, Brightness.dark);
 
 ThemeData _themeFrom(SkColors sk, Brightness brightness) {
   final ColorScheme scheme = ColorScheme.fromSeed(

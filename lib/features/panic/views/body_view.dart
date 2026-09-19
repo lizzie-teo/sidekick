@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:sidekick/app/core/app_constants.dart';
+import 'package:sidekick/app/core/service_locator.dart';
+import 'package:sidekick/app/core/theme_service.dart';
 import 'package:sidekick/app/widgets/sk_character.dart';
-import 'package:sidekick/app/widgets/sk_character_glow.dart';
 import 'package:sidekick/app/widgets/sk_colors.dart';
 import 'package:sidekick/app/widgets/sk_outline_button.dart';
 import 'package:sidekick/app/widgets/sk_scene_panel.dart';
@@ -99,8 +100,12 @@ class BodyView extends StatelessWidget {
               SizedBox(
                 height: _characterHeight(context),
                 child: IgnorePointer(
-                  child: SkCharacterGlow(
-                    child: SkCharacter(),
+                  // The chosen character, same as Home and the breathing.
+                  // Leaving it at the default put the girl on screen for
+                  // someone who had picked the cat, so the sidekick changed
+                  // identity twice inside one panic flow.
+                  child: SkCharacter(
+                    skin: getIt<ThemeService>().character.value.skin,
                   ),
                 ),
               ),

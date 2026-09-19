@@ -503,6 +503,7 @@ explicit call in the second phase of `setupServiceLocator()`.
 | `lib/app/core/auth_state_service.dart` | Signed-in or not, as the router's `refreshListenable` |
 | `lib/app/core/secure_local_storage.dart` | Session in the platform keystore |
 | `lib/app/core/device_settings_service.dart` | Small settings that live on the phone only |
+| `lib/app/core/theme_service.dart` | The three appearance choices: light/dark, palette, character |
 | `lib/data/services/good_things_service.dart` | Reads and writes the `good_things` table |
 | `lib/features/good_things/models/good_things_arguments.dart` | How another screen pre-fills the first line |
 | `lib/app/utilities/date_format_utils.dart` | "Today", "Yesterday", "5 September 2025" |
@@ -529,7 +530,15 @@ animates between routes and could do neither.
 The panic button opens the **breathing**, not the feeling picker. It is
 pressed by someone who could not wait, and a question in front of the pacer is
 a gate. The picker is still there behind the Home CTA, which is the unhurried
-door and the only way to the three Play faces.
+door into the three Play faces.
+
+**The scribble pad has its own door on Home.** The soft button that used to
+say "Play" and do nothing now says "Scribble" and pushes `Routes.scribble`.
+The picker's Wound up face still leads there too, and both doors are wanted:
+somebody who already knows they want to scribble should not have to name a
+feeling first, and somebody arriving through the picker should not be shown a
+screen they did not ask for. The pad's own two doors pop, so either route
+comes back where it started.
 
 The words themselves, the order they are read in and the rules behind both
 flows are written out in `_docs/affirmation-flow.md`. That document is the
@@ -594,6 +603,15 @@ is poor, and a line that is gone before it is taken in is worse than no line:
 it reads as the screen rushing them. The holds live in
 `BreathingViewModel.leadIn` and nowhere else.
 
+**`Idle` is not a Home-screen animation. It plays here too, for the whole
+lead-in.** `BreathingView` passes `startBreathing: state.isBreathing`, and
+`isBreathing` stays false until the three beats are done, so the state machine
+sits in `Idle` -- not `Breathe` -- for seven seconds in front of somebody
+mid-panic. Everything the pacer forbids therefore binds `Idle` as well: no
+snap, no startle, no fidget that could be read as an event. A planned ear
+flick was cut for exactly this reason. Anything added to `Idle` in future has
+to clear the same bar, however harmless it looks on Home.
+
 **The animation is the clock, and it says so out loud.** `assets/rive/character.riv`
 carries two Rive **events**, `inhale` and `exhale`, keyed on the `Breathe`
 timeline. The state machine reports each one as the playhead crosses it, and
@@ -611,11 +629,20 @@ triggers on their `fire` property (key 869) -- a keyframe kind the Rive
 editor can neither show nor list. The editor rewrites a timeline from what
 it can see, so every editor session silently deleted the two keys and the
 breathing screen went quiet, which forced a standing "re-add the keys before
-every export" rule. Event keys are ordinary, visible timeline keys: the
-editor preserves them, and a missing one can be seen at a glance. **That
-rule is dead.** What remains is: anything added to the `Breathe` timeline
-must keep the two event keys, and after any editor session, glance at the
-timeline to see they are still there. The old trigger properties
+every export" rule. Event keys are ordinary, visible timeline keys, so the
+swap was expected to end the problem.
+
+**It did not, and the standing rule is back in a better shape.** The
+ragdoll-cat rebuild on 19 September 2026 lost both event keys and the breath
+counter went dead in exactly the old way. So an editor session can still
+remove them, and the check cannot be a glance at the timeline -- that is what
+missed it. Nor can it be `queryKeyFrames`, which cannot see event keys and
+reports a healthy timeline as having none. The one check that works is
+simulating the state machine in the editor: fire `startBreathe` and look for
+two `"kind":"event"` entries in the trace. Run it after **every** editor
+session, whatever was touched. `.claude/skills/breath-events/SKILL.md` holds
+the call, the repair and the export recipe; invoke it as `/breath-events`.
+The old trigger properties
 `inhale`/`exhale` still exist in the file with their `toSource` binds; they
 are unused and harmless, kept because deleting them is riskier than ignoring
 them. The file stays single on purpose: a separate "breathing copy" was
@@ -673,15 +700,39 @@ rather than reordering them. Two rules follow:
 text does three jobs in turn, and the reader is never given two blocks to
 choose between:
 
-| Stage | What the band holds | Counter |
-| --- | --- | --- |
-| Lead-in | The three beats | No |
-| The counted set | `inhaleCue` / `exhaleCue`, `countedBreaths` breaths | Yes |
-| After it | The script, one line per Next | No |
+| Stage | What the band holds |
+| --- | --- |
+| Lead-in | The three beats |
+| The counted set | `inhaleCue` / `exhaleCue`, `countedBreaths` breaths |
+| After it | The script, one line per Next |
 
 The words **take the cue's own line** rather than opening a block under her.
 Two things to read at the peak of a panic attack is one too many, and a block
 that appears below her would push her up the screen.
+
+**There is no "Breath 1 of 2" counter, and no state for one.** It was removed
+on 19 September 2026 for the same rule that shapes the table above: it was a
+second thing to read, and a number in front of somebody mid-panic reads as a
+target whether or not it was meant as one. `countedBreaths` still decides when
+the words open; it is simply no longer reported. Do not add it back.
+
+**A flower blooms behind her, and it is not a second clock.**
+`BreathFlower` (`lib/features/panic/widgets/`) paints six pale circles that
+push out on the in-breath and fold back on the out, driven by the same two
+Rive events her body runs on -- every event re-anchors the ramp, so it cannot
+drift from her. It exists because her body alone was reported as not obvious
+enough to breathe along with. Three things about it are decisions, not taste:
+
+- **It is the pale slot, never the dark one.** A dark flower is a shadow: the
+  eye lands on it and she becomes the hole in it. `canvas` is the pale slot in
+  every light palette, `onScene` the pale one in every dark one, which is what
+  the one brightness branch in `BreathingView` is for.
+- **It paints under the whole screen, not inside her band.** Her head sits
+  near the top of that band, so a flower centred on her head could only be as
+  wide as her head before it covered the line above. The bloom passes behind
+  the words instead.
+- **Its centre was measured off the running app**, not calculated. Moving any
+  band on this screen means looking at `_centreY` again.
 
 The cue keeps being updated under the words even though nothing shows it. It
 is the pacer reporting, not the screen deciding, and stopping it would mean
@@ -714,6 +765,53 @@ failure mode here, never brevity.
 **The closing must not congratulate.** "You did it" is a score, and somebody
 still panicking has then failed a test. The pair says the time has passed and
 removes the deadline, and nothing anywhere on this screen reports how it went.
+
+**The screen is read out loud, and the voice says exactly what the band
+shows.** `assets/audio/` holds one recording per beat, per cue and per script
+line, cut from the session `_docs/briefs/voice-scripts/01-panic-breathing.md`
+was written for. `PanicVoice` (`lib/features/panic/services/`) wraps a single
+`just_audio` player, and the "one thing at a time, in one place" rule survives
+being spoken because one player can only hold one clip: starting a clip
+replaces whatever was playing, so two voices at once is not a state the screen
+can reach.
+
+Four things about it are decisions, not plumbing:
+
+- **The clip paths live next to the words they say** -- on `Sensation`, on
+  `BreathingScript`, on `BreathingViewModel.leadIn` -- so a line and its
+  recording cannot drift apart unnoticed. `test/panic_voice_clips_test.dart`
+  checks every path against the disk, because the file names carry a speed
+  suffix that changes on every re-record and a wrong one fails at runtime,
+  silently, on the one screen where nobody can report it.
+- **One line, one recording, no exceptions.** The five opening pairs arrived as
+  one file each, read as one performance, and that made the second line of an
+  opening audible only by *not* interrupting the first -- so Next had to know
+  which lines were safe to speak over, and the player grew a "leave it alone"
+  case. The files were cut in half instead, on the reader's own pause between
+  the sentences, with the originals kept in `assets/audio/_source/` (not
+  bundled: a folder entry in `pubspec.yaml` takes the files directly inside it
+  and no deeper). `BreathingScript.clipsForSensation()` runs beside
+  `forSensation()`, one clip per line, no gaps.
+- **The cue is spoken only while the cue has the band** -- the counted set, and
+  an extension after the script. Under the words it keeps being updated and
+  stays silent: that is the pacer reporting, and a voice reading it there would
+  talk over the line being read.
+- **The speaker button is the one control that does not wait for a stage.** It
+  is in the top right from the first frame, next to the X, because somebody who
+  opened this in an office needs it before the first beat speaks. The answer is
+  remembered in `SettingsKeys.panicVoiceEnabled`, and the lead-in does **not**
+  wait for that read -- the first beat goes up on the same frame and a stored
+  "off" catches up a moment later. A blank screen in front of a panic attack
+  costs more than a fraction of a second of voice.
+
+**Where a line and its recording disagree, the line moves.** The exhale cue was
+shortened to "Out through your mouth." on 19 September 2026 and put back to
+"Out slowly, through your mouth." the same day, when the recordings arrived
+carrying the brief's wording. The shortening was right on its own terms, and it
+still lost: a reader trying to follow one instruction must not be given two
+slightly different ones, and that costs more than the moment the longer line
+takes to read. Changing a line in `breathing_script.dart`, `sensation.dart` or
+`BreathingViewModel.leadIn` now means re-cutting its clip, or not changing it.
 
 **The way out is three doors, and none of them is the wrong kind of leaving.**
 Leaving mid-panic must never read as failing, so no single door is made to
@@ -771,6 +869,31 @@ Deliberately absent -- do not add without being asked:
 - `StateScope` in `app_constants.dart` is a placeholder enum with nothing behind
   it yet. It marks the intended split between application-scoped and
   session-scoped state.
+
+## Skills
+
+Each one is a folder under `.claude/skills/`, holding a `SKILL.md`. Invoke one
+by name with a leading slash, or just describe the job and it loads itself.
+
+| Skill | What it is for | Reach for it when |
+| --- | --- | --- |
+| `/rive-animator` | Animating the character in `assets/rive/character.riv` through the Rive editor MCP | Before the first `mcp__rive__` call -- timelines, state machines, tap reactions, idles, the pacer |
+| `/breath-events` | Checking and repairing the two Rive events the breath counter runs on | The count stops incrementing, the in/out cue stops swapping, or any Rive session touched `Breathe` |
+| `/meditation-writer` | Writing or editing a guided meditation or relaxation script | The Meditate tab, body scans, grounding, sleep. **Not** the panic script -- that is `_docs/affirmation-flow.md` |
+
+This table is maintained by hand, so it can fall behind. Typing `/` in Claude
+Code lists the live set, personal skills included, and that list is always
+right. Adding a skill means adding a row here.
+
+## Prompt shortcuts
+
+When a prompt contains one of these tokens on its own (e.g. "ra fix the blink",
+"use lm here"), expand it:
+
+| Token | Means |
+| --- | --- |
+| `ra` | Load the `rive-animator` skill before doing anything else |
+| `lm` | Read `_docs/skills/lively-motion.md` and apply it |
 
 ## Comments
 

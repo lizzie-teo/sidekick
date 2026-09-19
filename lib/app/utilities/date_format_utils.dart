@@ -77,6 +77,21 @@ abstract final class DateFormatUtils {
     return '${target.day} ${_months[target.month - 1]} ${target.year}';
   }
 
+  // Whole days from `then` to `now`, counted midnight to midnight. Negative
+  // for a date in the future, which a hand-edited preference can produce.
+  //
+  // Rounded rather than floored, unlike dayLabel above, because this one spans
+  // months. Two midnights either side of a clocks change are 23 or 25 hours
+  // per day apart, so flooring loses a day permanently the first spring after
+  // a date is stamped -- and this number is on screen every day, not just on
+  // the day it changes.
+  static int daysSince(DateTime then, {DateTime? now}) {
+    final Duration span =
+        _startOfDay(now ?? DateTime.now()).difference(_startOfDay(then));
+
+    return (span.inHours / 24).round();
+  }
+
   static DateTime _startOfDay(DateTime value) =>
       DateTime(value.year, value.month, value.day);
 }

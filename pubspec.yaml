@@ -24,10 +24,25 @@ dependencies:
   # Used for playing Rive animations
   rive: ^0.15.0-dev.1
 
+  # Used for the daily reminders. Local notifications only -- the phone holds
+  # the alert itself, so there is no server, no push token and no cost, and it
+  # works with no connection. `timezone` is what lets an alert be booked for
+  # 8:30 pm in the user's own zone rather than drifting an hour at the
+  # daylight-saving change; `flutter_timezone` is what asks the phone which
+  # zone that is.
+  flutter_local_notifications: ^18.0.1
+  timezone: ^0.9.4
+  flutter_timezone: ^3.0.1
+
   # Used for device-local settings: the day's pairing, the onboarding answers.
   # Losing any of it costs the user nothing, which is why it is not on the
   # server.
   shared_preferences: ^2.3.0
+
+  # Used for the recorded voice on the breathing screen. One player, one clip
+  # at a time -- see PanicVoice for why a second player would be a bug rather
+  # than a feature.
+  just_audio: ^0.9.42
 
 dev_dependencies:
   flutter_test:
@@ -44,13 +59,34 @@ flutter:
   fonts:
     - family: Lexend
       fonts:
+        - asset: assets/fonts/Lexend-Thin.ttf
+          weight: 100
+        - asset: assets/fonts/Lexend-ExtraLight.ttf
+          weight: 200
+        - asset: assets/fonts/Lexend-Light.ttf
+          weight: 300
         - asset: assets/fonts/Lexend-Regular.ttf
           weight: 400
+        - asset: assets/fonts/Lexend-Medium.ttf
+          weight: 500
         - asset: assets/fonts/Lexend-SemiBold.ttf
           weight: 600
         - asset: assets/fonts/Lexend-Bold.ttf
           weight: 700
+        - asset: assets/fonts/Lexend-ExtraBold.ttf
+          weight: 800
+        - asset: assets/fonts/Lexend-Black.ttf
+          weight: 900
 
   assets:
     - assets/images/
     - assets/rive/
+    - assets/audio/
+
+  # Fragment shaders, compiled by the build and loaded through ShaderCache.
+  # They are listed one by one rather than by folder: Flutter has no folder
+  # form for shaders, and a missing line fails at runtime, not at build.
+  shaders:
+    - shaders/halo_soft.frag
+    - shaders/halo_warm.frag
+    - shaders/halo_mist.frag

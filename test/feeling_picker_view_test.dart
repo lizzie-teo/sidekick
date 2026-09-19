@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:sidekick/app/core/app_constants.dart';
+import 'package:sidekick/app/core/service_locator.dart';
+import 'package:sidekick/app/core/theme_service.dart';
 import 'package:sidekick/app/widgets/sk_colors.dart';
 import 'package:sidekick/app/widgets/sk_rive_face.dart';
 import 'package:sidekick/features/panic/models/feeling.dart';
@@ -58,13 +60,36 @@ void main() {
     await pumpApp(tester, location: Routes.panic, isAuthenticated: true);
 
     // The Rive runtime cannot load in a widget test, so what is pinned is the
-    // wiring: each button asks for its own feeling's artboard by name.
+    // wiring: each button asks for its own feeling's artboard by name, and
+    // the name carries the character the user chose.
     for (final Feeling feeling in Feeling.values) {
       final Finder face = find.byWidgetPredicate(
         (Widget widget) =>
-            widget is SkRiveFace && widget.artboard == feeling.artboard,
+            widget is SkRiveFace &&
+            widget.artboard ==
+                feeling.artboardFor(SidekickCharacter.girl),
       );
       expect(face, findsOneWidget, reason: 'no face on ${feeling.label}');
+    }
+  });
+
+  testWidgets('the faces follow the chosen character', (tester) async {
+    await pumpApp(tester, location: Routes.panic, isAuthenticated: true);
+
+    await getIt<ThemeService>().setCharacter(SidekickCharacter.cat);
+    await tester.pumpAndSettle();
+
+    // Every face swaps, not just the one on screen, and the girl's stays the
+    // fallback -- a character can reach this enum before its faces are drawn.
+    for (final Feeling feeling in Feeling.values) {
+      final Finder face = find.byWidgetPredicate(
+        (Widget widget) =>
+            widget is SkRiveFace &&
+            widget.artboard == feeling.artboardFor(SidekickCharacter.cat) &&
+            widget.fallbackArtboard ==
+                feeling.artboardFor(SidekickCharacter.girl),
+      );
+      expect(face, findsOneWidget, reason: 'no cat face on ${feeling.label}');
     }
   });
 
@@ -81,15 +106,31 @@ void main() {
     await tester.pumpAndSettle();
     expect(_filledButtons(tester), 1);
 
-    // Picking again moves the mark rather than adding a second one. Two Play
-    // faces are used because the panic face now navigates to the breathing
-    // screen, whose Rive runtime cannot load in a widget test. The list
+    // Picking again moves the mark rather than adding a second one. The two
+    // faces that still lead nowhere are used, because the others navigate
+    // away -- panic to the breathing, wound up to the muscle script. The list
     // scrolls, so the lower button must be brought on screen before the tap.
+    await tester.ensureVisible(find.text(Feeling.actuallyOkay.label));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text(Feeling.actuallyOkay.label));
+    await tester.pumpAndSettle();
+    expect(_filledButtons(tester), 1);
+  });
+
+  // Not the scribble pad, which this face used to lead to. A hard, fast
+  // scribble raises arousal, and the anger evidence says that does not reduce
+  // anger and sometimes increases it. The pad is still in the app, reached
+  // from Home by somebody who is not angry.
+  testWidgets('Wound up goes to the muscle script', (tester) async {
+    final router = await pumpApp(tester, location: Routes.panic,
+        isAuthenticated: true);
+
     await tester.ensureVisible(find.text(Feeling.woundUp.label));
     await tester.pumpAndSettle();
     await tester.tap(find.text(Feeling.woundUp.label));
     await tester.pumpAndSettle();
-    expect(_filledButtons(tester), 1);
+
+    expect(router.state.uri.path, Routes.tighten);
   });
 
   testWidgets('Just looking goes back with nothing asked', (tester) async {

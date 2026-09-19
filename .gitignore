@@ -68,3 +68,12 @@ env.json
 # Design source archives. The wireframes are tracked unzipped in
 # _docs/design-guidelines/; the zip is a 23MB duplicate of the same thing.
 _docs/briefs/*.zip
+
+# Claude Code worktrees. These are whole extra checkouts of this repo
+# (~176MB), not source. The skills in .claude/skills/ are tracked.
+.claude/worktrees/
+.claude/scheduled_tasks.lock
+
+# Third-party animation books. Reference material, not ours to publish,
+# and this repo is public. The notes drawn from them are tracked as .md.
+_docs/skills/*.pdf

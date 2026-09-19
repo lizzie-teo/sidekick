@@ -4,11 +4,17 @@ import 'package:go_router/go_router.dart';
 import 'package:sidekick/app/core/app_constants.dart';
 import 'package:sidekick/app/core/auth_service.dart';
 import 'package:sidekick/app/core/auth_state_service.dart';
+import 'package:sidekick/app/core/device_settings_service.dart';
 import 'package:sidekick/app/core/logger_service.dart';
+import 'package:sidekick/app/core/notification_service.dart';
 import 'package:sidekick/app/core/service_locator.dart';
+import 'package:sidekick/app/core/theme_service.dart';
+import 'package:sidekick/app/widgets/sk_palettes.dart';
+import 'package:sidekick/app/widgets/sk_pressable.dart';
 import 'package:sidekick/app/widgets/sk_colors.dart';
 import 'package:sidekick/app/widgets/sk_list_card.dart';
 import 'package:sidekick/app/widgets/sk_list_group.dart';
+import 'package:sidekick/app/widgets/sk_rive_face.dart';
 import 'package:sidekick/app/widgets/sk_segmented.dart';
 import 'package:sidekick/app/widgets/sk_main_tab_bar.dart';
 import 'package:sidekick/app/widgets/sk_text.dart';
@@ -29,15 +35,27 @@ class _MeViewState extends State<MeView> {
     loggerService: getIt<LoggerService>(),
     authService: getIt<AuthService>(),
     authStateService: getIt<AuthStateService>(),
+    themeService: getIt<ThemeService>(),
+    deviceSettingsService: getIt<DeviceSettingsService>(),
+    notificationService: getIt<NotificationService>(),
   );
 
-  // Placeholder toggle positions. Widget-owned because nothing persists them
-  // yet; they move into a viewmodel the day they are stored.
+  // Placeholder toggle positions, for the two rows that are not reminders.
+  // Widget-owned because nothing persists them yet; they move into a viewmodel
+  // the day they are stored.
+  //
+  // The lock-screen panic button is an iOS Live Activity / Android widget, and
+  // "Vibrate with the breathing" is haptics on the pacer. Neither is a
+  // notification, so neither belongs to NotificationService.
   bool _lockScreen = true;
   bool _vibrate = true;
-  bool _checkIn = true;
-  bool _nudge = false;
-  int _appearance = 2;
+
+  // The segmented control's slots, in label order: Light, Dark, Auto.
+  static const List<ThemeMode> _modes = <ThemeMode>[
+    ThemeMode.light,
+    ThemeMode.dark,
+    ThemeMode.system,
+  ];
 
   @override
   void initState() {
@@ -55,6 +73,26 @@ class _MeViewState extends State<MeView> {
     // The preview harness has no router; taps are inert there.
     if (GoRouter.maybeOf(context) == null) return;
     context.push(Routes.connect);
+  }
+
+  // Minutes past midnight as the phone would write it: "8:30 pm".
+  String _clock(int minutes) {
+    final TimeOfDay time = TimeOfDay(hour: minutes ~/ 60, minute: minutes % 60);
+    return MaterialLocalizations.of(context)
+        .formatTimeOfDay(time, alwaysUse24HourFormat: false);
+  }
+
+  // The platform's own time picker. Dismissing it changes nothing, which is
+  // what a settings row should do when the user backs out of it.
+  Future<void> _pickTime(int minutes, Future<void> Function(int) onPicked) async {
+    final TimeOfDay? picked = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay(hour: minutes ~/ 60, minute: minutes % 60),
+    );
+
+    if (picked == null) return;
+
+    await onPicked(picked.hour * 60 + picked.minute);
   }
 
   @override
@@ -85,27 +123,21 @@ class _MeViewState extends State<MeView> {
 
                         const SizedBox(height: 22),
 
+                        // The card is the sidekick, never the user. There is
+                        // no name to take initials from -- the app asks for
+                        // one nowhere -- and an email is optional by design,
+                        // so most people have none. A grey circle with a
+                        // letter or a question mark would then be the normal
+                        // state, and an empty-looking avatar reads as a
+                        // prompt to sign up, which is the nagging this
+                        // product decided against. The account has its own
+                        // two signals further down the page.
                         SkListCard(
-                          leading: Container(
-                            width: 56,
-                            height: 56,
-                            decoration: BoxDecoration(
-                              gradient: sk.sceneGradient,
-                              shape: BoxShape.circle,
-                            ),
-                            clipBehavior: Clip.antiAlias,
-                            padding: const EdgeInsets.only(top: 6),
-                            child: Image.asset(
-                              'assets/images/panda-ok.png',
-                              fit: BoxFit.contain,
-                              // A missing drawing leaves the circle rather
-                              // than dropping a broken-image box into it.
-                              errorBuilder: (context, error, stack) =>
-                                  const SizedBox.shrink(),
-                            ),
+                          leading: _SidekickAvatar(
+                            character: state.character,
                           ),
                           title: 'Mochi',
-                          caption: 'Been with you 84 days',
+                          caption: state.sidekickCaption,
                           onTap: () {},
                         ),
 
@@ -113,9 +145,6 @@ class _MeViewState extends State<MeView> {
 
                         SkListGroup(
                           header: 'When you panic',
-                          footer:
-                              'Shown at the end of the panic flow if things '
-                              'get worse instead of better.',
                           children: [
                             SkRow(
                               label: 'Panic button on lock screen',
@@ -132,18 +161,6 @@ class _MeViewState extends State<MeView> {
                                 onChanged: (v) => setState(() => _vibrate = v),
                               ),
                             ),
-                            SkRow(
-                              label: 'Breathing pace',
-                              value: '4 in, 6 out',
-                              chevron: true,
-                              onTap: () {},
-                            ),
-                            SkRow(
-                              label: 'Someone to call',
-                              value: 'Mum',
-                              chevron: true,
-                              onTap: () {},
-                            ),
                           ],
                         ),
 
@@ -154,24 +171,48 @@ class _MeViewState extends State<MeView> {
                           children: [
                             SkRow(
                               label: 'Check in with me',
+                              caption: state.errors['checkIn'],
                               trailing: SkToggle(
-                                value: _checkIn,
-                                onChanged: (v) => setState(() => _checkIn = v),
+                                value: state.checkInEnabled,
+                                onChanged: _viewModel.setCheckInEnabled,
                               ),
                             ),
-                            SkRow(
-                              label: 'At',
-                              value: '8:30 pm',
-                              chevron: true,
-                              onTap: () {},
-                            ),
+                            // The time row is shown only while its reminder is
+                            // on. A time for an alert that will not fire is a
+                            // setting with nothing behind it.
+                            if (state.checkInEnabled)
+                              SkRow(
+                                label: 'At',
+                                value: _clock(state.checkInMinutes),
+                                chevron: true,
+                                onTap: () => _pickTime(
+                                  state.checkInMinutes,
+                                  _viewModel.setCheckInMinutes,
+                                ),
+                              ),
                             SkRow(
                               label: 'Nudge me for good things',
+                              caption: state.errors['goodThings'],
                               trailing: SkToggle(
-                                value: _nudge,
-                                onChanged: (v) => setState(() => _nudge = v),
+                                value: state.goodThingsEnabled,
+                                onChanged: _viewModel.setGoodThingsEnabled,
                               ),
                             ),
+                            // Its own time, not the check-in's. The two are
+                            // not the same errand -- one is read on the lock
+                            // screen and needs nothing, the other asks for a
+                            // line to be written -- and two alerts in the same
+                            // minute is one too many.
+                            if (state.goodThingsEnabled)
+                              SkRow(
+                                label: 'At',
+                                value: _clock(state.goodThingsMinutes),
+                                chevron: true,
+                                onTap: () => _pickTime(
+                                  state.goodThingsMinutes,
+                                  _viewModel.setGoodThingsMinutes,
+                                ),
+                              ),
                           ],
                         ),
 
@@ -192,9 +233,56 @@ class _MeViewState extends State<MeView> {
                                   Expanded(
                                     child: SkSegmented(
                                       labels: const ['Light', 'Dark', 'Auto'],
-                                      selected: _appearance,
+                                      selected: _modes.indexOf(state.mode),
                                       onChanged: (i) =>
-                                          setState(() => _appearance = i),
+                                          _viewModel.setMode(_modes[i]),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            // Its own block rather than a trailing: seven
+                            // dots do not fit beside a label on a narrow
+                            // phone, and the Wrap lets the set keep growing.
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 16, vertical: 12),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text('Colour',
+                                      style: SkText.rowLabel
+                                          .copyWith(color: sk.ink)),
+                                  const SizedBox(height: 10),
+                                  _PaletteDots(
+                                    selectedId: state.paletteId,
+                                    onChanged: _viewModel.setPalette,
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 16, vertical: 12),
+                              child: Row(
+                                children: [
+                                  Text('Your sidekick',
+                                      style: SkText.rowLabel
+                                          .copyWith(color: sk.ink)),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: SkSegmented(
+                                      // Read off the enum so the names live in
+                                      // one place and cannot drift from the
+                                      // order the tap is resolved against.
+                                      labels: <String>[
+                                        for (final SidekickCharacter c
+                                            in SidekickCharacter.values)
+                                          c.label,
+                                      ],
+                                      selected: state.character.index,
+                                      onChanged: (i) => _viewModel.setCharacter(
+                                          SidekickCharacter.values[i]),
                                     ),
                                   ),
                                 ],
@@ -292,6 +380,106 @@ class _MeViewState extends State<MeView> {
           ),
         ],
       ),
+    );
+  }
+}
+
+// The chosen character's resting face in a circle, above the settings that
+// change it. Picking Cat two rows down swaps this face in the same frame:
+// the segmented control writes to ThemeService, the viewmodel's watch folds
+// the new value into state, and this rebuilds with it.
+//
+// A still face rather than the animated `sidekick` artboard. She is
+// decoration on a settings page, and a state machine idling in a 56px circle
+// is a running animation behind every scroll of the list.
+class _SidekickAvatar extends StatelessWidget {
+  final SidekickCharacter character;
+
+  // Named here rather than taken from Feeling in the panic feature: one
+  // feature reaching into another's models is what the registry exists to
+  // prevent, and this is a four-word string.
+  static const String _artboardBase = 'feeling-actually-ok';
+
+  const _SidekickAvatar({required this.character});
+
+  @override
+  Widget build(BuildContext context) {
+    final SkColors sk = context.sk;
+
+    return Container(
+      width: 56,
+      height: 56,
+      decoration: BoxDecoration(
+        gradient: sk.sceneGradient,
+        shape: BoxShape.circle,
+      ),
+      clipBehavior: Clip.antiAlias,
+      alignment: Alignment.center,
+      // A character whose faces are not drawn yet falls back to the girl's,
+      // and a file missing both leaves the circle empty rather than throwing.
+      child: SkRiveFace(
+        artboard: '$_artboardBase-${character.riveName}',
+        fallbackArtboard: '$_artboardBase-${SidekickCharacter.girl.riveName}',
+        size: 48,
+      ),
+    );
+  }
+}
+
+// One dot per palette, filled with that palette's action colour, ringed when
+// it is the one in use. The row grows on its own as palettes are added to
+// SkPalettes.all -- nothing here names one.
+class _PaletteDots extends StatelessWidget {
+  final String selectedId;
+  final ValueChanged<String> onChanged;
+
+  const _PaletteDots({required this.selectedId, required this.onChanged});
+
+  @override
+  Widget build(BuildContext context) {
+    final SkColors sk = context.sk;
+
+    return Wrap(
+      spacing: 10,
+      runSpacing: 10,
+      children: [
+        for (final palette in SkPalettes.all)
+          SkPressable(
+            onPressed: () => onChanged(palette.id),
+            wash: sk.ink,
+            borderRadius: BorderRadius.circular(16),
+            child: Semantics(
+              label: palette.name,
+              button: true,
+              selected: palette.id == selectedId,
+              child: Container(
+                width: 32,
+                height: 32,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    // The ring says "chosen"; the unchosen keep a hairline
+                    // so a dot near the canvas colour still reads as a dot.
+                    color: palette.id == selectedId ? sk.ink : sk.hairline,
+                    width: palette.id == selectedId ? 2 : 1,
+                  ),
+                ),
+                child: Container(
+                  width: 22,
+                  height: 22,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    // The light action colour is the palette's signature;
+                    // showing the mode-matched one would make two dots of
+                    // the same palette look like different choices.
+                    color: palette.light.action,
+                  ),
+                ),
+              ),
+            ),
+          ),
+      ],
     );
   }
 }

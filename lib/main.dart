@@ -5,9 +5,13 @@ import 'package:go_router/go_router.dart';
 import 'package:rive/rive.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import 'package:sidekick/app/core/app_constants.dart';
+import 'package:sidekick/app/core/notification_service.dart';
 import 'package:sidekick/app/core/secure_local_storage.dart';
 import 'package:sidekick/app/core/service_locator.dart';
+import 'package:sidekick/app/core/theme_service.dart';
 import 'package:sidekick/app/views/error_view.dart';
+import 'package:sidekick/app/widgets/sk_palettes.dart';
 import 'package:sidekick/app/widgets/theme.dart';
 import 'package:sidekick/config.dart';
 
@@ -45,7 +49,38 @@ void main() async {
 
   await setupServiceLocator();
 
+  _routeNotificationTaps();
+
   runApp(const MainApp());
+}
+
+// Sends a tapped good-things nudge to the entry form.
+//
+// Only that one kind is routed here. A tapped check-in already lands on Home,
+// which is where it is going, and DashboardViewModel reads the line off the
+// tap so the lock screen and the app show the same sentence.
+//
+// This listens rather than reading once, because a tap can arrive two ways: as
+// a cold start, where NotificationService finds it during initialize(), and as
+// a tap on an app that was already running. Both set the same notifier.
+void _routeNotificationTaps() {
+  final NotificationService notifications = getIt<NotificationService>();
+
+  void handle() {
+    final ReminderTap? tap = notifications.tapped.value;
+    if (tap == null || tap.kind != ReminderKind.goodThings) return;
+
+    notifications.clearTap();
+
+    // The entry form, never the history. The nudge exists to get a line
+    // written, and history is the long view of lines already there.
+    getIt<GoRouter>().go(Routes.goodThings);
+  }
+
+  notifications.tapped.addListener(handle);
+
+  // A cold start has already set the notifier before this listener existed.
+  handle();
 }
 
 void _installErrorHandlers() {
@@ -72,6 +107,20 @@ class _AppLifecycleObserver extends WidgetsBindingObserver {
   Future<void> didChangeAppLifecycleState(AppLifecycleState state) async {
     if (state == AppLifecycleState.detached) {
       await disposeServices();
+      return;
+    }
+
+    // Coming back to the foreground re-checks whether the phone is still
+    // willing to show alerts, and tops the booked fortnight back up. Both
+    // answers can only come from the platform, and neither changes while the
+    // app is in the background where it could ask.
+    //
+    // Guarded because this observer is registered before the container is
+    // filled, so the very first resume can arrive before setupServiceLocator
+    // has run.
+    if (state == AppLifecycleState.resumed &&
+        getIt.isRegistered<NotificationService>()) {
+      await getIt<NotificationService>().onResumed();
     }
   }
 }
@@ -81,11 +130,24 @@ class MainApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp.router(
-      debugShowCheckedModeBanner: false,
-      theme: appTheme(),
-      darkTheme: appDarkTheme(),
-      routerConfig: getIt<GoRouter>(),
+    final ThemeService themeService = getIt<ThemeService>();
+
+    // Rebuilds on any appearance change from the Me tab. MaterialApp animates
+    // between the old ThemeData and the new one itself, so a palette or mode
+    // swap crossfades rather than snapping.
+    return ListenableBuilder(
+      listenable: themeService.changes,
+      builder: (context, child) {
+        final SkPalette palette = SkPalettes.byId(themeService.paletteId.value);
+
+        return MaterialApp.router(
+          debugShowCheckedModeBanner: false,
+          theme: appTheme(palette.light),
+          darkTheme: appDarkTheme(palette.dark),
+          themeMode: themeService.mode.value,
+          routerConfig: getIt<GoRouter>(),
+        );
+      },
     );
   }
 }
