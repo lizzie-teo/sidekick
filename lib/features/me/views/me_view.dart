@@ -19,6 +19,7 @@ import 'package:sidekick/app/widgets/sk_segmented.dart';
 import 'package:sidekick/app/widgets/sk_main_tab_bar.dart';
 import 'package:sidekick/app/widgets/sk_text.dart';
 import 'package:sidekick/app/widgets/sk_toggle.dart';
+import 'package:sidekick/features/me/services/data_export_service.dart';
 import 'package:sidekick/features/me/viewmodels/me_viewmodel.dart';
 
 // The Me tab: profile card, grouped settings, account actions. Most rows are
@@ -38,7 +39,11 @@ class _MeViewState extends State<MeView> {
     themeService: getIt<ThemeService>(),
     deviceSettingsService: getIt<DeviceSettingsService>(),
     notificationService: getIt<NotificationService>(),
+    dataExportService: getIt<DataExportService>(),
   );
+
+  // The export row, so the share sheet can be anchored to it on an iPad.
+  final GlobalKey _exportRowKey = GlobalKey();
 
   // Placeholder toggle positions, for the two rows that are not reminders.
   // Widget-owned because nothing persists them yet; they move into a viewmodel
@@ -73,6 +78,22 @@ class _MeViewState extends State<MeView> {
     // The preview harness has no router; taps are inert there.
     if (GoRouter.maybeOf(context) == null) return;
     context.push(Routes.connect);
+  }
+
+  // Builds the copy and opens the phone's share sheet over it. Mail is one
+  // choice in that sheet, which is how "send me a copy" actually reaches an
+  // inbox -- there is no mailer of our own, and there does not need to be.
+  Future<void> _sendCopy() async {
+    // Where the row is on screen. iPads and Macs anchor the popover to it;
+    // every other platform ignores it, and a row that somehow has no box
+    // leaves it null, which the sheet answers by centring itself rather than
+    // by failing.
+    final RenderObject? object = _exportRowKey.currentContext?.findRenderObject();
+    final Rect? origin = object is RenderBox && object.hasSize
+        ? object.localToGlobal(Offset.zero) & object.size
+        : null;
+
+    await _viewModel.exportEverything(origin: origin);
   }
 
   // Minutes past midnight as the phone would write it: "8:30 pm".
@@ -295,13 +316,29 @@ class _MeViewState extends State<MeView> {
 
                         SkListGroup(
                           header: 'Your stuff',
-                          footer: 'Everything you write stays on this phone. '
+                          // This used to say "Everything you write stays on
+                          // this phone", which was not true: good things go
+                          // to the account so they survive a new phone, and
+                          // only the settings are phone-only. A privacy line
+                          // that overclaims is worse than none at all, so it
+                          // now says what is actually kept and what is not.
+                          footer: 'Your good things are saved to your '
+                              'account, so they survive a new phone. Nothing '
+                              'else is kept: breathing, the panic screen and '
+                              'the feeling you pick all record nothing. '
                               'Deleting is immediate and can\'t be undone.',
                           children: [
                             SkRow(
+                              key: _exportRowKey,
                               label: 'Send me a copy of everything',
+                              // One caption doing two jobs, never both at
+                              // once: what is happening now, or why the last
+                              // try failed.
+                              caption: state.isExporting
+                                  ? 'Getting it ready...'
+                                  : state.errors['export'],
                               chevron: true,
-                              onTap: () {},
+                              onTap: state.isExporting ? null : _sendCopy,
                             ),
                             SkRow(
                               label: 'Delete everything',

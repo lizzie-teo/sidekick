@@ -11,9 +11,11 @@ import 'package:sidekick/app/widgets/sk_list_card.dart';
 import 'package:sidekick/app/widgets/theme.dart';
 import 'package:sidekick/features/dashboard/views/dashboard_view.dart';
 import 'package:sidekick/features/design_system/views/design_system_view.dart';
+import 'package:sidekick/features/design_system/views/orb_lab_view.dart';
 import 'package:sidekick/features/design_system/views/shader_lab_view.dart';
 import 'package:sidekick/features/design_system/views/theme_sheet_view.dart';
 import 'package:sidekick/features/me/views/me_view.dart';
+import 'package:sidekick/features/play/views/low_day_view.dart';
 
 // Screen preview: no Supabase, no router. Run with
 //   flutter run -d chrome -t lib/preview.dart
@@ -135,6 +137,25 @@ class _Launcher extends StatelessWidget {
                 title: 'Shader lab',
                 caption: 'Tune the breathing halo: shader, size, softness',
                 onTap: () => push(const ShaderLabView()),
+              ),
+              const SizedBox(height: 16),
+
+              // The blob orb, driven three ways. Idle is the one to judge:
+              // most of a meditation is nothing happening.
+              SkListCard(
+                title: 'Blob orb',
+                caption: 'Tune the gooey orb: shape, flow, level',
+                onTap: () => push(const OrbLabView()),
+              ),
+              const SizedBox(height: 16),
+
+              // The Low face, end to end. Seven minutes, so the first line
+              // holds four seconds before anything moves -- that is the
+              // script running, not the preview stalling.
+              SkListCard(
+                title: 'Low day',
+                caption: 'Somebody else, and you too -- the whole script',
+                onTap: () => push(const LowDayView()),
               ),
             ],
           ),

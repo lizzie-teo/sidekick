@@ -19,6 +19,17 @@ abstract class Routes {
   // everyone arrives from.
   static const String goodThingsHistory = '/good-things/history';
   static const String meditate = '/meditate';
+
+  // The third tab. It holds two kinds of thing -- lessons somebody does, and
+  // meditations somebody sits through -- and "practice" is the one word that
+  // covers both. Nobody learns a meditation; they do one.
+  //
+  // It replaced `/meditate` in the tab list on 20 September 2026, along with
+  // the wind icon, which stood for breathing. Breathing is still the panic
+  // button in the centre of the bar, where somebody mid-panic can reach it.
+  // `_docs/briefs/practice-tab-layout.md` holds the decision.
+  static const String practice = '/practice';
+
   static const String me = '/me';
 
   // The feeling picker. Reached from the Home CTA, which is the unhurried
@@ -32,22 +43,37 @@ abstract class Routes {
   // came from, which is the point of pushing it.
   static const String breathe = '/panic/breathe';
 
-  // "What's happening in your body?" -- its own screen, reached from the
-  // picker's "Can't cope right now" and from nowhere else. It explains the
-  // sensation that was picked and then hands over to the breathing.
-  //
-  // The tab-bar panic button never comes here. It is pressed instead of
-  // waiting, and a question in front of relief is a gate.
-  static const String body = '/panic/body';
+  // **`/panic/body` was deleted on 23 September 2026.** "What's happening in
+  // your body?" had a screen of its own, reached from the picker's "Can't
+  // cope"; the four tiles now sit on the picker itself, under the four faces,
+  // so the question is answered in the same tap as the feeling. Do not add
+  // the route back without moving the tiles off the picker first -- two
+  // places asking the same question is worse than either.
 
-  // Which sensation was picked on the body screen, carried to the breathing
-  // as `?sensation=<Sensation.name>`. The script's opening then explains that
+  // Which sensation was picked on the picker, carried to the breathing as
+  // `?sensation=<Sensation.name>`. The script's opening then explains that
   // sensation instead of the general words.
   //
   // A query parameter rather than `extra` so the pick survives a restored
   // route; the plain path -- no parameter, or one that names nothing -- is
   // the general script, which is the safer thing to land on by accident.
   static const String sensationQuery = 'sensation';
+
+  // Whether the breathing opens on its introduction page, carried as
+  // `?intro=1`. Every door on the picker sets it; the tab-bar panic button
+  // does not.
+  //
+  // **Unset is the pacer, and that is the safe way round.** A restored route
+  // or a deep link that lost its query string lands on the breathing itself,
+  // which is what somebody came for. The other way round would put a page
+  // with a Begin button in front of a panic attack because a parameter went
+  // missing.
+  //
+  // A parameter rather than a second route, for the same reason the
+  // introduction is not a route of its own: a route would put the page in the
+  // back stack, where the system back gesture drops somebody mid-script onto
+  // a page inviting them to start again.
+  static const String introQuery = 'intro';
 
   // Wound up -- tighten, and stop. The first of the three Play faces, reached
   // from the picker and from nowhere else. Nothing on it is saved, which is
@@ -60,17 +86,55 @@ abstract class Routes {
   // _docs/briefs/wound-up-tighten-and-stop.md.
   static const String tighten = '/play/tighten';
 
+  // Low -- "Somebody else, and you too". The second of the three Play faces,
+  // reached from the picker and from nowhere else. Seven minutes of kind
+  // words that go outward before they include the reader; the reasoning is in
+  // _docs/briefs/low-kind-voice.md.
+  //
+  // Nothing on it is saved and nothing is counted, so the route carries
+  // nothing either. That is not an omission: the whole face is built around
+  // rumination, and a record of how often somebody opened it is a low week
+  // turned into a failed test.
+  static const String lowDay = '/play/low-day';
+
+  // Actually okay -- the third of the three Play faces, reached from the
+  // picker and from nowhere else. One screen, not a script: somebody who taps
+  // it has said they need nothing, and this is the one path the app lets end
+  // in nothing.
+  //
+  // It carries nothing and saves nothing, like the other two. A record that
+  // somebody was fine today would turn noticing into monitoring, which is the
+  // same reason the panic sensation is never stored.
+  static const String actuallyOkay = '/play/actually-okay';
+
   // The scribble pad. No longer a feeling: it is reached from the Play button
   // on Home, by somebody who is not angry, where it is drawing rather than
   // therapy. Nothing on it is saved either.
   static const String scribble = '/play/scribble';
+
+  // Drill 0 -- swap the sentence. Four pages that teach the "I" sentence,
+  // then six sentences to sort, one to fix, and one of the reader's own built
+  // three parts at a time.
+  //
+  // **There used to be a reading lesson beside it (`sayI`, "Saying it with
+  // 'I'"), and it was deleted on 21 September 2026.** It taught the same
+  // subject as a five-chapter scroll, and this screen's own four-page
+  // introduction had become a shorter, better-ordered version of its second
+  // and third chapters. Two doors onto one subject made the smaller one look
+  // like the lesson and the bigger one like a footnote. Nothing it taught was
+  // lost: the trap was already one of the six sentences, and its closing
+  // advice became a new last step the same day.
+  //
+  // Nothing on it is saved and nothing is counted, so the route carries
+  // nothing either. See _docs/briefs/assertiveness-practice.md, "Drill 0".
+  static const String swapDrill = '/practice/swap';
 
   // The four tab destinations, in bar order. The panic button is the fifth
   // slot but is not a tab: it is a route the tabs sit behind, not beside.
   static const List<String> tabs = <String>[
     home,
     goodThings,
-    meditate,
+    practice,
     me,
   ];
 
@@ -89,6 +153,12 @@ abstract class Routes {
   // resolves to nothing. It is declared here rather than inline so the
   // constant is still the one place a path is written down.
   static const String shaderLab = '/design-system/shader-lab';
+
+  // The blob orb workbench. **Debug builds only**, on the same terms as the
+  // shader lab above. A separate route rather than a tab inside it: the orb
+  // shares no uniforms with the halo, so one screen driving both would be two
+  // screens wearing one hat.
+  static const String orbLab = '/design-system/orb-lab';
 
   // Screens that exist to attach an email to the account. Someone who already
   // has one is bounced off them to home; anyone else may visit them freely.
@@ -170,6 +240,14 @@ abstract class SettingsKeys {
   // mean opening the app changed what tomorrow's alert says.
   static const String lastReminderLine = 'last_reminder_line';
 
+  // Which side of the Practice tab was showing last: lessons or meditations.
+  //
+  // Somebody who only ever meditates should not tap the toggle every single
+  // time. It is on the phone rather than the server because losing it on a new
+  // phone costs the user nothing, which is the test that decides between the
+  // two. A fresh install opens on lessons.
+  static const String practiceSection = 'practice_section';
+
   static const String appearanceMode = 'appearance_mode';
   static const String themePalette = 'theme_palette';
   static const String sidekickCharacter = 'sidekick_character';
@@ -205,7 +283,8 @@ abstract class SettingsKeys {
 // more word to read is one too many at the peak of a panic attack.
 enum SidekickCharacter {
   girl(0, 'girl', 'Mochi'),
-  cat(1, 'cat', 'Maui');
+  cat(1, 'cat', 'Maui'),
+  rabbit(2, 'rabbit', 'Momo');
 
   const SidekickCharacter(this.skin, this.riveName, this.label);
 

@@ -3,14 +3,30 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:sidekick/app/widgets/sk_category_chip.dart';
 import 'package:sidekick/app/widgets/theme.dart';
 import 'package:sidekick/features/dashboard/models/affirmation_explanations.dart';
 import 'package:sidekick/features/dashboard/models/affirmation_lines.dart';
 import 'package:sidekick/features/dashboard/widgets/affirmation_sheet.dart';
 
+import 'support/load_fonts.dart';
 import 'support/pump_app.dart';
 
 void main() {
+  // **The real face, loaded once, before any test runs.**
+  //
+  // The default test font draws every glyph as a square of the font size,
+  // which is about a third wider than Poppins -- a test that asks "does this
+  // fit" would report a scroll the running app has not got.
+  //
+  // It has to be `setUpAll` rather than a line inside the test. A `testWidgets`
+  // body runs inside fake async, and `FontLoader.load()` waits on real file
+  // reads that never complete there: the test hangs until the ten-minute
+  // timeout with no error to read.
+  setUpAll(() async {
+    await loadPoppins();
+  });
+
 
   // The rule seven lines were cut from the set to hold. A set where some
   // lines open something and others do not makes tapping a gamble, and the
@@ -172,6 +188,169 @@ void main() {
         expect(c, isNot(contains(word)), reason: 'jargon in category: $c');
       }
     }
+  });
+
+  // The category used to be 13pt `muted` text, which measures between 2.8:1
+  // and 3.2:1 against the canvas in every light palette -- under the 4.5:1
+  // WCAG 1.4.3 asks of text that size. It is a chip now, ink on its own
+  // tinted pill, and the icon beside it is hidden from screen readers so the
+  // family is not announced twice.
+  testWidgets('the category is a chip, and every family has an icon',
+      (WidgetTester tester) async {
+    await pumpApp(tester);
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text(AffirmationLines.all.first));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(SkCategoryChip), findsOneWidget);
+
+    // Every family, not just the one that happened to open. A new category
+    // with no icon written for it falls back rather than failing, so the only
+    // place the gap shows is here.
+    final Set<String> categories = AffirmationExplanations.byLine.values
+        .map((AffirmationExplanation e) => e.category)
+        .toSet();
+
+    for (final String category in categories) {
+      expect(
+        AffirmationSheet.iconFor(category),
+        isNot(Icons.chat_bubble_outline_rounded),
+        reason: 'no icon written for: $category',
+      );
+    }
+  });
+
+  // **The belief and its answer share one card; the line gets its own.** Three
+  // evenly spaced headings read as three unrelated notes, which is the shape
+  // the sheet is arguing against. Two blocks say old-thing, new-thing.
+  testWidgets('the argument is two cards, not three parts',
+      (WidgetTester tester) async {
+    await pumpApp(tester);
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text(AffirmationLines.all.first));
+    await tester.pumpAndSettle();
+
+    // Two tinted grounds inside the sheet, and the three headings still
+    // between them.
+    final Finder cards = find.descendant(
+      of: find.byType(AffirmationSheet),
+      matching: find.byWidgetPredicate((Widget w) =>
+          w is Container &&
+          w.decoration is BoxDecoration &&
+          (w.decoration! as BoxDecoration).border != null &&
+          (w.decoration! as BoxDecoration).borderRadius ==
+              BorderRadius.circular(20)),
+    );
+    expect(cards, findsNWidgets(2));
+
+    final AffirmationExplanation e =
+        AffirmationExplanations.forLine(AffirmationLines.all.first)!;
+
+    // The first two headings share a card; the third is in the other one.
+    expect(
+      find.descendant(of: cards.first, matching: find.text(e.ruleHeading)),
+      findsOneWidget,
+    );
+    expect(
+      find.descendant(
+          of: cards.first, matching: find.text('Why it does not hold')),
+      findsOneWidget,
+    );
+    expect(
+      find.descendant(
+          of: cards.last, matching: find.text('Closer to the truth')),
+      findsOneWidget,
+    );
+  });
+
+  // **A sheet this short must not ask anybody to scroll.** It was held to
+  // three quarters of the screen, which put the answer to the belief below
+  // the fold at normal text size. The sheet takes 92% now, and the longest
+  // writing in the set has to arrive whole on an ordinary phone.
+  //
+  // **390 by 844, not an iPhone SE.** The longest sheet needs about 720
+  // points and an SE offers 614 of them, so the three or four longest ones do
+  // still scroll a little on the smallest screen there is -- which is the
+  // scroll view earning its keep rather than a cap doing it. Measuring the
+  // rule on a screen where it cannot hold would only pin the failure.
+  testWidgets('the longest sheet in the set arrives whole',
+      (WidgetTester tester) async {
+    await tester.binding.setSurfaceSize(const Size(390, 844));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    late BuildContext captured;
+    await tester.pumpWidget(MaterialApp(
+      theme: appTheme(),
+      home: Builder(builder: (BuildContext context) {
+        captured = context;
+        return const Scaffold();
+      }),
+    ));
+
+    // The longest sheet in the set, so the check is against the worst case
+    // rather than against whichever line happened to be first.
+    final MapEntry<String, AffirmationExplanation> longest =
+        AffirmationExplanations.byLine.entries.reduce(
+      (MapEntry<String, AffirmationExplanation> a,
+              MapEntry<String, AffirmationExplanation> b) =>
+          (a.key.length + a.value.rule.length + a.value.why.length +
+                      a.value.truth.length) >
+                  (b.key.length + b.value.rule.length + b.value.why.length +
+                      b.value.truth.length)
+              ? a
+              : b,
+    );
+
+    unawaited(AffirmationSheet.show(captured, longest.key));
+    await tester.pumpAndSettle();
+
+    final ScrollableState scrollable =
+        tester.state(find.byType(Scrollable).last);
+    expect(
+      scrollable.position.maxScrollExtent,
+      0,
+      reason: 'the longest sheet in the set still asks for a scroll',
+    );
+  });
+
+  // **The sheet has to survive the largest text the phone offers.** The
+  // category and the line used to sit above the scroll view, and at 200% that
+  // header alone is taller than the sheet is allowed -- the argument under it
+  // had nowhere to go and the Close button went with it. Everything but the
+  // handle and the button scrolls now.
+  testWidgets('nothing overflows or is pushed off at 200% text',
+      (WidgetTester tester) async {
+    await tester.binding.setSurfaceSize(const Size(375, 667));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    const String line = 'Once is not always.';
+    late BuildContext captured;
+
+    await tester.pumpWidget(MaterialApp(
+      theme: appTheme(),
+      builder: (BuildContext context, Widget? child) => MediaQuery(
+        data: MediaQuery.of(context)
+            .copyWith(textScaler: const TextScaler.linear(2.0)),
+        child: child!,
+      ),
+      home: Builder(builder: (BuildContext context) {
+        captured = context;
+        return const Scaffold();
+      }),
+    ));
+
+    unawaited(AffirmationSheet.show(captured, line));
+    await tester.pumpAndSettle();
+
+    expect(tester.takeException(), isNull);
+
+    // The way out is still on screen, which is the thing the fixed header
+    // used to cost.
+    final Finder close = find.text('Close');
+    expect(close, findsOneWidget);
+    expect(tester.getBottomLeft(close).dy, lessThanOrEqualTo(667));
   });
 
   test('every line carries a category', () {

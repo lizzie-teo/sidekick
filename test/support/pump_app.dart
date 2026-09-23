@@ -14,6 +14,7 @@ import 'package:sidekick/app/core/theme_service.dart';
 import 'package:sidekick/app/widgets/theme.dart';
 import 'package:sidekick/data/services/configuration_service.dart';
 import 'package:sidekick/data/services/good_things_service.dart';
+import 'package:sidekick/features/me/services/data_export_service.dart';
 
 import 'fakes.dart';
 
@@ -35,11 +36,24 @@ Future<GoRouter> pumpApp(
   Object? extra,
   bool isAuthenticated = false,
   bool hasAccount = false,
+  // How large the reader has their text set.
+  //
+  // **The style guide's one test is 200% on an iPhone SE**, and until 21
+  // September 2026 no widget test could ask for it -- so every fixed-height
+  // band in the app was unchecked at the size that breaks them. Pass
+  // `TextScaler.linear(2)` to run that pass.
+  TextScaler textScaler = TextScaler.noScaling,
+  // The theme to mount. Defaults to Moss light, which is what nearly every
+  // test wants. Pass `appDarkTheme()` to run the dark half of the style
+  // guide's one test -- the exercise screens have two grounds since 22
+  // September 2026, and only one of them is the default.
+  ThemeData? theme,
   AuthService? authService,
   AuthStateService? authStateService,
   ConfigurationService? configurationService,
   DeviceSettingsService? deviceSettingsService,
   GoodThingsService? goodThingsService,
+  DataExportService? dataExportService,
 }) async {
   // The shell mounts Home, and Home has a Rive animation on it. Rive's native
   // engine has to be loaded before that widget builds or it asserts. Safe to
@@ -68,6 +82,13 @@ Future<GoRouter> pumpApp(
     goodThingsService ?? FakeGoodThingsService(),
   );
 
+  // The Me tab's "Send me a copy of everything". Faked by default because the
+  // real one renders a PDF, writes into the temporary directory and summons
+  // the platform share sheet -- none of which a widget test wants.
+  getIt.registerSingleton<DataExportService>(
+    dataExportService ?? FakeDataExportService(),
+  );
+
   // The real service over the fake settings: it is a plain notifier holder,
   // so faking it would only duplicate it. initialize() is awaited so values a
   // test primed into the settings fake are already applied at first build.
@@ -93,8 +114,14 @@ Future<GoRouter> pumpApp(
   // Home -- holds its first frame and pumpAndSettle can finish.
   await tester.pumpWidget(
     MediaQuery(
-      data: const MediaQueryData(disableAnimations: true),
-      child: MaterialApp.router(theme: appTheme(), routerConfig: router),
+      data: MediaQueryData(
+        disableAnimations: true,
+        textScaler: textScaler,
+      ),
+      child: MaterialApp.router(
+        theme: theme ?? appTheme(),
+        routerConfig: router,
+      ),
     ),
   );
   await tester.pumpAndSettle();

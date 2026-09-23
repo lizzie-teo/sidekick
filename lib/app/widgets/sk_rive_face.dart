@@ -11,6 +11,7 @@ class SkRiveFace extends StatefulWidget {
     super.key,
     required this.artboard,
     required this.size,
+    this.aspectRatio = 1.0,
     this.fallbackArtboard,
   });
 
@@ -27,9 +28,29 @@ class SkRiveFace extends StatefulWidget {
   // has to stay calm.
   final String? fallbackArtboard;
 
-  // Width and height. The box is square and holds its size before the file
-  // decodes, so the button never changes shape when the face appears.
+  // How wide the box is. It holds its size before the file decodes, so the
+  // button never changes shape when the face appears.
   final double size;
+
+  // The box's width divided by its height.
+  //
+  // **The faces are not all the same shape.** The feeling artboards were
+  // tightened around their drawings on 23 September 2026, and they came back
+  // 360x300 for the girl, 280x240 for the cat and 260x260 for the rabbit --
+  // the rabbit's ears are as tall as her head is wide, and the girl's hair is
+  // not. `Fit.contain` fits the drawing inside whatever box it is given, so a
+  // square box letterboxes the two wide faces and re-opens exactly the gap
+  // the artboards were tightened to close.
+  //
+  // A box slightly wider than tall costs the wide faces a point or two top
+  // and bottom, and costs the square face a little at the sides instead --
+  // which is the cheaper of the two, because a row of cards is read down the
+  // page and an uneven side gap is not what the eye is measuring.
+  //
+  // The alternative was to read each artboard's real shape after it loads and
+  // resize to it. That is exact, and it means the card changes height a frame
+  // after it is drawn.
+  final double aspectRatio;
 
   @override
   State<SkRiveFace> createState() => _SkRiveFaceState();
@@ -104,8 +125,9 @@ class _SkRiveFaceState extends State<SkRiveFace> {
   Widget build(BuildContext context) {
     final rive.RiveWidgetController? controller = _controller;
 
-    return SizedBox.square(
-      dimension: widget.size,
+    return SizedBox(
+      width: widget.size,
+      height: widget.size / widget.aspectRatio,
       child: controller == null
           ? null
           : rive.RiveWidget(controller: controller, fit: rive.Fit.contain),

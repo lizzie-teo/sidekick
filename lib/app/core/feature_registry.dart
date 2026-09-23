@@ -5,6 +5,7 @@ import 'package:sidekick/features/good_things/good_things_module.dart';
 import 'package:sidekick/features/meditate/meditate_module.dart';
 import 'package:sidekick/features/panic/panic_module.dart';
 import 'package:sidekick/features/play/play_module.dart';
+import 'package:sidekick/features/practice/practice_module.dart';
 import 'package:sidekick/features/me/me_module.dart';
 import 'package:sidekick/features/design_system/design_system_module.dart';
 import 'package:sidekick/features/welcome/welcome_module.dart';
@@ -24,6 +25,7 @@ const List<FeatureModule> featureModules = <FeatureModule>[
   MeditateModule(),
   PanicModule(),
   PlayModule(),
+  PracticeModule(),
   MeModule(),
   DesignSystemModule(),
 ];

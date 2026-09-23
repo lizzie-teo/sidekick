@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:sidekick/app/core/app_constants.dart';
 import 'package:sidekick/app/core/feature_module.dart';
 import 'package:sidekick/features/design_system/views/design_system_view.dart';
+import 'package:sidekick/features/design_system/views/orb_lab_view.dart';
 import 'package:sidekick/features/design_system/views/shader_lab_view.dart';
 
 // The catalogue of what the app looks like: colour roles, type scale, buttons,
@@ -38,6 +39,14 @@ class DesignSystemModule extends FeatureModule {
             path: Routes.shaderLab,
             name: 'shader-lab',
             builder: (context, state) => const ShaderLabView(),
+          ),
+
+        // Debug builds only, on the same terms.
+        if (kDebugMode)
+          GoRoute(
+            path: Routes.orbLab,
+            name: 'orb-lab',
+            builder: (context, state) => const OrbLabView(),
           ),
       ];
 }

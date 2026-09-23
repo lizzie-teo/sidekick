@@ -16,23 +16,154 @@ hypothetical. Read this before touching the file, alongside
 - One artboard, `sidekick`, carries everything. The `ragdoll` artboard is a
   scratch pad for drawing; nothing on it ships.
 - `Group` (the character group, at x 247 y 485) holds every character
-  **side by side as siblings**: `girl`, `ragdoll`. There is **no Solo, no
-  slot**. All characters exist at once, stacked in the same spot.
+  **side by side as siblings**: `girl`, `ragdoll`, `rabbit`. There is **no
+  Solo, no slot**. All characters exist at once, stacked in the same spot.
 - Which one you see is decided by **opacity**. Each character has a 1-frame
-  timeline (`SkinGirl`, `SkinRagdoll`) that keys its parts to opacity 100 and
-  every other character's parts to 0. These timelines are set to **loop**.
+  timeline (`SkinGirl`, `SkinRagdoll`, `SkinTeacher`) that keys its parts to
+  opacity 100 and every other character's parts to 0. These timelines are set
+  to **loop**.
 - The `Skin` state-machine layer has one state per character. The app writes
-  the `skin` number on the `Character` view model (0 girl, 1 ragdoll);
-  conditions `skin == N` move between states. Every transition has a
-  **100 ms duration** — never 0 (trap 3 below).
+  the `skin` number on the `Character` view model (0 girl, 1 ragdoll,
+  2 rabbit); conditions `skin == N` move between states. Every transition has
+  a **100 ms duration** — never 0 (trap 3 below).
 - At rest (statics in the file): the girl's parts are opacity 100, everyone
   else's 0. So the file opens showing the girl.
 - Taps: ten click listeners per character, each targeting a part and firing a
   trigger. Matching parts fire the **same** trigger on every character
   (face → `tapTorso`; ears → `tapEarLeft` / `tapEarRight`; everything else →
   `tapEar`), so it never matters which character is visible when a tap lands.
+- **The tap order is: ear twitches, then SayHi, then Jump**, on `Idle` and on
+  `IdleAfterHi` alike. Reordered 23 September 2026 by the swap-the-contents
+  trick (trap 7), because the rabbit's ears are long enough that their lower
+  halves sit behind a head. A tap there fires `tapEarLeft` **and** `tapTorso`,
+  SayHi used to win, and the ear did not twitch. Note that the heads of the
+  characters you cannot see are hit-tested too: opacity 0 does not stop a
+  shape catching a tap, so the girl's and the cat's faces fire `tapTorso`
+  under the rabbit's ear whatever skin is showing. A face tap alone never
+  fires an ear trigger, so SayHi is unaffected.
 - The `Breathe` timeline carries the two Rive events the app depends on:
   `inhale` at frame 0, `exhale` at frame 186, of 480 frames at 48 fps.
+
+### The rabbit (`skin` 2, `Momo` in the picker) — added 23 September 2026
+
+Drawn as a copy of the cat, so **every bone rest matches the cat's to the
+digit** and all its animation keys were ported verbatim. Only the ears and the
+eyes needed re-basing.
+
+**It has two ear pairs, and only one is visible at a time.** `ear-left` /
+`ear-right` stand upright; `ear-left-fold` / `ear-right-fold` flop outward. The
+upright pair is the default (opacity 100) and the fold pair is off (opacity 0).
+Both pairs carry the same sway, flap and twitch keys on every timeline, so the
+character animates correctly whichever pair is showing.
+
+**Nothing switches them yet.** The swap is a static in the file today. When an
+expression wants the folded ears it needs its own mechanism — the cheapest is
+two more 1-frame looping timelines and a second state-machine layer, keyed off
+a new view-model number, exactly like `Skin`. Do **not** hang it off `skin`:
+the ears are an expression, not a character.
+
+**Each ear node's origin sits on its own bone root, which is the ear base
+where it meets the head.** It did not start there — the origins were above the
+art, so a twitch swung the *bases* outward and opened a gap at the head while
+the tips barely moved. Fixed 23 September 2026 by moving each node onto its
+bone root and shifting that node's children back by the same amount, so the
+art did not move and no key had to be re-timed. The ear art is **skinned to
+bones**, so its shapes ignore their own transforms; the bones are children of
+the ear node, which is why rotating the node still works.
+
+**Moving a pivot from one end of a part to the other reverses which way the
+motion reads**, and this is where it cost an extra pass: the same `r` that used
+to splay an ear outward now folded it inward. The signs, measured on the
+running artboard rather than reasoned about:
+
+| Character | Node | Splays outward when `r` goes | Outward amount |
+| --- | --- | --- | --- |
+| cat | `ear left` (rest 180) | up | `r - 180` |
+| cat | `ear-right` (rest 0) | **down** | `-r` |
+| rabbit | `ear-left` (rest 0) | **down** | `-r` |
+| rabbit | `ear-right` (rest 0) | up | `r` |
+| rabbit | `ear-left-fold` (rest 0.5695) | up | `r - 0.5695` |
+| rabbit | `ear-right-fold` (rest 0.5695) | **down** | `0.5695 - r` |
+
+**Read the sign off this table, never off a mirror argument.** Every one of the
+six was measured by posing the ear and looking; no two of them follow from each
+other. The line this replaced claimed the cat's right ear splayed outward when
+its number went **up**, which is the wrong way round, and that one wrong
+assumption inverted every right-ear key on the rabbit in every timeline — the
+breath sway and both answer poses read as a head-tilt instead of ears perking.
+Found by a person watching the app, not by any check in this file.
+
+**Port ears through the outward amount, never by copying numbers.** Read the
+donor's key as an outward amount with its own row above, then write it onto the
+new ear with that ear's row. `Idle`, `Breathe`, `Jump`, both `EarTwitch`es and
+both `Answer` poses all splay the two ears **symmetrically**; if a port makes
+them lean, the sign is wrong.
+
+The check that settles any doubt is two captures: pose the cat at a known ear
+extreme, pose the rabbit at the value you think matches, and look at whether the
+same ear leans the same way.
+
+**Three things the cat has that the rabbit does not**, so their keys were
+dropped rather than ported:
+
+| Missing | What it costs |
+| --- | --- |
+| An open mouth (`mouth-open`) | The mouth does not open on the out-breath in `Breathe`, and does not open in `AnswerWrong`. The closed smile stays on instead |
+| A tail | No tail lag anywhere. Nothing looks broken; there is simply nothing there |
+| A sweat drop (`sweat-cat`) | No drop in `AnswerWrong` |
+
+Its eye shapes are its own, so `AnswerWrong`'s per-vertex eye squash did not
+port either — the eyes still scale, they just do not deform.
+
+**Its clothing draws in front of its arms**, the way the cat's does: the order
+under `rabbit` is head, `hoodie-collar`, both arms, neck, body, legs. The arms
+shipped in front on 23 September 2026 and the sleeves read as flat shapes
+pasted over the hoodie. **The sleeves are still a flat `#9ce2d4` while the
+hoodie body is a gradient `#a3f0e2` → `#35b7a0`**, so a seam is still visible
+where a sleeve meets the dark bottom of the hoodie. That is paint, not order,
+and it is outstanding.
+
+**A happy mouth is a swap, not a stretch, and both characters have one.**
+`big-smile` — a second mouth carrying its own nose and an open pink mouth —
+lives in `face` beside the everyday mouth, at opacity 0. Two timelines hold the
+everyday mouth off and the big smile on:
+
+| Timeline | Big smile on | Off again |
+| --- | --- | --- |
+| `SayHi` (78 frames) | frame 12 | frame 58 |
+| `AnswerRight` (54 frames) | frame 14 | frame 44 |
+
+| Character | Everyday mouth | Big smile |
+| --- | --- | --- |
+| cat | `Group` (holds `smile` + `nose`) | `big-smile` |
+| rabbit | `snout` (holds `smile` + `nose`) | `big-smile` |
+
+The smile arrives just after the head reaches its tilt and leaves just after
+the head straightens, so the mouth reads as a reaction rather than a switch
+thrown at the same instant. Every key is `hold`, which is how every other mouth
+swap in this file works — a crossfade shows two mouths at once. The girl is not
+in this: her mouth is one filled `mouth-open` shape she reshapes vertex by
+vertex, which is her own mechanism and needs nothing added.
+
+**Scaling the ordinary smile was tried first and could not be seen.** The
+`AnswerRight` amplitude (122% wide, 130% tall) is plenty on a right answer,
+where it is the only thing changing; under a head tilt and widened eyes it
+vanishes. A drawn open mouth is a different shape, not a bigger one.
+
+**Each big smile's nose is lined up with that character's ordinary nose**, so
+nothing jumps at the swap: the rabbit's sits at `face` y 44.034, the cat's at
+`face` (-0.5, 40.228). Move one nose and measure the other again.
+
+**The cat's `smile` and `nose` were wrapped in a `Group` on 23 September 2026
+so the pair could be hidden with one key.** Trap 6 says wrapping keyed objects
+rebases their keys; this wrap was checked and is clean, because the `Group`
+took the whole offset (y 28.76) and left `smile` at scale 100, which is exactly
+what its `AnswerRight` keys expect. **Check that every time** — the same wrap
+with any scale on it would have silently broken the right-answer smile.
+
+**It has no `feeling-*` or `lesson-neutral` artboards yet.** Both callers fall
+back to the girl's face when an artboard name is missing, so nothing breaks;
+the picker and the lesson header show the girl until recipe C is run for it.
 
 ## The rig contract — every character has these parts
 
@@ -80,10 +211,18 @@ frame-0 keys, not just x/y.
    Runtime keyed writes to a node that was reparented across artboards fail
    silently (trap 2). Its children are fine; the node itself is cursed.
 4. **Re-key the shared animations** onto the new ids (the duplicate gets all
-   new ids; keys do not copy). For each of `Breathe`, `SayHi`, `Jump`,
-   `EarTwitchLeft`, `EarTwitchRight`: dump the donor's keys with
-   `queryKeyFrames`, map old id → new id by part name, re-add with
-   `modifyKeyFrames`. Re-base rule: `new_key = new_rest + (old_key −
+   new ids; keys do not copy). There are **eleven** of them today, not the
+   five this step used to list: `Breathe`, `Idle`, `SayHi`, `Jump`,
+   `EarTwitchLeft`, `EarTwitchRight`, `AnswerRight`, `AnswerWrong`,
+   `FaceCross`, `FaceNeutral`, `FaceReset`. Check `listLinearAnimations`
+   rather than this list — it is the one that cannot go stale. Dump the
+   donor's keys with `queryKeyFrames`, map old id → new id by part name,
+   re-add with `modifyKeyFrames`. That is about 700 keys, which will not fit
+   in MCP tool calls: script it over the editor's own HTTP endpoint
+   (`http://127.0.0.1:9791/mcp`, `initialize` → `notifications/initialized`
+   → `tools/call`). Every interpolator in this file is the same ease-in-out,
+   `{x1:0.42, y1:0, x2:0.58, y2:1}`, and a key written without
+   `interpolationType` comes out **linear**, which visibly pulses. Re-base rule: `new_key = new_rest + (old_key −
    old_rest)`; when rests match, copy verbatim. Check amplitudes on the new
    silhouette — a 25° arm swing on a small-shouldered character can be a
    T-pose on a wide one; pose the peak, capture, and halve until it reads.

@@ -1,0 +1,1427 @@
+<title>Sidekick Visual Style</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+
+<style>
+  /* Sidekick's own Moss palette. The guide is the app looking at itself, so
+     it uses the app's slots and the app's face rather than a theme of its own. */
+  :root {
+    --ground:      #F6F1E2;
+    --surface:     #FFFFFF;
+    --soft:        #E2E8D6;
+    --border:      #E0DBC6;
+    --hairline:    #ECE7D4;
+    --ink:         #2C3324;
+    --caption:     #7F6927;
+    --accent:      #3D5232;
+    --on-accent:   #F6F1E2;
+    --alarm:       #B3311F;
+    --ok:          #3D5232;
+
+    --tint-alarm:  rgba(179, 49, 31, 0.10);
+    --tint-accent: rgba(61, 82, 50, 0.10);
+    --edge-alarm:  rgba(179, 49, 31, 0.28);
+    --edge-accent: rgba(61, 82, 50, 0.28);
+
+    --display: "Poppins", "Avenir Next", "Segoe UI", system-ui, sans-serif;
+    --body:    "Poppins", "Avenir Next", "Segoe UI", system-ui, sans-serif;
+    --mono:    "IBM Plex Mono", "SF Mono", ui-monospace, Menlo, monospace;
+
+    --measure: 68ch;
+    --rule: 1px solid var(--border);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground:      #1B2418;
+      --surface:     #24301F;
+      --soft:        #3B3520;
+      --border:      #3D4D36;
+      --hairline:    #2F3D2A;
+      --ink:         #F2ECD9;
+      --caption:     #A9BE9C;
+      --accent:      #D9A640;
+      --on-accent:   #1B2418;
+      --alarm:       #E0705C;
+      --ok:          #D9A640;
+
+      --tint-alarm:  rgba(224, 112, 92, 0.14);
+      --tint-accent: rgba(217, 166, 64, 0.13);
+      --edge-alarm:  rgba(224, 112, 92, 0.32);
+      --edge-accent: rgba(217, 166, 64, 0.32);
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --ground:      #1B2418;
+    --surface:     #24301F;
+    --soft:        #3B3520;
+    --border:      #3D4D36;
+    --hairline:    #2F3D2A;
+    --ink:         #F2ECD9;
+    --caption:     #A9BE9C;
+    --accent:      #D9A640;
+    --on-accent:   #1B2418;
+    --alarm:       #E0705C;
+    --ok:          #D9A640;
+
+    --tint-alarm:  rgba(224, 112, 92, 0.14);
+    --tint-accent: rgba(217, 166, 64, 0.13);
+    --edge-alarm:  rgba(224, 112, 92, 0.32);
+    --edge-accent: rgba(217, 166, 64, 0.32);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--body);
+    font-size: 17px;
+    line-height: 1.6;
+    margin: 0;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .shell {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0;
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 0 24px 96px;
+  }
+
+  @media (min-width: 1000px) {
+    .shell {
+      grid-template-columns: 210px minmax(0, 1fr);
+      gap: 64px;
+      padding: 0 40px 120px;
+    }
+  }
+
+  /* ---- masthead ---- */
+
+  header.mast {
+    grid-column: 1 / -1;
+    padding: 72px 0 40px;
+    border-bottom: var(--rule);
+    margin-bottom: 56px;
+  }
+
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--caption);
+    margin: 0 0 20px;
+  }
+
+  h1 {
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: clamp(38px, 6.5vw, 62px);
+    line-height: 1.04;
+    letter-spacing: -0.022em;
+    margin: 0 0 24px;
+    text-wrap: balance;
+    max-width: 16ch;
+  }
+
+  .standfirst {
+    max-width: var(--measure);
+    font-size: 19px;
+    line-height: 1.62;
+    margin: 0;
+  }
+
+  .standfirst strong { font-weight: 600; }
+
+  /* ---- section index ---- */
+
+  nav.index {
+    display: none;
+  }
+
+  @media (min-width: 1000px) {
+    nav.index {
+      display: block;
+      position: sticky;
+      top: 40px;
+      align-self: start;
+      max-height: calc(100vh - 80px);
+      overflow-y: auto;
+    }
+  }
+
+  nav.index ol {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  nav.index a {
+    display: block;
+    font-family: var(--mono);
+    font-size: 12.5px;
+    letter-spacing: 0.01em;
+    color: var(--caption);
+    text-decoration: none;
+    padding: 5px 0 5px 12px;
+    border-left: 2px solid transparent;
+    transition: color .15s, border-color .15s;
+  }
+
+  nav.index a:hover,
+  nav.index a:focus-visible { color: var(--ink); border-left-color: var(--accent); }
+
+  /* ---- sections ---- */
+
+  main { min-width: 0; }
+
+  section {
+    padding-top: 8px;
+    margin-bottom: 72px;
+    scroll-margin-top: 32px;
+  }
+
+  h2 {
+    font-family: var(--display);
+    font-weight: 600;
+    font-size: clamp(25px, 3.4vw, 32px);
+    line-height: 1.18;
+    letter-spacing: -0.018em;
+    margin: 0 0 8px;
+    text-wrap: balance;
+  }
+
+  .kicker {
+    font-family: var(--mono);
+    font-size: 11.5px;
+    font-weight: 500;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--caption);
+    margin: 0 0 14px;
+  }
+
+  h3 {
+    font-family: var(--display);
+    font-weight: 600;
+    font-size: 18px;
+    line-height: 1.35;
+    letter-spacing: -0.006em;
+    margin: 40px 0 10px;
+  }
+
+  p { max-width: var(--measure); margin: 0 0 18px; }
+
+  ul.plain { max-width: var(--measure); padding-left: 20px; margin: 0 0 18px; }
+  ul.plain li { margin-bottom: 8px; }
+
+  code {
+    font-family: var(--mono);
+    font-size: 0.88em;
+    background: var(--soft);
+    padding: 1px 5px;
+    border-radius: 4px;
+  }
+
+  .lede {
+    font-size: 19px;
+    line-height: 1.58;
+    max-width: var(--measure);
+    margin: 0 0 26px;
+  }
+
+  /* ---- the one-sentence rule blocks ---- */
+
+  .rule {
+    max-width: var(--measure);
+    border-left: 3px solid var(--accent);
+    background: var(--tint-accent);
+    padding: 18px 22px;
+    border-radius: 0 12px 12px 0;
+    margin: 0 0 26px;
+  }
+
+  .rule p:last-child { margin-bottom: 0; }
+  .rule p { font-size: 17px; }
+
+  /* ---- tables ---- */
+
+  .scroller { overflow-x: auto; margin: 0 0 26px; }
+
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    min-width: 440px;
+    font-size: 15px;
+  }
+
+  th {
+    text-align: left;
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--caption);
+    padding: 0 16px 10px 0;
+    border-bottom: var(--rule);
+    white-space: nowrap;
+  }
+
+  td {
+    padding: 11px 16px 11px 0;
+    border-bottom: 1px solid var(--hairline);
+    vertical-align: top;
+    line-height: 1.45;
+  }
+
+  td:last-child, th:last-child { padding-right: 0; }
+
+  .num { font-family: var(--mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+  /* ---- verdict chips ---- */
+
+  .chip {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 10.5px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    border-radius: 999px;
+    white-space: nowrap;
+  }
+
+  .chip.pass  { background: var(--tint-accent); color: var(--ok); border: 1px solid var(--edge-accent); }
+  .chip.fail  { background: var(--tint-alarm);  color: var(--alarm); border: 1px solid var(--edge-alarm); }
+  .chip.watch { background: var(--soft); color: var(--caption); border: 1px solid var(--border); }
+
+  /* ---- swatches ---- */
+
+  .swatches {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(168px, 1fr));
+    gap: 14px;
+    margin: 0 0 26px;
+  }
+
+  .swatch {
+    border: var(--rule);
+    border-radius: 14px;
+    overflow: hidden;
+    background: var(--surface);
+  }
+
+  .swatch .well {
+    height: 74px;
+    display: flex;
+    align-items: flex-end;
+    padding: 10px;
+  }
+
+  .swatch .well span {
+    font-family: var(--mono);
+    font-size: 10.5px;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+  }
+
+  .swatch .meta { padding: 11px 13px 13px; }
+
+  .swatch .name {
+    font-family: var(--mono);
+    font-size: 12.5px;
+    font-weight: 600;
+    margin-bottom: 3px;
+  }
+
+  .swatch .use {
+    font-size: 12.5px;
+    line-height: 1.4;
+    color: var(--caption);
+  }
+
+  /* ---- live caption demo ---- */
+
+  .captions {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+    gap: 14px;
+    margin: 0 0 26px;
+  }
+
+  .cap-card {
+    border-radius: 14px;
+    padding: 18px;
+    border: 1px solid rgba(128,128,128,0.22);
+  }
+
+  .cap-card .cap-label {
+    font-family: var(--body);
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+
+  .cap-card .cap-body { font-size: 15px; line-height: 1.45; }
+
+  .cap-card .cap-meta {
+    font-family: var(--mono);
+    font-size: 10.5px;
+    margin-top: 12px;
+    opacity: 0.85;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ---- status demo ---- */
+
+  .status-demo {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(268px, 1fr));
+    gap: 14px;
+    margin: 0 0 26px;
+  }
+
+  .status-block {
+    border-radius: 20px;
+    padding: 16px;
+    display: grid;
+    grid-template-columns: 22px minmax(0, 1fr);
+    gap: 12px;
+    align-items: start;
+  }
+
+  .status-block .glyph {
+    font-family: var(--mono);
+    font-size: 15px;
+    font-weight: 600;
+    line-height: 1.3;
+    text-align: center;
+  }
+
+  .status-block .head {
+    font-family: var(--display);
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 1.3;
+  }
+
+  .status-block .sub {
+    font-size: 14px;
+    line-height: 1.45;
+    margin-top: 4px;
+    color: var(--ink);
+  }
+
+  .status-block .meta {
+    font-family: var(--mono);
+    font-size: 10.5px;
+    font-variant-numeric: tabular-nums;
+    margin-top: 10px;
+  }
+
+  /* ---- quiz demo ---- */
+
+  .quiz {
+    display: grid;
+    gap: 10px;
+    max-width: 460px;
+    margin: 0 0 26px;
+  }
+
+  .quiz .option {
+    border-radius: 16px;
+    padding: 14px 16px;
+    display: grid;
+    grid-template-columns: 22px minmax(0, 1fr);
+    gap: 12px;
+    align-items: center;
+    font-size: 16px;
+  }
+
+  .quiz .option .glyph {
+    font-family: var(--mono);
+    font-weight: 600;
+    text-align: center;
+  }
+
+  .quiz .option.resting {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--ink);
+  }
+
+  /* ---- tinted card demo ---- */
+
+  .tint-demo {
+    display: grid;
+    gap: 14px;
+    max-width: var(--measure);
+    margin: 0 0 26px;
+  }
+
+  .tint-card { border-radius: 20px; padding: 20px; }
+  .tint-card.given { background: var(--tint-alarm);  border: 1px solid var(--edge-alarm); }
+  .tint-card.truth { background: var(--tint-accent); border: 1px solid var(--edge-accent); }
+
+  .tint-card h4 {
+    font-family: var(--display);
+    font-size: 16px;
+    font-weight: 600;
+    margin: 0 0 8px;
+  }
+  .tint-card.given h4 { color: var(--alarm); }
+  .tint-card.truth h4 { color: var(--ok); }
+  .tint-card p { margin: 0; font-size: 16px; }
+
+  /* ---- type specimens ---- */
+
+  .specimen {
+    display: grid;
+    grid-template-columns: 116px minmax(0, 1fr);
+    gap: 20px;
+    padding: 16px 0;
+    border-bottom: 1px solid var(--hairline);
+    align-items: baseline;
+  }
+
+  .specimen .tag {
+    font-family: var(--mono);
+    font-size: 11px;
+    line-height: 1.5;
+    color: var(--caption);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .specimen .tag b { display: block; color: var(--ink); font-weight: 600; font-size: 12px; }
+
+  .specimen .sample {
+    font-family: var(--display);
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+  }
+
+  /* ---- spacing bars ---- */
+
+  .steps { display: flex; flex-direction: column; gap: 7px; margin: 0 0 26px; }
+
+  .step { display: grid; grid-template-columns: 62px 44px minmax(0, 1fr); gap: 14px; align-items: center; }
+
+  .step .n { font-family: var(--mono); font-size: 12.5px; font-weight: 600; }
+  .step .v { font-family: var(--mono); font-size: 12px; color: var(--caption); font-variant-numeric: tabular-nums; }
+
+  .step .bar { height: 13px; background: var(--accent); border-radius: 3px; }
+
+  .step .use { font-size: 13px; color: var(--caption); }
+
+  .step-row { display: grid; grid-template-columns: 62px 44px minmax(0,1fr) minmax(0,1.1fr); gap: 14px; align-items: center; }
+
+  @media (max-width: 620px) {
+    .step-row { grid-template-columns: 54px 40px minmax(0,1fr); }
+    .step-row .use { display: none; }
+  }
+
+  /* ---- checklist ---- */
+
+  .checklist { list-style: none; padding: 0; margin: 0; max-width: var(--measure); }
+
+  .checklist li {
+    display: grid;
+    grid-template-columns: 22px minmax(0, 1fr);
+    gap: 12px;
+    padding: 11px 0;
+    border-bottom: 1px solid var(--hairline);
+    font-size: 16px;
+    line-height: 1.45;
+  }
+
+  .checklist li::before {
+    content: "";
+    width: 15px;
+    height: 15px;
+    margin-top: 5px;
+    border: 1.5px solid var(--accent);
+    border-radius: 4px;
+  }
+
+  /* ---- footer ---- */
+
+  footer {
+    grid-column: 1 / -1;
+    border-top: var(--rule);
+    padding-top: 24px;
+    font-size: 14px;
+    color: var(--caption);
+    max-width: var(--measure);
+  }
+
+  a { color: var(--accent); }
+
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 3px; }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; animation: none !important; }
+  }
+</style>
+
+<div class="shell">
+
+  <header class="mast">
+    <p class="eyebrow">Sidekick · design guidelines · 21 September 2026</p>
+    <h1>How a screen is coloured, set and spaced</h1>
+    <p class="standfirst">
+      Written after a contrast audit found that every small label in the app — every
+      section header, every category, every caption — sat below the legal minimum for
+      text that size. Nothing failed. Nothing looked wrong in a screenshot. The least
+      readable text in the app was the text explaining things to somebody on a hard
+      evening. <strong>This guide is for the failures that do not look like failures.</strong>
+    </p>
+  </header>
+
+  <nav class="index" aria-label="Sections">
+    <ol>
+      <li><a href="#theme">Colour from the theme</a></li>
+      <li><a href="#slots">The slots</a></li>
+      <li><a href="#captions">Captions</a></li>
+      <li><a href="#tints">Tinted blocks</a></li>
+      <li><a href="#status">Status colours</a></li>
+      <li><a href="#type">Type</a></li>
+      <li><a href="#hierarchy">Hierarchy</a></li>
+      <li><a href="#spacing">Spacing</a></li>
+      <li><a href="#responsive">Responsive</a></li>
+      <li><a href="#access">Accessibility</a></li>
+      <li><a href="#audit">The audit</a></li>
+      <li><a href="#motion">Motion</a></li>
+      <li><a href="#checklist">Before merging</a></li>
+      <li><a href="#gaps">Known gaps</a></li>
+    </ol>
+  </nav>
+
+  <main>
+
+    <section id="theme">
+      <p class="kicker">Rule one</p>
+      <h2>Colour comes from the theme. Always.</h2>
+
+      <div class="rule">
+        <p>Every colour on screen is read from <code>context.sk</code>. Never a hex
+        literal, never <code>Colors.white</code>, never <code>Colors.grey.shade600</code>.</p>
+      </div>
+
+      <p>Six palettes times two modes is twelve schemes, and a hex literal is right in
+      at most one of them. This is not about tidiness. A hardcoded colour is a screen
+      that is broken in eleven themes and nobody notices, because nobody opens Dusk
+      terrarium dark.</p>
+
+      <h3>The exceptions, audited</h3>
+      <p>Twenty-three hardcoded colours exist in <code>lib/</code>. Most are deliberate
+      and documented. Three are leaks.</p>
+
+      <div class="scroller">
+        <table>
+          <thead><tr><th>Where</th><th>Verdict</th><th>Why</th></tr></thead>
+          <tbody>
+            <tr><td><code>sk_palettes.dart</code>, <code>sk_colors.dart</code></td><td><span class="chip pass">Correct</span></td><td>This is where colour is defined</td></tr>
+            <tr><td>The two orb colours in Play</td><td><span class="chip pass">Correct</span></td><td>A soothing colour that went coral in one palette and teal in another would be six different promises. The page ground is the palette; the orb is not</td></tr>
+            <tr><td>Theme sheet device frame</td><td><span class="chip pass">Correct</span></td><td>It is a picture of a phone, not part of the app's surface</td></tr>
+            <tr><td>PDF export greys</td><td><span class="chip pass">Correct</span></td><td>A PDF has no theme and is read outside the app</td></tr>
+            <tr><td><code>sk_tab_bar.dart</code> shadow and wash</td><td><span class="chip fail">Leak</span></td><td>Should be <code>ink</code> and <code>surface</code> at an alpha</td></tr>
+            <tr><td><code>design_system_view.dart</code> white</td><td><span class="chip fail">Leak</span></td><td>On the one screen that exists to show the palettes</td></tr>
+            <tr><td><code>breathing_view.dart</code> cream</td><td><span class="chip watch">Unexamined</span></td><td>Named nowhere. Check it in dark mode</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>If a colour genuinely must not follow the theme, say why in a comment beside
+      it. The orb comments are the model: they name the alternative, say what was wrong
+      with it, and leave the door open.</p>
+    </section>
+
+    <section id="slots">
+      <p class="kicker">Colour</p>
+      <h2>What each slot is for</h2>
+      <p class="lede">Moss, the default palette. Ratios below are measured live against
+      this page's own ground.</p>
+
+      <div class="swatches" id="swatch-grid"></div>
+
+      <h3><code>muted</code> is not a text colour</h3>
+      <p>Measured across all twelve schemes, <code>muted</code> on <code>canvas</code>
+      runs from <span class="num">2.79:1</span> to <span class="num">3.23:1</span>.
+      WCAG 1.4.3 asks <span class="num">4.5:1</span> of text that size.
+      <strong>Every light palette fails.</strong></p>
+      <p>It is kept for hairlines, dividers and disabled states.
+      <code>test/contrast_test.dart</code> asserts the failure out loud, so nobody
+      re-adopts it by accident — and so nobody deletes the check thinking it is the bug.</p>
+    </section>
+
+    <section id="captions">
+      <p class="kicker">Rule two</p>
+      <h2>A caption is a darker shade of its own ground</h2>
+
+      <div class="rule">
+        <p>Anything smaller and quieter than body text is <strong>the colour it is
+        sitting on, moved in lightness until it is legible</strong>. Not a grey. Not a
+        separate slot. <code>SkContrast.captionOn(ground)</code>.</p>
+      </div>
+
+      <p>Grey text on a cream page is two colour families on one screen, and it reads as
+      a mistake nobody can name. The same cream taken down to a deep tan belongs to the
+      page. So the caption keeps the ground's hue and saturation, and only its lightness
+      moves — far enough to clear 4.5:1, and no further.</p>
+
+      <p>Every card below computes its own caption colour in the browser, by the same
+      method the Dart does. The ratio under each one is measured, not quoted.</p>
+
+      <div class="captions" id="caption-demo"></div>
+
+      <h3>Why a function and not twelve more palette entries</h3>
+      <ul class="plain">
+        <li>A slot only covers grounds somebody wrote down. A function covers the card
+        tint invented next month and the palette added next year.</li>
+        <li>It handles a translucent fill: flatten it with <code>SkContrast.over</code>
+        first, because <em>destructive at 10%</em> is not a colour any checker can read.</li>
+        <li>Direction is decided by headroom, not by mode — whichever of black or white
+        is further from the ground is the way with room in it. Asking “is this light?”
+        gets mid-tones wrong: a salmon gradient stop at luminance 0.47 read as dark, so
+        the caption went lighter, hit white, and came back at <span class="num">2.14:1</span>.</li>
+      </ul>
+    </section>
+
+    <section id="tints">
+      <p class="kicker">Colour</p>
+      <h2>Tinted blocks</h2>
+      <p class="lede">A block that carries meaning by colour is built the same way every
+      time.</p>
+
+      <div class="scroller">
+        <table>
+          <thead><tr><th>Part</th><th>Value</th></tr></thead>
+          <tbody>
+            <tr><td>Fill</td><td class="num">the hue at 10% over the page ground</td></tr>
+            <tr><td>Edge</td><td class="num">the same hue at 25%, 1px</td></tr>
+            <tr><td>Radius</td><td class="num">20</td></tr>
+            <tr><td>Padding</td><td class="num">SkLayout.xl — 20</td></tr>
+            <tr><td>Caption inside</td><td class="num">captionOn(the flattened fill)</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="tint-demo">
+        <div class="tint-card given">
+          <h4>The rule you were given</h4>
+          <p>Putting your needs before other people's is selfish.</p>
+        </div>
+        <div class="tint-card truth">
+          <h4>Closer to the truth</h4>
+          <p>Your needs count too. Some of the time they can come first.</p>
+        </div>
+      </div>
+
+      <p><strong>A tenth, not the full colour.</strong> A solid red panel around
+      somebody's own belief says “you are wrong about yourself”. A solid green one
+      claims a last word the writing was worded to avoid. A wash tells two blocks apart
+      without making a statement.</p>
+
+      <p><strong>Colour is never the only thing carrying the meaning.</strong> Every
+      tinted block also says what it is in words, and the order on the page carries it
+      again. The fills measure about <span class="num">1.1:1</span> against the canvas —
+      deliberately a hint, never the message. Somebody who cannot tell the two hues
+      apart must lose nothing.</p>
+    </section>
+
+    <section id="status">
+      <p class="kicker">Colour</p>
+      <h2>Four status tones, fixed across every theme</h2>
+      <p class="lede">Success, destructive, warning, informational. They are the one
+      colour family that does <strong>not</strong> change with the palette.</p>
+
+      <div class="rule">
+        <p>A status colour is a word, not a decoration. <strong>A green that drifted to
+        olive in one theme and mint in another would teach a different signal on every
+        screen</strong> — and the whole value of a status colour is that it is
+        recognised before it is read.</p>
+      </div>
+
+      <p>So there is one set for the light canvases and one for the dark. Each block
+      below is drawn exactly as the app draws it: the tone on a 12% wash of itself, a
+      25% hairline around it, and the ratio measured in the browser.</p>
+
+      <div class="status-demo" id="status-demo"></div>
+
+      <h3>The saturation is chosen, not inherited</h3>
+      <p>Each colour is the <strong>lightest</strong> (light mode) or
+      <strong>darkest</strong> (dark mode) colour at its hue that still clears 4.5:1
+      against a 12% tint of itself over <em>every</em> canvas in the app.</p>
+      <p>That is the demanding case, and it is the one that happens: a block says
+      “correct” by putting the colour on a wash of itself, and the wash is what eats the
+      contrast. A colour checked against the bare page passes on paper and fails on
+      screen — it is how the old dark red was caught. Saturation lands at 0.50–0.60, not
+      0.85. This is an app for people having a hard evening, not a dashboard.</p>
+
+      <div class="scroller">
+        <table>
+          <thead><tr><th>Tone</th><th>Light</th><th>Dark</th><th>Means</th></tr></thead>
+          <tbody>
+            <tr><td><code>success</code></td><td class="num">#246D43</td><td class="num">#6FC094</td><td>It worked. The answer was right</td></tr>
+            <tr><td><code>destructive</code></td><td class="num">#B3311F</td><td class="num">#E8897B</td><td>It did not. A wrong answer, or a delete</td></tr>
+            <tr><td><code>warning</code></td><td class="num">#7C5A1F</td><td class="num">#D3A863</td><td>Careful. Harder to undo than it looks</td></tr>
+            <tr><td><code>info</code></td><td class="num">#336399</td><td class="num">#8FB4DD</td><td>Worth knowing. No verdict</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Two things changed</h3>
+      <ul class="plain">
+        <li><strong><code>destructive</code> was twelve reds and is now two.</strong>
+        Five palettes carried their own, drifting between <span class="num">#9C2B22</span>
+        and <span class="num">#C2402A</span> for no reason anybody wrote down. The light
+        value is the one Moss always had, so <strong>light mode is unchanged</strong>.
+        The dark value moved from <span class="num">#E0705C</span> to a lighter salmon,
+        because the old one could not clear 4.5:1 on a wash of itself.</li>
+        <li><strong>Warning is a brown-gold, and that is not a mistake.</strong> Amber
+        has to go dark to be legible on a pale ground, and dark amber is brown. Every
+        design system lands in the same place. It suits this app better than most.</li>
+      </ul>
+
+      <h3>A quiz answer</h3>
+      <p>Right → the success colour on the lightest tint of success. Wrong → the
+      destructive colour on the lightest tint of destructive. That is
+      <code>SkStatusStyle.of(context, tone, ground)</code> and nothing else.</p>
+
+      <div class="quiz" id="quiz-demo"></div>
+
+      <h3>A wash and a hairline. Never a filled pill.</h3>
+      <p>The primary action in this app is a filled pill. A status is a block of colour
+      you read. Some palettes put the action colour close to a status hue —
+      <strong>Moss dark runs a gold action next to a gold warning</strong> — and the
+      difference in <em>shape</em> is what survives that. A difference in hue would not.</p>
+
+      <h3>Every tone carries an icon</h3>
+      <p>Roughly <strong>one man in twelve</strong> cannot separate the red from the
+      green. A quiz that answers only in colour answers nothing for him. A test asserts
+      that no two tones share an icon.</p>
+
+      <h3>A status states a fact. It does not score.</h3>
+      <p>“Correct” and “Not this one” are facts. <strong>“Well done” is a score</strong>,
+      and this app does not keep scores — the same rule that took the counter off the
+      breathing screen. The body text under a headline is <code>ink</code>, not the tone:
+      a whole paragraph in a status colour reads as shouting.</p>
+    </section>
+
+    <section id="type">
+      <p class="kicker">Type</p>
+      <h2>Poppins, on a fixed scale</h2>
+      <p class="lede">Colour is applied at the use site with <code>copyWith</code>,
+      because the right colour depends on the surface. Sizes are not.</p>
+
+      <div id="specimens"></div>
+
+      <h3>The three rules the scale follows</h3>
+      <ul class="plain">
+        <li><strong>Tracking is negative at 24 and up, zero below it.</strong> Poppins is
+        geometric — perfect circles, wide round forms — and reads loose at headline
+        sizes, so the big styles pull in 1.5%. Doing the same to body text would close
+        the counters that make it legible at 16. <code>sectionHeader</code> is the
+        exception: capitals have no ascenders or descenders to tell them apart, so it
+        gets 6% back.</li>
+        <li><strong>Nothing lighter than 400, nothing smaller than 13.</strong> Both
+        floors come from WCAG 1.4.4 and Apple's 11pt hard minimum. Thin through Light
+        are bundled for Rive and decoration, never for reading.</li>
+        <li><strong>Weight carries state, size carries hierarchy.</strong> A heading is
+        bigger, not just bolder, so the order survives somebody turning text up.</li>
+      </ul>
+
+      <h3>Reading text</h3>
+      <div class="scroller">
+        <table>
+          <thead><tr><th>Setting</th><th>Value</th><th>Why</th></tr></thead>
+          <tbody>
+            <tr><td>Line height, paragraphs</td><td class="num">1.5 – 1.55</td><td>Room between lines is what lets a tired eye find the next one</td></tr>
+            <tr><td>Line height, headings</td><td class="num">1.2 – 1.35</td><td>A heading is one object; loose leading breaks it into lines</td></tr>
+            <tr><td>Measure</td><td class="num">max 560</td><td>45–75 characters is what the eye tracks back across without losing its place</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="hierarchy">
+      <p class="kicker">Type</p>
+      <h2>Hierarchy is size, then weight, then colour</h2>
+
+      <div class="rule">
+        <p><strong>Colour is last on purpose.</strong> A hierarchy built on colour
+        disappears for anybody who cannot see the difference — and it was exactly the
+        hierarchy that put every caption in this app below the contrast floor.</p>
+      </div>
+
+      <div class="scroller">
+        <table>
+          <thead><tr><th>Level</th><th>How it is made</th></tr></thead>
+          <tbody>
+            <tr><td>What the screen is about</td><td>The largest style on the screen, and the only thing at that size</td></tr>
+            <tr><td>A heading over a group</td><td>One or two steps down, 600 weight</td></tr>
+            <tr><td>Body</td><td><code>rowLabel</code>, 17/400, <code>ink</code></td></tr>
+            <tr><td>A caption</td><td>One step below body, 600, <code>captionOn(ground)</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p><strong>Two things at the same size are the same rank, whatever their colour.</strong>
+      If two things must be told apart, change the size.</p>
+    </section>
+
+    <section id="spacing">
+      <p class="kicker">Layout</p>
+      <h2>A four-point grid, named</h2>
+      <p class="lede">Every gap is a step in <code>SkLayout</code>. Use the name, never
+      the number.</p>
+
+      <div class="steps" id="step-scale"></div>
+
+      <p>A count of every <code>EdgeInsets</code> in <code>lib/</code> found 20, 16, 24,
+      12, 8, 4 and 32 taking 127 of the values, and a tail of one-offs — 6, 10, 13, 14,
+      18 — taking the rest. <strong>A page whose gaps are 12, 16 and 24 reads as
+      deliberate. One whose gaps are 13, 17 and 22 reads as an accident, and nobody can
+      say why.</strong></p>
+
+      <h3>Gaps are nested, never equal</h3>
+      <p>The gap inside a group must be smaller than the gap around it, or a page of six
+      blocks reads as six unrelated notes. The explanation sheet is the worked example:
+      20 between two parts sharing a card, 16 plus two card edges between the cards.</p>
+    </section>
+
+    <section id="responsive">
+      <p class="kicker">Layout</p>
+      <h2>Four width bands</h2>
+      <p class="lede">So no widget invents its own breakpoint.</p>
+
+      <div class="scroller">
+        <table>
+          <thead><tr><th>Band</th><th>Width</th><th>What it is</th><th>Gutter</th><th>Section gap</th><th>Display type</th></tr></thead>
+          <tbody>
+            <tr><td><code>compact</code></td><td class="num">&lt; 380</td><td>iPhone SE, split view</td><td class="num">16</td><td class="num">20</td><td class="num">1.00×</td></tr>
+            <tr><td><code>medium</code></td><td class="num">380–600</td><td>Every ordinary phone</td><td class="num">24</td><td class="num">24</td><td class="num">1.00×</td></tr>
+            <tr><td><code>expanded</code></td><td class="num">600–900</td><td>Small tablet, phone landscape</td><td class="num">32</td><td class="num">32</td><td class="num">1.08×</td></tr>
+            <tr><td><code>wide</code></td><td class="num">900+</td><td>Tablet landscape, desktop</td><td class="num">40</td><td class="num">32</td><td class="num">1.15×</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p><strong>Only display type scales, and only upward.</strong> A 34pt title on a
+      tablet is proportionally <em>smaller</em> than the same title on a phone, because
+      the screen grew and the type did not. Body text is the opposite case and is left
+      alone: 17 is 17 because that is comfortable at arm's length, and a tablet is not
+      read from further away. Nothing shrinks — a phone is the floor.</p>
+
+      <p><strong>The gutter grows because the edge of a tablet is further from the thumb
+      and from the eye.</strong> Content pinned 16 points off a 1024-point edge reads as
+      having fallen off it.</p>
+
+      <h3>What responsive is not</h3>
+      <p>It is not <code>width * 0.04</code>. A gutter that is a fraction of the screen
+      is off the grid on every device, agrees with nothing, and cannot be reasoned about.
+      Bands and steps, always.</p>
+    </section>
+
+    <section id="access">
+      <p class="kicker">Accessibility</p>
+      <h2>The three thresholds, and 200% text</h2>
+
+      <div class="scroller">
+        <table>
+          <thead><tr><th>Threshold</th><th>Applies to</th><th>Constant</th></tr></thead>
+          <tbody>
+            <tr><td class="num">4.5:1</td><td>Text under 18pt, or under 14pt bold — most of the app</td><td><code>SkContrast.bodyText</code></td></tr>
+            <tr><td class="num">3.0:1</td><td>Text 18pt+, or 14pt+ bold</td><td><code>SkContrast.largeText</code></td></tr>
+            <tr><td class="num">3.0:1</td><td>Icons, focus rings, the edge of a control</td><td><code>SkContrast.nonText</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Text scaling</h3>
+      <div class="rule">
+        <p><strong>Every screen must survive 200%.</strong> iOS and Android both offer
+        it, and somebody reading a screen about their own thinking is more likely than
+        average to be using it.</p>
+      </div>
+
+      <ul class="plain">
+        <li><strong>Nothing that can grow sits outside a scroll view.</strong> The
+        explanation sheet learned this the expensive way: its category and line were a
+        fixed header, and at 200% that header alone was taller than the sheet was
+        allowed — so the Close button went off the bottom.</li>
+        <li>Test it. Pump with a 2.0 text scaler and assert no exception.</li>
+        <li>Ask <code>SkLayout.isLargeText</code> when a row of controls has to become a
+        column. It reads off the body style, not the raw factor, because Android scales
+        non-linearly above 130%.</li>
+        <li><strong>Never clamp the scaler.</strong> Capping text growth is capping
+        somebody's eyesight.</li>
+      </ul>
+
+      <h3>Tap targets</h3>
+      <p><code>SkLayout.tapTarget</code> is <span class="num">48</span>, on every
+      control, at every text size. 44 is Apple's floor and 48 is Android's; one number
+      that clears both is one number to remember. A chip or badge that is not tappable is
+      exempt, and says so in a comment.</p>
+
+      <h3>Screen readers</h3>
+      <div class="scroller">
+        <table>
+          <thead><tr><th>Do</th><th>Why</th></tr></thead>
+          <tbody>
+            <tr><td><code>Semantics(header: true)</code> on every heading</td><td>“Next heading” is how a screen-reader user skims</td></tr>
+            <tr><td><code>ExcludeSemantics</code> on decoration</td><td>A grab handle is a picture of a gesture somebody is not making</td></tr>
+            <tr><td><code>excludeSemantics</code> on an icon-plus-label</td><td>Otherwise the label is announced twice</td></tr>
+            <tr><td><code>barrierLabel</code> on a modal</td><td>The default is “Scrim”, which says nothing about what opened</td></tr>
+            <tr><td>A real label on every icon-only button</td><td>An unlabelled icon is announced as “button”</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Colour is never the only cue</h3>
+      <p>Anything said in colour is also said in words, in position, or in shape.</p>
+    </section>
+
+    <section id="audit">
+      <p class="kicker">Accessibility</p>
+      <h2>The audit baseline</h2>
+      <p class="lede">Eleven foreground/background pairs across five palettes are under
+      4.5:1 today. They are <strong>listed, not fixed</strong> — fixing them means
+      choosing new colours for shipped themes, which is a design decision and not a
+      test's to make.</p>
+
+      <div class="scroller">
+        <table>
+          <thead><tr><th>Palette</th><th>Pair</th><th>Ratio</th><th>At 4.5</th><th>At 3.0</th></tr></thead>
+          <tbody id="audit-rows"></tbody>
+        </table>
+      </div>
+
+      <p><strong>Moss — the default — passes everything.</strong></p>
+
+      <p>The test pins this list exactly, in both directions. A new pair is a regression;
+      a listed pair that now passes means somebody fixed it and the list is stale. Both
+      fail, with a message saying which.</p>
+
+      <p><strong>Two things make this less bad than it reads.</strong> A button label is
+      19/600, which counts as large text, so 3.0 is arguably its bar — and both
+      <code>onAction</code> entries clear it. And a scene stop is one of three: the words
+      may not sit over that end of the gradient. Both need looking at on a device before
+      anybody repaints a theme.</p>
+    </section>
+
+    <section id="motion">
+      <p class="kicker">Motion</p>
+      <h2>One clock per screen</h2>
+
+      <div class="scroller">
+        <table>
+          <thead><tr><th>Rule</th><th>Why</th></tr></thead>
+          <tbody>
+            <tr><td>Crossfade, never slide, between steps of a script</td><td>The reader moves both ways, so a direction would be a lie half the time</td></tr>
+            <tr><td>240ms, ease-out in and ease-in out</td><td>Long enough to see, short enough not to wait</td></tr>
+            <tr><td><strong>One clock per screen</strong></td><td>Two things moving on two timings is two instructions. An orb driven by the same data as the line being read is one instruction said twice — that is allowed</td></tr>
+            <tr><td>Nothing moves under somebody reading</td><td>The thing they are reading must not leave</td></tr>
+            <tr><td>A character must never shift</td><td>Bands around her are fixed height, so a long line cannot move her</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="checklist">
+      <p class="kicker">Practice</p>
+      <h2>Before a screen is merged</h2>
+      <ul class="checklist">
+        <li>No hex literal, no <code>Colors.*</code>. Every colour from <code>context.sk</code></li>
+        <li>Every caption from <code>SkContrast.captionOn(its ground)</code> — not <code>muted</code></li>
+        <li>Every gap a named <code>SkLayout</code> step</li>
+        <li>Gutter from <code>SkLayout.gutter(context)</code>, not a constant</li>
+        <li>Reading text wrapped in <code>SkLayout.readable</code></li>
+        <li>Opens at 200% text with nothing off screen and no overflow</li>
+        <li>Every tap target 48 or more</li>
+        <li>Headings marked <code>header: true</code>; decoration excluded</li>
+        <li>Nothing said only in colour</li>
+        <li>Looks right in Moss <em>and</em> one dark palette</li>
+      </ul>
+    </section>
+
+    <section id="gaps">
+      <p class="kicker">Honesty</p>
+      <h2>Known gaps</h2>
+      <p class="lede">Things this guide names that are not finished.</p>
+
+      <div class="scroller">
+        <table>
+          <thead><tr><th>Gap</th><th>Where</th></tr></thead>
+          <tbody>
+            <tr><td>Three hardcoded colours are leaks</td><td>Tab bar, design system screen, breathing screen</td></tr>
+            <tr><td>Eleven palette pairs under 4.5:1</td><td>Listed above, not fixed</td></tr>
+            <tr><td><code>SkLayout</code> is new — only the explanation sheet uses it</td><td>Every other screen still has its numbers inline</td></tr>
+            <tr><td>No focus-visible treatment</td><td>Keyboard and switch control have no visible ring anywhere</td></tr>
+            <tr><td>No reduced-motion path</td><td><code>MediaQuery.disableAnimations</code> is read nowhere</td></tr>
+            <tr><td>The design system screen shows colours, not rules</td><td>It could show the contrast numbers live</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+  </main>
+
+  <footer>
+    <p>Source of truth: <code>_docs/design-guidelines/visual-style.md</code>. The
+    machinery: <code>lib/app/widgets/sk_contrast.dart</code>,
+    <code>lib/app/widgets/sk_layout.dart</code>,
+    <code>lib/app/widgets/sk_text.dart</code>. The enforcement:
+    <code>test/contrast_test.dart</code>. A draft like everything else in
+    <code>_docs/</code> — argue with it.</p>
+  </footer>
+
+</div>
+
+<script>
+  // ---- WCAG arithmetic, the same as SkContrast ----------------------------
+
+  const hexToRgb = (h) => {
+    const n = parseInt(h.replace('#', ''), 16);
+    return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+  };
+
+  const rgbToHex = ([r, g, b]) =>
+    '#' + [r, g, b].map((v) => Math.round(v).toString(16).padStart(2, '0')).join('').toUpperCase();
+
+  const luminance = (rgb) => {
+    const [r, g, b] = rgb.map((v) => {
+      const s = v / 255;
+      return s <= 0.03928 ? s / 12.92 : Math.pow((s + 0.055) / 1.055, 2.4);
+    });
+    return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+  };
+
+  const ratio = (a, b) => {
+    const la = luminance(a), lb = luminance(b);
+    const hi = Math.max(la, lb), lo = Math.min(la, lb);
+    return (hi + 0.05) / (lo + 0.05);
+  };
+
+  const rgbToHsl = ([r, g, b]) => {
+    r /= 255; g /= 255; b /= 255;
+    const max = Math.max(r, g, b), min = Math.min(r, g, b);
+    const l = (max + min) / 2;
+    if (max === min) return [0, 0, l];
+    const d = max - min;
+    const s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+    let h;
+    if (max === r) h = ((g - b) / d + (g < b ? 6 : 0)) / 6;
+    else if (max === g) h = ((b - r) / d + 2) / 6;
+    else h = ((r - g) / d + 4) / 6;
+    return [h, s, l];
+  };
+
+  const hslToRgb = ([h, s, l]) => {
+    if (s === 0) { const v = l * 255; return [v, v, v]; }
+    const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+    const p = 2 * l - q;
+    const f = (t) => {
+      if (t < 0) t += 1;
+      if (t > 1) t -= 1;
+      if (t < 1 / 6) return p + (q - p) * 6 * t;
+      if (t < 1 / 2) return q;
+      if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
+      return p;
+    };
+    return [f(h + 1 / 3) * 255, f(h) * 255, f(h - 1 / 3) * 255];
+  };
+
+  // The caption rule, exactly as SkContrast.captionOn does it.
+  const captionOn = (groundRgb, target = 4.5) => {
+    const [h, s, l] = rgbToHsl(groundRgb);
+    const goDarker = ratio([0, 0, 0], groundRgb) > ratio([255, 255, 255], groundRgb);
+    for (let step = 0.06; step <= 1.0; step += 0.02) {
+      const lightness = Math.min(1, Math.max(0, goDarker ? l - step : l + step));
+      const candidate = hslToRgb([h, s, lightness]);
+      if (ratio(candidate, groundRgb) >= target) return candidate;
+      if (lightness === 0 || lightness === 1) break;
+    }
+    return goDarker ? [0, 0, 0] : [255, 255, 255];
+  };
+
+  // ---- Moss, the default palette -----------------------------------------
+
+  const MOSS_LIGHT = {
+    canvas: '#F6F1E2', surface: '#FFFFFF', surfaceMuted: '#E2E8D6',
+    border: '#E0DBC6', hairline: '#ECE7D4', ink: '#2C3324', muted: '#8B8A72',
+    chevron: '#ADAE94', action: '#3D5232', onAction: '#F6F1E2',
+    actionSoft: '#E2E8D6', toggleOff: '#D8DCC6', destructive: '#B3311F',
+    panic: '#C2542A', onScene: '#33421F'
+  };
+
+  const SLOTS = [
+    ['canvas', 'The page ground', 'ink'],
+    ['surface', 'A card lifted off the page', 'ink'],
+    ['surfaceMuted', 'A quieter block — a chip, a group', 'ink'],
+    ['border', 'The edge of a control. Not text', null],
+    ['hairline', 'A divider between rows. Not text', null],
+    ['ink', 'All body text', 'canvas'],
+    ['muted', 'Nothing that is read', 'canvas'],
+    ['chevron', 'A disclosure arrow, a grab handle', null],
+    ['action', 'The primary control fill', 'onAction'],
+    ['actionSoft', 'A soft tint of the action colour', 'ink'],
+    ['destructive', 'Delete, and the negative tint', 'canvas'],
+    ['panic', 'The panic button only. Never changes', 'canvas']
+  ];
+
+  const swatchGrid = document.getElementById('swatch-grid');
+  SLOTS.forEach(([name, use, against]) => {
+    const hex = MOSS_LIGHT[name];
+    const rgb = hexToRgb(hex);
+    const label = captionOn(rgb);
+
+    let meta = '';
+    if (against) {
+      const r = ratio(rgb, hexToRgb(MOSS_LIGHT[against]));
+      const ok = r >= 4.5;
+      meta = `<span class="chip ${ok ? 'pass' : 'fail'}">${r.toFixed(2)}:1 vs ${against}</span>`;
+    }
+
+    const el = document.createElement('div');
+    el.className = 'swatch';
+    el.innerHTML =
+      `<div class="well" style="background:${hex}">
+         <span style="color:${rgbToHex(label)}">${hex}</span>
+       </div>
+       <div class="meta">
+         <div class="name">${name}</div>
+         <div class="use">${use}</div>
+         ${meta ? `<div style="margin-top:8px">${meta}</div>` : ''}
+       </div>`;
+    swatchGrid.appendChild(el);
+  });
+
+  // ---- live caption demo --------------------------------------------------
+
+  const GROUNDS = [
+    ['Moss light canvas', '#F6F1E2'],
+    ['Moss dark canvas', '#1B2418'],
+    ['Harvest moon canvas', '#F7EFE9'],
+    ['Coral diorama canvas', '#F4F6F1'],
+    ['The negative card', '#F0DCD3'],
+    ['The positive card', '#E8ECE0']
+  ];
+
+  const capDemo = document.getElementById('caption-demo');
+  GROUNDS.forEach(([name, hex]) => {
+    const rgb = hexToRgb(hex);
+    const cap = captionOn(rgb);
+    const body = ratio([0, 0, 0], rgb) > ratio([255, 255, 255], rgb) ? '#111111' : '#F2ECD9';
+    const r = ratio(cap, rgb);
+
+    const el = document.createElement('div');
+    el.className = 'cap-card';
+    el.style.background = hex;
+    el.innerHTML =
+      `<div class="cap-label" style="color:${rgbToHex(cap)}">${name}</div>
+       <div class="cap-body" style="color:${body}">Body text sits in ink. The label above it is this ground, taken down in lightness.</div>
+       <div class="cap-meta" style="color:${rgbToHex(cap)}">${hex} &rarr; ${rgbToHex(cap)} &nbsp;·&nbsp; ${r.toFixed(2)}:1</div>`;
+    capDemo.appendChild(el);
+  });
+
+  // ---- type specimens -----------------------------------------------------
+
+  const SCALE = [
+    ['largeTitle', 34, 700, -0.015, 'A screen title'],
+    ['breathCue', 34, 600, -0.015, 'Breathe in'],
+    ['sceneLine', 24, 600, -0.015, 'A line over the gradient'],
+    ['button', 19, 600, 0, 'Primary button'],
+    ['cardTitle', 18, 600, 0, 'Card title'],
+    ['rowLabel', 17, 400, 0, 'Body text, and the style long writing is read in'],
+    ['buttonSmall', 17, 600, 0, 'Secondary button'],
+    ['sheetHeading', 16, 600, 0, 'Why it does not hold'],
+    ['caption', 16, 400, 0, 'A subtitle under a title'],
+    ['buttonGhost', 15, 600, 0, "That's enough for now"],
+    ['chipLabel', 14, 600, 0, 'Things you are allowed'],
+    ['tabLabel', 14, 500, 0, 'A hint, or a lab meter'],
+    ['sectionHeader', 13, 600, 0.06, 'OVER A LIST GROUP']
+  ];
+
+  const specimens = document.getElementById('specimens');
+  SCALE.forEach(([name, size, weight, tracking, sample]) => {
+    const el = document.createElement('div');
+    el.className = 'specimen';
+    el.innerHTML =
+      `<div class="tag"><b>${name}</b>${size} / ${weight}${tracking ? `<br>${tracking > 0 ? '+' : ''}${(tracking * 100).toFixed(1)}%` : ''}</div>
+       <div class="sample" style="font-size:${size}px;font-weight:${weight};letter-spacing:${tracking * size}px">${sample}</div>`;
+    specimens.appendChild(el);
+  });
+
+  // ---- spacing scale ------------------------------------------------------
+
+  const STEPS = [
+    ['xs', 4, 'Things that are touching'],
+    ['sm', 8, 'A heading and the line under it'],
+    ['md', 12, 'Inside a chip or small control'],
+    ['lg', 16, 'Between two rows'],
+    ['xl', 20, 'Card padding; parts of one idea'],
+    ['xxl', 24, 'Between two ideas'],
+    ['xxxl', 32, 'Between two sections'],
+    ['huge', 40, "A page's own top and bottom air"]
+  ];
+
+  const stepScale = document.getElementById('step-scale');
+  STEPS.forEach(([name, value, use]) => {
+    const el = document.createElement('div');
+    el.className = 'step step-row';
+    el.innerHTML =
+      `<div class="n">${name}</div>
+       <div class="v">${value}</div>
+       <div class="bar" style="width:${value * 3}px"></div>
+       <div class="use">${use}</div>`;
+    stepScale.appendChild(el);
+  });
+
+  // ---- status tones -------------------------------------------------------
+
+  // The four tones, both sets, exactly as SkColors carries them.
+  const TONES = [
+    ['success',     '#246D43', '#6FC094', '\u2713', 'Correct',      'That is the one. The ask stays concrete.'],
+    ['destructive', '#B3311F', '#E8897B', '\u2715', 'Not this one', '"You always" makes it about them, not about what happened.'],
+    ['warning',     '#7C5A1F', '#D3A863', '\u26A0', 'Careful',      'This deletes everything you have written, and it cannot be undone.'],
+    ['info',        '#336399', '#8FB4DD', 'i',       'Worth knowing','Nothing on this screen is saved or counted.']
+  ];
+
+  // Which set the page is currently showing, by its own ground.
+  const pageIsDark = () => {
+    const g = getComputedStyle(document.body).backgroundColor;
+    const m = g.match(/\d+/g).map(Number);
+    return luminance([m[0], m[1], m[2]]) < 0.5;
+  };
+
+  const groundRgb = () => {
+    const m = getComputedStyle(document.body).backgroundColor.match(/\d+/g).map(Number);
+    return [m[0], m[1], m[2]];
+  };
+
+  const FILL_ALPHA = 0.12;
+  const EDGE_ALPHA = 0.25;
+
+  // SkContrast.readable, in the browser.
+  const readable = (preferred, ground, target = 4.5) => {
+    if (ratio(preferred, ground) >= target) return preferred;
+    const [h, s, l] = rgbToHsl(preferred);
+    const goDarker = ratio([0, 0, 0], ground) > ratio([255, 255, 255], ground);
+    for (let step = 0.02; step <= 1.0; step += 0.02) {
+      const lightness = Math.min(1, Math.max(0, goDarker ? l - step : l + step));
+      const candidate = hslToRgb([h, s, lightness]);
+      if (ratio(candidate, ground) >= target) return candidate;
+      if (lightness === 0 || lightness === 1) break;
+    }
+    return goDarker ? [0, 0, 0] : [255, 255, 255];
+  };
+
+  const mix = (fg, bg, a) => [0, 1, 2].map((i) => fg[i] * a + bg[i] * (1 - a));
+
+  const toneColour = (row) => hexToRgb(pageIsDark() ? row[2] : row[1]);
+
+  const renderStatus = () => {
+    const ground = groundRgb();
+    const host = document.getElementById('status-demo');
+    host.innerHTML = '';
+
+    TONES.forEach((row) => {
+      const [name, , , glyph, head, sub] = row;
+      const hue = toneColour(row);
+      const fill = mix(hue, ground, FILL_ALPHA);
+      const text = readable(hue, fill);
+      const r = ratio(text, fill);
+
+      const el = document.createElement('div');
+      el.className = 'status-block';
+      el.style.background = rgbToHex(fill);
+      el.style.border = `1px solid rgba(${hue.map(Math.round).join(',')},${EDGE_ALPHA})`;
+      el.innerHTML =
+        `<div class="glyph" style="color:${rgbToHex(text)}">${glyph}</div>
+         <div>
+           <div class="head" style="color:${rgbToHex(text)}">${head}</div>
+           <div class="sub">${sub}</div>
+           <div class="meta" style="color:${rgbToHex(text)}">${name} &nbsp;·&nbsp; ${rgbToHex(hue)} on 12% &nbsp;·&nbsp; ${r.toFixed(2)}:1</div>
+         </div>`;
+      host.appendChild(el);
+    });
+
+    // ---- the quiz example ----
+    const quiz = document.getElementById('quiz-demo');
+    quiz.innerHTML = '';
+
+    const option = (row, label) => {
+      const hue = toneColour(row);
+      const fill = mix(hue, ground, FILL_ALPHA);
+      const text = readable(hue, fill);
+      const el = document.createElement('div');
+      el.className = 'option';
+      el.style.background = rgbToHex(fill);
+      el.style.border = `1px solid rgba(${hue.map(Math.round).join(',')},${EDGE_ALPHA})`;
+      el.style.color = rgbToHex(text);
+      el.innerHTML = `<div class="glyph">${row[3]}</div><div>${label}</div>`;
+      return el;
+    };
+
+    const resting = document.createElement('div');
+    resting.className = 'option resting';
+    resting.innerHTML = '<div class="glyph"></div><div>You never tell me anything.</div>';
+
+    quiz.appendChild(option(TONES[0], "I'd like to know if you're running late."));
+    quiz.appendChild(option(TONES[1], 'You always leave me waiting.'));
+    quiz.appendChild(resting);
+  };
+
+  renderStatus();
+
+  // The page can flip theme under the reader — the demos are computed from the
+  // live ground, so they have to be recomputed when it does.
+  if (window.matchMedia) {
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', renderStatus);
+  }
+  new MutationObserver(renderStatus).observe(document.documentElement, {
+    attributes: true,
+    attributeFilter: ['data-theme']
+  });
+
+  // ---- audit table --------------------------------------------------------
+
+  const AUDIT = [
+    ['Harvest moon light', 'onAction on action', 4.07],
+    ['Harvest moon dark', 'onScene on scene stop 0', 2.78],
+    ['Harvest moon dark', 'onScene on scene stop 1', 4.42],
+    ['Moonlit valley light', 'onScene on scene stop 2', 4.00],
+    ['Moonlit valley dark', 'onScene on scene stop 1', 3.88],
+    ['Night forest light', 'onScene on scene stop 0', 2.41],
+    ['Night forest dark', 'onScene on scene stop 0', 4.16],
+    ['Coral diorama light', 'onAction on action', 3.58],
+    ['Coral diorama dark', 'onScene on scene stop 0', 2.79],
+    ['Dusk terrarium light', 'onScene on scene stop 2', 2.60],
+    ['Dusk terrarium dark', 'onScene on scene stop 0', 3.98]
+  ];
+
+  const auditRows = document.getElementById('audit-rows');
+  AUDIT.forEach(([palette, pair, r]) => {
+    const row = document.createElement('tr');
+    row.innerHTML =
+      `<td>${palette}</td>
+       <td><code>${pair}</code></td>
+       <td class="num">${r.toFixed(2)}:1</td>
+       <td><span class="chip fail">under</span></td>
+       <td><span class="chip ${r >= 3.0 ? 'pass' : 'fail'}">${r >= 3.0 ? 'clears' : 'under'}</span></td>`;
+    auditRows.appendChild(row);
+  });
+</script>

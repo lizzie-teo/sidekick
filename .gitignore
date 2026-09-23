@@ -77,3 +77,15 @@ _docs/briefs/*.zip
 # Third-party animation books. Reference material, not ours to publish,
 # and this repo is public. The notes drawn from them are tracked as .md.
 _docs/skills/*.pdf
+
+# Third-party clinical handouts and the source art they came with. Same rule
+# as the animation books above, and it matters more here: the Centre for
+# Clinical Interventions modules are Crown copyright (State of Western
+# Australia) and their terms allow downloading for personal use only -- no
+# publishing, no reproduction in any material form. A public repo is both.
+#
+# So the whole folder is ignored rather than the PDFs alone. A transcription
+# into Markdown is still a reproduction, and two of those were committed here
+# before anybody checked. What is tracked is the brief: our own sentences,
+# with a page reference where a thought came from theirs.
+_docs/references/

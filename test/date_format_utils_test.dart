@@ -55,4 +55,14 @@ void main() {
     expect(DateFormatUtils.monthLabel(DateTime(2026, 9)), 'September 2026');
     expect(DateFormatUtils.monthLabel(DateTime(2025, 12)), 'December 2025');
   });
+
+  // Anything kept or sent somewhere needs a day that is still that day when
+  // it is read. "Yesterday" in a PDF opened next month names nothing.
+  group('fullDate', () {
+    test('never goes relative, however near the day is', () {
+      expect(DateFormatUtils.fullDate(DateTime(2026, 9, 20)),
+          '20 September 2026');
+      expect(DateFormatUtils.fullDate(DateTime(2025, 1, 1)), '1 January 2025');
+    });
+  });
 }

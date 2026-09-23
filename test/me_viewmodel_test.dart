@@ -1,3 +1,6 @@
+import 'dart:async';
+import 'dart:ui' show Rect;
+
 import 'package:flutter/material.dart' show ThemeMode;
 import 'package:flutter_test/flutter_test.dart';
 
@@ -12,9 +15,11 @@ void main() {
   late FakeAuthStateService authState;
   late FakeDeviceSettingsService settings;
   late ThemeService themeService;
+  late FakeDataExportService exportService;
   late MeViewModel viewModel;
 
   setUp(() {
+    exportService = FakeDataExportService();
     authService = FakeAuthService();
     authState = FakeAuthStateService(isAuthenticated: true, hasAccount: true);
     settings = FakeDeviceSettingsService();
@@ -27,6 +32,7 @@ void main() {
       notificationService:
           FakeNotificationService(deviceSettingsService: settings),
       deviceSettingsService: settings,
+      dataExportService: exportService,
     );
   });
 
@@ -61,6 +67,7 @@ void main() {
       notificationService:
           FakeNotificationService(deviceSettingsService: settings),
       deviceSettingsService: settings,
+      dataExportService: exportService,
     );
 
     viewModel.init();
@@ -183,6 +190,7 @@ void main() {
         themeService: themeService,
         deviceSettingsService: settings,
         notificationService: notifications,
+        dataExportService: exportService,
       );
       addTearDown(viewModel.dispose);
       viewModel.init();
@@ -205,6 +213,7 @@ void main() {
         themeService: themeService,
         deviceSettingsService: settings,
         notificationService: notifications,
+        dataExportService: exportService,
       );
       addTearDown(viewModel.dispose);
       viewModel.init();
@@ -228,6 +237,7 @@ void main() {
         themeService: themeService,
         deviceSettingsService: settings,
         notificationService: notifications,
+        dataExportService: exportService,
       );
       addTearDown(viewModel.dispose);
       viewModel.init();
@@ -238,4 +248,60 @@ void main() {
     });
   });
 
+  // "Send me a copy of everything" is the one row that reaches the server,
+  // the phone and the operating system in a single tap, so the guard and the
+  // failure path are both worth pinning.
+  group('sending a copy', () {
+    test('opens the sheet once and hands it the row it was tapped from',
+        () async {
+      viewModel.init();
+      const Rect row = Rect.fromLTWH(16, 420, 343, 48);
+
+      await viewModel.exportEverything(origin: row);
+
+      expect(exportService.calls, 1);
+      expect(exportService.lastOrigin, row);
+      // Back to a plain row, so the caption goes and the tap works again.
+      expect(viewModel.state.value.isExporting, isFalse);
+    });
+
+    // The entries come off the server before a single page is drawn, so the
+    // wait is long enough for an impatient second tap. Two sheets is not a
+    // state this screen may reach.
+    test('a second tap while it is still working is ignored', () async {
+      viewModel.init();
+      exportService.gate = Completer<void>();
+
+      final Future<void> first = viewModel.exportEverything();
+      await Future<void>.delayed(Duration.zero);
+
+      expect(viewModel.state.value.isExporting, isTrue);
+
+      await viewModel.exportEverything();
+      expect(exportService.calls, 1);
+
+      exportService.gate!.complete();
+      await first;
+
+      expect(viewModel.state.value.isExporting, isFalse);
+    });
+
+    test('a failure says so on the row and lets the user try again', () async {
+      viewModel.init();
+      exportService.shareError = Exception('no network');
+
+      await viewModel.exportEverything();
+
+      expect(viewModel.state.value.errors['export'], isNotNull);
+      expect(viewModel.state.value.isExporting, isFalse);
+
+      // The next tap starts clean rather than carrying the old message under
+      // a row that is working.
+      exportService.shareError = null;
+      await viewModel.exportEverything();
+
+      expect(viewModel.state.value.errors['export'], isNull);
+      expect(exportService.calls, 2);
+    });
+  });
 }

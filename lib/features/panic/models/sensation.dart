@@ -16,7 +16,10 @@
 // settle. There is no intensity rating here for the same reason.
 enum Sensation {
   heartRacing(
-    label: 'My heart is racing',
+    label: 'Racing heart',
+    introBodyLine: 'When you panic, your heart speeds up.',
+    introBreathLine: 'Slow breathing is what brings a fast heart down.',
+    introEmphasis: 'brings a fast heart down',
     script: <String>[
       'Your heart is beating fast to move blood to your arms and legs. '
           "That's all it's doing.",
@@ -28,7 +31,10 @@ enum Sensation {
     ],
   ),
   cantBreathe(
-    label: "I can't get a full breath",
+    label: 'Hard to breathe',
+    introBodyLine: 'When you panic, your chest goes tight.',
+    introBreathLine: 'A long breath out is what loosens a tight chest.',
+    introEmphasis: 'loosens a tight chest',
     script: <String>[
       'Your chest muscles have tightened, so a breath feels unfinished. '
           'You are still taking in all the air you need.',
@@ -41,7 +47,10 @@ enum Sensation {
     ],
   ),
   faint(
-    label: 'I feel like fainting',
+    label: 'Dizzy',
+    introBodyLine: 'When you panic, your head can go light.',
+    introBreathLine: 'Slower breathing is what clears a light head.',
+    introEmphasis: 'clears a light head',
     script: <String>[
       'Fainting happens when blood pressure drops. Right now yours has gone '
           'up, not down.',
@@ -54,7 +63,10 @@ enum Sensation {
     ],
   ),
   tingling(
-    label: 'My hands are tingling',
+    label: 'Tingling hands',
+    introBodyLine: 'When you panic, your hands can tingle.',
+    introBreathLine: 'Slower breathing is what settles your hands.',
+    introEmphasis: 'settles your hands',
     script: <String>[
       'Breathing fast changes the mix of gases in your blood, and that makes '
           'hands, feet and lips tingle.',
@@ -66,10 +78,74 @@ enum Sensation {
     ],
   );
 
-  // What the button says. Plain and physical -- "My heart is racing", never
+  // What the button says. Plain and physical -- "Racing heart", never
   // "I think something is wrong with me". A tile that names a fear invites
   // the reader to agree with it.
+  //
+  // **Two or three words, not a sentence**, shortened on 23 September 2026
+  // from "My heart is racing", "I can't get a full breath", "I feel like
+  // fainting" and "My hands are tingling". Four sentences have to be read
+  // and compared before anything happens, by somebody whose comprehension is
+  // already impaired -- and the four old ones shared an opening word, so the
+  // part that told them apart came last. The noun comes first now.
+  //
+  // **"Hard to breathe", never "Can't breathe".** The short version is the
+  // one the reader would say, and it is also the catastrophic reading the
+  // script then spends two lines taking back. A tile may name the feeling
+  // and may not agree with the fear.
   final String label;
+
+  // This sensation's two lines on the introduction page, and the phrase inside
+  // the second of them set in 600.
+  //
+  // **The page speaks to the tile that was tapped, top to bottom.** It said
+  // the same two opening lines to everybody until 23 September 2026 and
+  // changed only at the end, so somebody who tapped "Dizzy" was told about
+  // breathing speeding up and then, three lines later, about their head. The
+  // first thing on the page is now the thing they just named.
+  //
+  // | | Says |
+  // | --- | --- |
+  // | `introBodyLine` | What panic does to this part of the body |
+  // | `BreathingScript.introPacerLine` | What is about to happen. Everybody's |
+  // | `introBreathLine` | What the breathing does about it |
+  //
+  // **`introBodyLine` is a fact about bodies, not a verdict on this reader.**
+  // "Your heart is racing" is a claim about somebody who may have tapped the
+  // tile to see what it did -- and these tiles sit on the picker now, where
+  // anybody can reach them without having said they cannot cope. "When you
+  // panic, your heart speeds up" is the same shape as
+  // `TightenScript.intro`'s "When you are wound up, your muscles go tight".
+  //
+  // **It names the sensation. `script` explains it.** The line here says
+  // *that* panic does this; the two script lines, read over the pacer, say
+  // *why* and what it is not. Naming a thing and then explaining it thirty
+  // seconds later is not the same as saying it twice -- but they are the
+  // closest two pieces of writing in this flow, so a change to either is a
+  // reason to read the other.
+  //
+  // **The two script lines did not move here, and that was the decision.**
+  // The Play scripts moved their openings onto the page, which is why this
+  // one looks like it should too. It must not: the pair is a matched set --
+  // the first says what the body is doing, the second says what it is not
+  // doing -- and noticing a sensation without its answer is the loop this
+  // whole screen exists to interrupt. Splitting them across a button would
+  // put the noticing on one page and half the answer on another. They also
+  // have recordings, read as one performance.
+  //
+  // **Neither line agrees with the fear**, the same rule as `label`. They
+  // name what the body is doing and what slows it, never what might be going
+  // wrong.
+  //
+  // **`introEmphasis` is a phrase inside `introBreathLine`, never the whole
+  // line**, and never the first words of it. Weight lifts a phrase without
+  // taking it out of the sentence it belongs to; a line bold from end to end
+  // is a second heading. It is the answer to "what would this do for me?",
+  // which is the question somebody is holding while they decide whether to
+  // press Begin.
+  final String introBodyLine;
+  final String introBreathLine;
+  final String introEmphasis;
 
   // The script's opening for this sensation, read one line at a time over
   // the pacer once the counted breaths are done.
@@ -88,6 +164,9 @@ enum Sensation {
 
   const Sensation({
     required this.label,
+    required this.introBodyLine,
+    required this.introBreathLine,
+    required this.introEmphasis,
     required this.script,
     required this.voiceClips,
   });

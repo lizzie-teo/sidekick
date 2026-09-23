@@ -82,4 +82,73 @@ void main() {
     expect(find.text('Could not sign out. Please try again.'), findsOneWidget);
     expect(router.state.uri.path, Routes.me);
   });
+
+  // The last link in the chain, and the only one a viewmodel test cannot
+  // reach: the row on the page has to be wired to the action.
+  //
+  // This used to be an empty onTap under a footer promising the copy, which
+  // is the worst shape a settings row can take -- it looks like it worked.
+  group('send me a copy of everything', () {
+    testWidgets('the row opens the share sheet, anchored to itself',
+        (tester) async {
+      final export = FakeDataExportService();
+
+      await pumpApp(
+        tester,
+        isAuthenticated: true,
+        hasAccount: true,
+        location: Routes.me,
+        dataExportService: export,
+      );
+
+      await tester.scrollUntilVisible(
+          find.text('Send me a copy of everything'), 200);
+      await tester.tap(find.text('Send me a copy of everything'));
+      await tester.pumpAndSettle();
+
+      expect(export.calls, 1);
+      // An iPad anchors the popover to the row. A null rect would centre it
+      // on the screen instead, which is not wrong but is not what was asked.
+      expect(export.lastOrigin, isNotNull);
+      expect(export.lastOrigin!.width, greaterThan(0));
+    });
+
+    testWidgets('a failure says so under the row, not at the top of the page',
+        (tester) async {
+      final export = FakeDataExportService()
+        ..shareError = Exception('no network');
+
+      await pumpApp(
+        tester,
+        isAuthenticated: true,
+        hasAccount: true,
+        location: Routes.me,
+        dataExportService: export,
+      );
+
+      await tester.scrollUntilVisible(
+          find.text('Send me a copy of everything'), 200);
+      await tester.tap(find.text('Send me a copy of everything'));
+      await tester.pumpAndSettle();
+
+      expect(find.textContaining('Could not get your copy ready'),
+          findsOneWidget);
+    });
+
+    // The footer used to say "Everything you write stays on this phone",
+    // which was not true -- good things go to the account. A privacy line
+    // that overclaims is worse than no line at all.
+    testWidgets('the footer does not promise the words never leave the phone',
+        (tester) async {
+      await pumpApp(
+        tester,
+        isAuthenticated: true,
+        hasAccount: true,
+        location: Routes.me,
+      );
+
+      expect(find.textContaining('stays on this phone'), findsNothing);
+      expect(find.textContaining('saved to your account'), findsOneWidget);
+    });
+  });
 }

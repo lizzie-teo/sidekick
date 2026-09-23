@@ -15,7 +15,9 @@ import 'package:sidekick/features/panic/viewmodels/breathing_viewmodel.dart';
 // a hypothetical.
 //
 // The recordings themselves are in assets/audio/, and the words they say are
-// in _docs/briefs/voice-scripts/01-panic-breathing.md.
+// from the recording session. That session's script was deleted on 23
+// September 2026 and is in git history only, so this test is now the only
+// live record that a clip exists for every line.
 void main() {
   void expectOnDisk(String clip) {
     expect(File(clip).existsSync(), isTrue,

@@ -5,6 +5,20 @@ lines, the explanations behind them, empty states, error messages, the account
 offer. Not the meditation scripts -- those are spoken aloud and have their own
 rules in `_docs/skills/` and `_docs/briefs/low-kind-voice.md`.
 
+**Not the practice screens either.** `lib/features/practice/` teaches a skill
+to somebody who opened it in order to be taught, and three rules below flip on
+that fact: rule 1 (never "we"), rule 2 (no instructions) and rule 12 (no
+naming a technique). A lesson that will not name its own subject teaches a
+trick rather than a skill. The rules that protect the reader rather than the
+voice -- 7, 9 and 15 -- hold everywhere, practice screens included. The split
+is argued in `_docs/briefs/assertiveness-practice.md`, and the rules for
+writing one are in `.claude/skills/practice-writer/SKILL.md`.
+
+**The line is who asked.** These rules are written for somebody who did not
+ask for this: a line arriving on a lock screen, an error in front of a job
+they were trying to finish. Where the reader opened the thing in order to be
+taught, a rule that stops a teacher teaching is the wrong rule.
+
 Written 19 September 2026 from published guidance and from the psychology
 already behind `_docs/briefs/affirmation-lines.md`. Sources at the end.
 

@@ -41,6 +41,16 @@ abstract final class DateFormatUtils {
   static String monthLabel(DateTime month) =>
       '${_months[month.month - 1]} ${month.year}';
 
+  // "5 September 2026", always, however near the day is.
+  //
+  // The relative names dayLabel gives -- Today, Yesterday, Friday -- are read
+  // on a screen that is open now, and they are wrong the moment the words
+  // outlive the reading. Anything kept, printed or sent somewhere uses this
+  // instead: "Send me a copy of everything" is opened weeks later, and a copy
+  // headed "Yesterday" names no day at all.
+  static String fullDate(DateTime day) =>
+      '${day.day} ${_months[day.month - 1]} ${day.year}';
+
   // The heading over one day's entries.
   //
   //   Today · Yesterday · Friday (within the last week) · 5 September

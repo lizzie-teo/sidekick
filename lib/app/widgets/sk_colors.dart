@@ -50,8 +50,50 @@ class SkColors extends ThemeExtension<SkColors> {
   final Color actionSoft;
   final Color toggleOff;
 
-  // Semantics.
+  // Status. Four meanings, and they are the one family that does **not**
+  // change with the palette.
+  //
+  // **A status colour is a word, not a decoration.** Green means the answer
+  // was right, in Moss and in Dusk terrarium, in light and in dark. A green
+  // that drifted to olive in one theme and mint in another would teach the
+  // reader a different signal on every screen, and the whole value of a
+  // status colour is that it is recognised before it is read.
+  //
+  // So there are two sets, not twelve: one tuned to sit on the light canvases
+  // and one on the dark. `panic` has been that way since the start, for the
+  // same reason -- "the one control that looks the same everywhere" -- and
+  // this is that rule applied to the other four.
+  //
+  // **The saturation is chosen, not inherited.** Each one is the lightest
+  // (in light mode) or darkest (in dark mode) colour at its hue that still
+  // clears 4.5:1 **against a 12% tint of itself** over every canvas in the
+  // app. That is the demanding case, because a block says "correct" by
+  // putting the colour on a wash of itself, and the wash is the thing that
+  // eats the contrast. `test/contrast_test.dart` measures all twelve.
+  //
+  // | | Light | Dark |
+  // | --- | --- | --- |
+  // | `success` | `#246D43` | `#6FC094` |
+  // | `destructive` | `#B3311F` | `#E8897B` |
+  // | `warning` | `#7C5A1F` | `#D3A863` |
+  // | `info` | `#336399` | `#8FB4DD` |
+  //
+  // **`destructive` used to be twelve different reds and is now two.** Five
+  // palettes carried their own, drifting between `#9C2B22` and `#C2402A`
+  // for no reason anybody wrote down. The light value is the one Moss always
+  // had, so light mode is unchanged; the dark value moved from `#E0705C` to
+  // a lighter salmon, because the old one could not clear 4.5:1 on a wash of
+  // itself.
+  //
+  // **Warning is a brown-gold and that is not a mistake.** Amber has to go
+  // dark to be legible on a pale ground, and dark amber is brown. Every
+  // design system lands in the same place. It suits this app better than most.
+  final Color success;
   final Color destructive;
+  final Color warning;
+  final Color info;
+
+  // The panic button, and only that. Never changes in any theme or mode.
   final Color panic;
 
   // The scene gradient: 3 stops at 0.0 / 0.55 / 1.0, 170deg.
@@ -71,7 +113,10 @@ class SkColors extends ThemeExtension<SkColors> {
     required this.onAction,
     required this.actionSoft,
     required this.toggleOff,
+    required this.success,
     required this.destructive,
+    required this.warning,
+    required this.info,
     required this.panic,
     required this.scene,
     required this.onScene,
@@ -90,7 +135,10 @@ class SkColors extends ThemeExtension<SkColors> {
     onAction: Color(0xFFF6F1E2),
     actionSoft: Color(0xFFE2E8D6),
     toggleOff: Color(0xFFD8DCC6),
+    success: Color(0xFF246D43),
     destructive: Color(0xFFB3311F),
+    warning: Color(0xFF7C5A1F),
+    info: Color(0xFF336399),
     panic: Color(0xFFC2542A),
     scene: [Color(0xFFE6E6C8), Color(0xFFCFD9AE), Color(0xFFB6C795)],
     onScene: Color(0xFF33421F),
@@ -111,8 +159,11 @@ class SkColors extends ThemeExtension<SkColors> {
     onAction: Color(0xFF1B2418),
     actionSoft: Color(0xFF3B3520),
     toggleOff: Color(0xFF4A5C41),
-    destructive: Color(0xFFE0705C),
     // Panic never changes, in any theme or mode.
+    success: Color(0xFF6FC094),
+    destructive: Color(0xFFE8897B),
+    warning: Color(0xFFD3A863),
+    info: Color(0xFF8FB4DD),
     panic: Color(0xFFC2542A),
     scene: [Color(0xFF54704A), Color(0xFF47603F), Color(0xFF3A5035)],
     onScene: Color(0xFFEEF3D9),
@@ -141,7 +192,10 @@ class SkColors extends ThemeExtension<SkColors> {
     Color? onAction,
     Color? actionSoft,
     Color? toggleOff,
+    Color? success,
     Color? destructive,
+    Color? warning,
+    Color? info,
     Color? panic,
     List<Color>? scene,
     Color? onScene,
@@ -159,7 +213,10 @@ class SkColors extends ThemeExtension<SkColors> {
       onAction: onAction ?? this.onAction,
       actionSoft: actionSoft ?? this.actionSoft,
       toggleOff: toggleOff ?? this.toggleOff,
+      success: success ?? this.success,
       destructive: destructive ?? this.destructive,
+      warning: warning ?? this.warning,
+      info: info ?? this.info,
       panic: panic ?? this.panic,
       scene: scene ?? this.scene,
       onScene: onScene ?? this.onScene,
@@ -182,7 +239,10 @@ class SkColors extends ThemeExtension<SkColors> {
       onAction: Color.lerp(onAction, other.onAction, t)!,
       actionSoft: Color.lerp(actionSoft, other.actionSoft, t)!,
       toggleOff: Color.lerp(toggleOff, other.toggleOff, t)!,
+      success: Color.lerp(success, other.success, t)!,
       destructive: Color.lerp(destructive, other.destructive, t)!,
+      warning: Color.lerp(warning, other.warning, t)!,
+      info: Color.lerp(info, other.info, t)!,
       panic: Color.lerp(panic, other.panic, t)!,
       scene: [
         for (int i = 0; i < scene.length; i++)

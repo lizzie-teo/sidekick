@@ -34,7 +34,7 @@ class SkSoftButton extends StatelessWidget {
           child: Text(
             label,
             textAlign: TextAlign.center,
-            style: SkText.cardTitle.copyWith(color: sk.action),
+            style: SkText.buttonSmall.copyWith(color: sk.action),
           ),
         ),
       ),

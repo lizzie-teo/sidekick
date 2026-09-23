@@ -12,10 +12,11 @@ Code: `lib/features/panic/`. The words themselves live in
 
 ## The two doors
 
-| Door | Route | Asks about the body | First affirmation at |
+| Door | Route | Begin page first | First affirmation at |
 | --- | --- | --- | --- |
 | Panic button, centre of the tab bar | `Routes.breathe` | No | ~31s |
-| "Tap me" -> "Can't cope right now" | `Routes.body` | Yes | ~31s after the breathing starts |
+| The picker's "Can't cope" | `Routes.breathe?intro=1` | Yes | ~31s after Begin |
+| One of the picker's four sensations | `Routes.breathe?intro=1&sensation=<name>` | Yes | ~31s after Begin |
 
 31 seconds is 11s of lead-in and two 10s breaths, measured on a device. It was
 31s before any of this, came down to 23s, and went back up as the lead-in was
@@ -23,10 +24,28 @@ slowed to be readable and the breath slowed to six a minute. Both were paid
 for knowingly: the lead-in is skippable with one tap, and the breath rate is
 the part with trials behind it.
 
-The difference is **what is asked before the breathing**, and the only words
-it changes are the opening two: a picked sensation's own lines open the
-script; everyone else gets the general pair. Everything after the opening is
-the same for both doors.
+**"What's happening in your body?" is asked on the picker**, under the four
+faces, since 23 September 2026. It had a screen of its own (`BodyView`) and
+that screen is deleted: the feeling and the sensation are answered in the same
+tap now.
+
+The difference between the doors is **whether anything stands in front of the
+pacer**. The tab-bar button is pressed instead of waiting, so nothing does.
+Every door on the picker opens on `GuidedIntro` -- three lines and a Begin
+button -- because the reader has already stopped and chosen, and the page is
+where the exercise says what it is for.
+
+A sensation changes four things and no more: the Begin page's first line
+(`Sensation.introBodyLine` -- what panic does to that part of the body), its
+last line (`Sensation.introBreathLine` -- what the breathing does about it),
+the bold phrase inside that last line, and the opening two lines of the script
+(`Sensation.script` -- why, and what it is not). The Begin page's middle line
+and everything after the script's opening are the same for every door.
+
+**The lead-in did not move onto the Begin page and was not shortened.** The
+Play scripts moved their opening lines onto theirs, and those lines said what
+the exercise was for. These three are a countdown into the first breath, and
+"Small breaths." is the last thing said before it on purpose.
 
 ---
 
@@ -143,10 +162,32 @@ Home: "Tap me"
 
 | Tile | Its two lines say |
 | --- | --- |
-| My heart is racing | Blood is moving to your limbs; it slows on its own |
-| I can't get a full breath | Chest muscles tightened; a long out-breath loosens them |
-| I feel like fainting | Blood pressure went up, not down; it is fast breathing |
-| My hands are tingling | Gas mix in the blood changed; it fades with slower breathing |
+| Racing heart | Blood is moving to your limbs; it slows on its own |
+| Hard to breathe | Chest muscles tightened; a long out-breath loosens them |
+| Dizzy | Blood pressure went up, not down; it is fast breathing |
+| Tingling hands | Gas mix in the blood changed; it fades with slower breathing |
+
+**The tiles are two or three words, not sentences.** Shortened on 23 September
+2026 from "My heart is racing", "I can't get a full breath", "I feel like
+fainting" and "My hands are tingling". Four sentences have to be read and
+compared before anything happens, by somebody whose comprehension is already
+impaired -- and all four began with the same word, so the part that told them
+apart came last. The noun comes first now.
+
+**"Hard to breathe", never "Can't breathe".** The shorter version is the one
+the reader would say, and it is also the catastrophic reading the script then
+spends two lines taking back. A tile may name the feeling and may not agree
+with the fear.
+
+**A sad face for her was built on 23 September 2026 and taken back out the
+same day.** Her ordinary face smiles, and a smile beside "What's happening in
+your body?" is the app not having noticed what the reader just pressed. The
+change is right and is worth building again; the evening ran out chasing a
+different bug. The standing character had vanished from every screen, and the
+cause turned out to be two layers left hidden by the **eye icon** in the Rive
+editor -- which ships in the export while every opacity read still says 100.
+`_docs/skills/character-pipeline.md` names that as export-ritual step 5.
+`CLAUDE.md` holds the detail.
 
 ---
 

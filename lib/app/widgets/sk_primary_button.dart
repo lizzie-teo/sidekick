@@ -6,7 +6,8 @@ import 'package:sidekick/app/widgets/sk_pressable.dart';
 import 'package:sidekick/app/widgets/sk_text.dart';
 
 // The filled pill: Next, Save, Continue. Full width by default; compact hugs
-// its label for the scene CTA.
+// its label for the scene CTA. Compact is a width, not a size -- the label is
+// `SkText.button` either way.
 class SkPrimaryButton extends StatelessWidget {
   final String label;
   final VoidCallback? onPressed;
@@ -34,10 +35,11 @@ class SkPrimaryButton extends StatelessWidget {
       ),
       child: Text(
         label,
-        style: SkText.button.copyWith(
-          color: sk.onAction,
-          fontSize: compact ? 17 : 19,
-        ),
+        // Compact shrinks the pill, never the label. The two used to move
+        // together, which dropped the scene CTA to 17 -- under the soft
+        // buttons below it and under the invite card below those, so the one
+        // action the screen is built around was the smallest thing on it.
+        style: SkText.button.copyWith(color: sk.onAction),
       ),
     );
 

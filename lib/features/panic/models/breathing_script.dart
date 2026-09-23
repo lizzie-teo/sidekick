@@ -30,6 +30,109 @@ import 'package:sidekick/features/panic/models/sensation.dart';
 // and Next goes away -- the sequence is the same either way, which is why it
 // lives here rather than in the view.
 abstract final class BreathingScript {
+  //
+  // The introduction page -- read before the pacer starts, at the reader's own
+  // speed, with nothing moving. See `GuidedIntro`.
+  //
+  // **It is on the picker's path only, and never on the tab-bar panic
+  // button.** That button is pressed instead of waiting, and a page with a
+  // Begin button in front of it is the gate the whole screen is built not to
+  // have. The picker has already cost the reader a screen and a choice, so a
+  // page there is not in anybody's way -- the same argument that put the body
+  // question on that path and kept it off this one.
+  //
+  // **The lead-in is not moved here and is not shortened.** It looks like the
+  // same trade the Play scripts made, where three opening lines came off the
+  // timer and onto the page, and it is not. Those three said what the exercise
+  // was for, which is a thing to read before committing. These three are a
+  // countdown into the first breath: they exist so the breath starts on a
+  // boundary rather than mid-way, and they are held long because they are read
+  // by somebody whose attention is poor. "Small breaths." especially stays --
+  // it is the last thing said before the first breath on purpose, and a Begin
+  // button between it and the breath would put an unknown gap there.
+  //
+  // **No duration, no count, and the page is the same on the fiftieth visit.**
+  // The Play pages' rules, for the same reasons, and the counting one is
+  // sharper here: a record of how often somebody panicked is the last thing
+  // this app should hold.
+
+  // **"Breathe with me", for every door, sensation or not.** A title names the
+  // exercise, and the exercise has one name. Putting "Dizzy" at the top of the
+  // page instead would name the reader's symptom in the largest type on the
+  // screen, which is a long way from what a title is for -- and the four
+  // pages would then be four different-shaped screens to somebody who is
+  // reading at the worst moment of their day.
+  static const String introTitle = 'Breathe with me';
+
+  // The line everybody gets, whichever door they came through: what is about
+  // to happen, said before it happens.
+  //
+  // **Two sentences, and both halves matter.** She goes first, so nothing is
+  // asked before it is shown; and following is offered rather than
+  // instructed, because the one thing this screen never does is hand somebody
+  // a way to fail at breathing.
+  //
+  // **Nothing on this page says "deep".** The app-wide ban has a randomised
+  // trial behind it and it binds hardest here, which is the last thing read
+  // before a panic attack meets a pacer.
+  static const String introPacerLine =
+      'I will breathe slowly. You can follow me.';
+
+  // The first line for somebody who did not name a sensation.
+  //
+  // **A fact about bodies, not a verdict on this reader.** "You are panicking"
+  // is a claim about somebody who may have tapped the card to see what it did.
+  // Each of the four tiles replaces this with its own version -- see
+  // `Sensation.introBodyLine`.
+  static const String introGeneralBodyLine =
+      'When you panic, your breathing speeds up.';
+
+  // The last line for the same reader.
+  //
+  // It is the one thing worth knowing about this exercise: the out-breath is
+  // the half that does the work. Each tile replaces it with what the breathing
+  // does about that sensation -- see `Sensation.introBreathLine`.
+  static const String introGeneralBreathLine =
+      'It is the long breath out that settles it.';
+
+  // The one phrase on the general page set in 600 where the rest is 400.
+  //
+  // **A phrase inside a sentence, never a whole line**, and it appears across
+  // the three lines exactly once. `SwapIntroText.emphasis`' rule, which
+  // `TightenScript.emphasis` already runs on: bold is worth what it is
+  // rationed to, and a line bold end to end reads as a second heading.
+  static const String introGeneralEmphasis = 'the long breath out';
+
+  // The three lines for one door.
+  //
+  // **A tile swaps the first and the last. Only the middle is everybody's.**
+  // Until 23 September 2026 a tile swapped the last line alone, so a reader
+  // who tapped "Dizzy" opened on a page about breathing speeding up and was
+  // not told about their head until the third line. The page names what they
+  // tapped first now.
+  static List<String> introFor(Sensation? sensation) => <String>[
+        sensation?.introBodyLine ?? introGeneralBodyLine,
+        introPacerLine,
+        sensation?.introBreathLine ?? introGeneralBreathLine,
+      ];
+
+  // The bold phrase for that door. It always lives in the third line, so a
+  // sensation carries its own.
+  static String introEmphasisFor(Sensation? sensation) =>
+      sensation?.introEmphasis ?? introGeneralEmphasis;
+
+  // **The standing permission, and it is the last thing read before Begin.**
+  // Word for word `TightenScript.permission`, deliberately: a reader who meets
+  // it on the wound-up page and again here should meet the same sentence, or
+  // the second one reads as a different and smaller promise.
+  //
+  // It is phrased about the **session**, never about the reader. "If it gets
+  // too much for you, stop" predicts distress and plants what it meant to
+  // cushion.
+  static const String introPermission = 'You can stop whenever you want.';
+
+  static const String introPermissionNote = 'Nothing here has to be finished.';
+
   // The opening for someone who skipped the body question, or let it go by.
   // It has to be true of all four sensations at once, so it names none.
   static const List<String> generalOpening = <String>[

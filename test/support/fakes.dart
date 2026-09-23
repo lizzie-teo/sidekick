@@ -1,3 +1,6 @@
+import 'dart:async';
+import 'dart:ui' show Rect;
+
 import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -11,6 +14,7 @@ import 'package:sidekick/data/models/entities/configuration_model.dart';
 import 'package:sidekick/data/models/entities/good_thing_model.dart';
 import 'package:sidekick/data/services/configuration_service.dart';
 import 'package:sidekick/data/services/good_things_service.dart';
+import 'package:sidekick/features/me/services/data_export_service.dart';
 
 // The fakes `implements` rather than `extends` the real services, so no
 // SupabaseClient is constructed -- a real one starts a token refresh timer that
@@ -274,6 +278,22 @@ class FakeGoodThingsService implements GoodThingsService {
   }
 
   @override
+  Future<List<GoodThingModel>> getAllEntries() async {
+    reads++;
+
+    if (readError != null) {
+      throw readError!;
+    }
+
+    // Newest first, as the real query orders it.
+    final List<GoodThingModel> all = List<GoodThingModel>.from(entries)
+      ..sort((GoodThingModel a, GoodThingModel b) =>
+          b.createdAt.compareTo(a.createdAt));
+
+    return all;
+  }
+
+  @override
   Future<List<GoodThingModel>> getEntriesBetween({
     required DateTime from,
     required DateTime to,
@@ -339,4 +359,43 @@ class FakeNotificationService extends NotificationService {
 
   // Stands in for a tap on a real alert.
   void pretendTapped(ReminderTap tap) => _tapped.value = tap;
+}
+
+// Stands in for the real export so a viewmodel test never builds a PDF, never
+// touches the temporary directory and never summons a share sheet. `calls`
+// counts the taps that got through, which is how the double-tap guard is
+// proven. Set shareError to make it fail.
+class FakeDataExportService implements DataExportService {
+  int calls = 0;
+  Rect? lastOrigin;
+  Object? shareError;
+
+  // Held open by a test that wants to inspect the page mid-export, the same
+  // way async_button_test holds an action open with a Completer.
+  Completer<void>? gate;
+
+  @override
+  Future<void> shareEverything({Rect? sharePositionOrigin}) async {
+    calls++;
+    lastOrigin = sharePositionOrigin;
+
+    if (gate != null) {
+      await gate!.future;
+    }
+
+    if (shareError != null) {
+      throw shareError!;
+    }
+  }
+
+  @override
+  Future<ExportData> gather({DateTime? now}) async => ExportData(
+        madeAt: now ?? DateTime.now(),
+        email: null,
+        goodThings: const <GoodThingModel>[],
+        settings: const <ExportSetting>[],
+      );
+
+  @override
+  Future<Uint8List> render(ExportData data) async => Uint8List(0);
 }

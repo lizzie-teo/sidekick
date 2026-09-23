@@ -44,6 +44,18 @@ dependencies:
   # than a feature.
   just_audio: ^0.9.42
 
+  # Used for "Send me a copy of everything" on the Me tab. The phone builds
+  # the document and hands it to the operating system's own share sheet, where
+  # Mail is one choice among several. No server and no email address are
+  # involved, which is the point: almost every account is anonymous, so a
+  # mailer on the server could only serve the few who have signed up.
+  #
+  # `pdf` draws it, `path_provider` finds the temporary directory it is
+  # written into, and `share_plus` opens the sheet.
+  pdf: ^3.13.1
+  path_provider: ^2.1.6
+  share_plus: ^13.3.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -56,27 +68,44 @@ dev_dependencies:
 flutter:
   uses-material-design: true
 
+  # Poppins, SIL Open Font License 1.1 -- assets/fonts/OFL.txt. All nine
+  # weights are bundled; SkText uses 400 to 700 and the rest are there for
+  # decoration. Lexend was the face until 20 September 2026 and is gone, not
+  # kept as a fallback: a second family that nothing names is dead weight in
+  # the bundle and a trap for anyone who copies an old `fontFamily` string.
   fonts:
-    - family: Lexend
+    - family: Poppins
       fonts:
-        - asset: assets/fonts/Lexend-Thin.ttf
+        - asset: assets/fonts/Poppins-Thin.ttf
           weight: 100
-        - asset: assets/fonts/Lexend-ExtraLight.ttf
+        - asset: assets/fonts/Poppins-ExtraLight.ttf
           weight: 200
-        - asset: assets/fonts/Lexend-Light.ttf
+        - asset: assets/fonts/Poppins-Light.ttf
           weight: 300
-        - asset: assets/fonts/Lexend-Regular.ttf
+        - asset: assets/fonts/Poppins-Regular.ttf
           weight: 400
-        - asset: assets/fonts/Lexend-Medium.ttf
+        - asset: assets/fonts/Poppins-Medium.ttf
           weight: 500
-        - asset: assets/fonts/Lexend-SemiBold.ttf
+        - asset: assets/fonts/Poppins-SemiBold.ttf
           weight: 600
-        - asset: assets/fonts/Lexend-Bold.ttf
+        - asset: assets/fonts/Poppins-Bold.ttf
           weight: 700
-        - asset: assets/fonts/Lexend-ExtraBold.ttf
+        - asset: assets/fonts/Poppins-ExtraBold.ttf
           weight: 800
-        - asset: assets/fonts/Lexend-Black.ttf
+        - asset: assets/fonts/Poppins-Black.ttf
           weight: 900
+
+        # The one italic, at 400 only. It is what `SkText.quote` is set in --
+        # the example sentences on the practice drill's introduction pages.
+        #
+        # It is a real Poppins italic cut, not a slant. Flutter does not
+        # synthesise one: `FontStyle.italic` on a family with no italic asset
+        # renders upright and reports nothing, which is how a missing italic
+        # goes unnoticed. Only 400 is here because only 400 is used; a bold
+        # italic would be another 180KB nothing asks for.
+        - asset: assets/fonts/Poppins-Italic.ttf
+          weight: 400
+          style: italic
 
   assets:
     - assets/images/
@@ -90,3 +119,4 @@ flutter:
     - shaders/halo_soft.frag
     - shaders/halo_warm.frag
     - shaders/halo_mist.frag
+    - shaders/blob_orb.frag

@@ -43,6 +43,8 @@ class SkCharacter extends StatefulWidget {
   const SkCharacter({
     super.key,
     this.height,
+    this.fit = rive.Fit.contain,
+    this.alignment = Alignment.center,
     this.startBreathing = false,
     this.skin = 0,
     this.pose,
@@ -57,6 +59,22 @@ class SkCharacter extends StatefulWidget {
   static const String startTrigger = 'startBreathe';
 
   final double? height;
+
+  // How the 500 x 500 artboard is laid into the box, and which part of it
+  // survives when the two do not match.
+  //
+  // **The default fits the whole of her in and is what nearly every screen
+  // wants.** The exceptions are boxes that mean to show a part of her: a box
+  // that is not square with `Fit.cover` keeps the full width and crops top
+  // and bottom, and `Alignment.topCenter` then makes that crop her head. The
+  // swap drill uses both -- `cover` to drop the empty margin either side of
+  // her, and a head crop on its last screen.
+  //
+  // **A cropping fit needs a `ClipRect` around this widget.** The runtime
+  // paints outside the box otherwise, and on a scrolling page that lands on
+  // whatever is next to her.
+  final rive.Fit fit;
+  final Alignment alignment;
 
   // Fires [startTrigger] once, so the breathing screen starts her without
   // asking for a touch.
@@ -73,9 +91,10 @@ class SkCharacter extends StatefulWidget {
   final double skin;
 
   // A trigger to fire on this artboard, named by a screen that is driving her
-  // rather than listening to her. The wound-up script is the only caller: it
-  // owns its own clock, so it says "tighten your hands now" instead of being
-  // told when a breath started. See TightenPose.
+  // rather than listening to her. Callers own their own clock: the wound-up
+  // script says "tighten your hands now" instead of being told when a breath
+  // started, and a lesson says "that was it" the moment a card is tapped. See TightenPose, and AnswerPose for the two
+  // a lesson fires when an answer lands.
   //
   // **An unknown name is a no-op, on purpose.** `trigger(name)` returns null
   // when the file has no such trigger, so a screen can be built and shipped
@@ -257,7 +276,11 @@ class _SkCharacterState extends State<SkCharacter> {
       height: widget.height,
       child: controller == null
           ? const SizedBox.shrink()
-          : rive.RiveWidget(controller: controller),
+          : rive.RiveWidget(
+              controller: controller,
+              fit: widget.fit,
+              alignment: widget.alignment,
+            ),
     );
   }
 }

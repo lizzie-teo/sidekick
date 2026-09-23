@@ -1,3 +1,5 @@
+import 'dart:ui' show Rect;
+
 import 'package:flutter/material.dart' show ThemeMode;
 
 import 'package:sidekick/app/core/app_constants.dart';
@@ -9,6 +11,7 @@ import 'package:sidekick/app/core/notification_service.dart';
 import 'package:sidekick/app/core/theme_service.dart';
 import 'package:sidekick/app/core/view_model.dart';
 import 'package:sidekick/app/utilities/date_format_utils.dart';
+import 'package:sidekick/features/me/services/data_export_service.dart';
 
 class MeViewModel extends ViewModel<MeViewModelState> {
   final LoggerService _loggerService;
@@ -17,6 +20,7 @@ class MeViewModel extends ViewModel<MeViewModelState> {
   final ThemeService _themeService;
   final DeviceSettingsService _deviceSettingsService;
   final NotificationService _notificationService;
+  final DataExportService _dataExportService;
 
   MeViewModel({
     required LoggerService loggerService,
@@ -25,12 +29,14 @@ class MeViewModel extends ViewModel<MeViewModelState> {
     required ThemeService themeService,
     required DeviceSettingsService deviceSettingsService,
     required NotificationService notificationService,
+    required DataExportService dataExportService,
   })  : _loggerService = loggerService,
         _authService = authService,
         _authStateService = authStateService,
         _themeService = themeService,
         _deviceSettingsService = deviceSettingsService,
         _notificationService = notificationService,
+        _dataExportService = dataExportService,
         super(MeViewModelState());
 
   // The account rows follow hasAccount, not isAuthenticated. Everyone has a
@@ -166,6 +172,43 @@ class MeViewModel extends ViewModel<MeViewModelState> {
   void setCharacter(SidekickCharacter character) =>
       _themeService.setCharacter(character);
 
+  // "Send me a copy of everything". Builds the document and hands it to the
+  // phone's share sheet, where Mail is one choice among several.
+  //
+  // `origin` is the rect of the row that was tapped, which iPads and Macs use
+  // to anchor the popover. Everything else ignores it.
+  //
+  // isExporting is a named flag rather than isLoading, and it is on the
+  // viewmodel rather than owned by the row, for one reason each. isLoading on
+  // this page means "there is nothing to show yet", which is never true here.
+  // And the row is an SkRow, not an AsyncButton -- it has nowhere to keep an
+  // in-flight flag of its own, and the wait is long enough to need reporting:
+  // the entries come off the server before a single page is drawn.
+  Future<void> exportEverything({Rect? origin}) async {
+    if (current.isExporting) return;
+
+    final Map<String, String> clear = Map<String, String>.from(current.errors)
+      ..remove('export');
+    emit(current.copyWith(isExporting: true, errors: clear));
+
+    try {
+      await _dataExportService.shareEverything(sharePositionOrigin: origin);
+    } catch (e, s) {
+      // Reported on the row rather than at the top of the page, so the
+      // message sits under the thing that failed.
+      //
+      // Nothing is said about success. The share sheet opening is the
+      // success, the user watched it happen, and a tick underneath it
+      // afterwards would be the app talking about itself.
+      _loggerService.errorShort(e, s);
+      final Map<String, String> next = Map<String, String>.from(current.errors);
+      next['export'] = 'Could not get your copy ready. Please try again.';
+      emit(current.copyWith(errors: next));
+    } finally {
+      emit(current.copyWith(isExporting: false));
+    }
+  }
+
   // Nothing navigates here: no screen this page can be on needs a session,
   // so the redirect leaves the user in place and the watch() above flips
   // the page to its no-account shape.
@@ -217,6 +260,11 @@ class MeViewModelState {
   final bool goodThingsEnabled;
   final int goodThingsMinutes;
 
+  // Whether a copy is being put together right now. Turns the export row's
+  // label into a caption saying so, and swallows a second tap while the
+  // server read and the page layout finish.
+  final bool isExporting;
+
   // Whole days since this install was first opened. Null until the stamp has
   // been read, and null for good if there is nothing readable to count from.
   final int? daysTogether;
@@ -235,6 +283,7 @@ class MeViewModelState {
     this.goodThingsEnabled = false,
     this.goodThingsMinutes = NotificationService.defaultGoodThingsMinutes,
     this.daysTogether,
+    this.isExporting = false,
     this.errors = const {},
     this.messages = const {},
   });
@@ -265,6 +314,7 @@ class MeViewModelState {
     bool? goodThingsEnabled,
     int? goodThingsMinutes,
     int? daysTogether,
+    bool? isExporting,
     Map<String, String>? errors,
     Map<String, String>? messages,
   }) {
@@ -279,6 +329,7 @@ class MeViewModelState {
       goodThingsEnabled: goodThingsEnabled ?? this.goodThingsEnabled,
       goodThingsMinutes: goodThingsMinutes ?? this.goodThingsMinutes,
       daysTogether: daysTogether ?? this.daysTogether,
+      isExporting: isExporting ?? this.isExporting,
       errors: errors ?? this.errors,
       messages: messages ?? this.messages,
     );

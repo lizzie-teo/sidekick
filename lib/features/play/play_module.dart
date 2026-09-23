@@ -2,14 +2,17 @@ import 'package:go_router/go_router.dart';
 
 import 'package:sidekick/app/core/app_constants.dart';
 import 'package:sidekick/app/core/feature_module.dart';
+import 'package:sidekick/features/play/views/actually_okay_view.dart';
+import 'package:sidekick/features/play/views/low_day_view.dart';
 import 'package:sidekick/features/play/views/scribble_view.dart';
 import 'package:sidekick/features/play/views/tighten_view.dart';
 
 // The three faces that are not panic, phase 5 of the build plan. Each one is
 // allowed to end in nothing.
 //
-// Built so far: Wound up (5.1), "Tighten, and stop". Low (5.2) and Actually
-// okay (5.3) land here beside it.
+// All three are built: Wound up (5.1), "Tighten, and stop"; Low (5.2),
+// "Somebody else, and you too"; and Actually okay (5.3), one short screen
+// whose only invitation is into Three good things.
 //
 // **"Play" means two things in this app and this module holds both.** The
 // folder is named for the three non-panic faces on the picker. The soft
@@ -37,6 +40,16 @@ class PlayModule extends FeatureModule {
           path: Routes.tighten,
           name: 'tighten',
           builder: (context, state) => const TightenView(),
+        ),
+        GoRoute(
+          path: Routes.lowDay,
+          name: 'low-day',
+          builder: (context, state) => const LowDayView(),
+        ),
+        GoRoute(
+          path: Routes.actuallyOkay,
+          name: 'actually-okay',
+          builder: (context, state) => const ActuallyOkayView(),
         ),
         GoRoute(
           path: Routes.scribble,

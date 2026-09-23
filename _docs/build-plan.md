@@ -336,9 +336,9 @@ The three faces that are not panic. Each one is allowed to end in nothing.
 
 | Step | Screen |
 | --- | --- |
-| 5.1 | Wound up — scribble it out. Nothing is saved, which is the point |
-| 5.2 | Low — sit with me, petting, offered tea |
-| 5.3 | Actually okay — capture it |
+| 5.1 | Wound up — tighten, and stop. **Built.** The scribble pad moved to Home; the anger evidence puts a hard, fast scribble on the arousal-raising side |
+| 5.2 | Low — somebody else, and you too. **Built.** Seven minutes of kind words, eyes closed, an orb on screen rather than the character |
+| 5.3 | Actually okay — capture it. **Built.** One screen, not a script: her content face, one of six lines picked at random, and a single outline button into Three good things |
 
 ## Phase 6 — Onboarding and the account offer
 

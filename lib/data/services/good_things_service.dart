@@ -79,6 +79,32 @@ class GoodThingsService {
     }
   }
 
+  // Every entry this account has ever written, newest first.
+  //
+  // Unbounded on purpose. It has one caller -- "Send me a copy of everything"
+  // on the Me tab -- and a copy of everything that stopped at a page would be
+  // a copy of some of it. The table holds one short line per row, so even a
+  // daily writer of several years is a few hundred kilobytes.
+  //
+  // No user filter here either: row-level security is what decides whose rows
+  // come back, and putting the test in two places means one of them can be
+  // forgotten.
+  Future<List<GoodThingModel>> getAllEntries() async {
+    try {
+      final List<Map<String, dynamic>> rows = await _supabaseClient
+          .from('good_things')
+          .select()
+          .order('created_at', ascending: false);
+
+      return rows.map(GoodThingModel.fromJson).toList();
+    } catch (e, s) {
+      // Rethrown rather than degraded to an empty list: an export that
+      // quietly came back blank would tell the user nothing was ever saved.
+      _loggerService.errorShort(e, s);
+      rethrow;
+    }
+  }
+
   // Entries written between two local times, newest first. `from` is
   // inclusive, `to` is exclusive, so a caller passes the start of one day and
   // the start of the next without worrying about the last second of the day.

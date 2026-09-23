@@ -105,7 +105,7 @@ class DesignSystemView extends StatelessWidget {
 
               DesignSystemSection(
                 title: 'Type',
-                description: 'Lexend for everything, display and body.',
+                description: 'Poppins for everything, display and body.',
                 children: [
                   Text('Me', style: SkText.largeTitle.copyWith(color: sk.ink)),
                   const SizedBox(height: 8),
@@ -114,6 +114,16 @@ class DesignSystemView extends StatelessWidget {
                   const SizedBox(height: 8),
                   Text('Carry on with Mountain',
                       style: SkText.cardTitle.copyWith(color: sk.ink)),
+                  const SizedBox(height: 8),
+                  // The two button sizes sit next to the card title on
+                  // purpose: 19 / 18 / 17 is the whole of the middle of the
+                  // scale, and it is the part that is judged on a phone
+                  // rather than argued about in a table.
+                  Text('Tap me',
+                      style: SkText.button.copyWith(color: sk.ink)),
+                  const SizedBox(height: 8),
+                  Text('Meditate',
+                      style: SkText.buttonSmall.copyWith(color: sk.ink)),
                   const SizedBox(height: 8),
                   Text('Vibrate with the breathing',
                       style: SkText.rowLabel.copyWith(color: sk.ink)),

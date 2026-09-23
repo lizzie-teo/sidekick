@@ -20,8 +20,8 @@ void main() {
     await tapTab(tester, 'Good things');
     expect(router.state.uri.path, Routes.goodThings);
 
-    await tapTab(tester, 'Meditate');
-    expect(router.state.uri.path, Routes.meditate);
+    await tapTab(tester, 'Practice');
+    expect(router.state.uri.path, Routes.practice);
 
     await tapTab(tester, 'Me');
     expect(router.state.uri.path, Routes.me);

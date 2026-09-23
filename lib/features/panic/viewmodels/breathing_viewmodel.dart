@@ -33,12 +33,20 @@ import 'package:sidekick/features/panic/services/panic_voice.dart';
 // a block that appears below her would move her down the screen, which is the
 // one thing she must never do.
 //
-// "What's happening in your body?" is asked on its own screen (`BodyView`),
-// on the picker's path only, and the tile that was tapped is handed over
-// here as `sensation`. All it changes is the script's opening: the two lines
-// explaining that sensation, read over the pacer once the counted breaths
-// are done. The tab-bar panic button arrives with it unset and gets the
-// general opening, because nobody has said what their body is doing.
+// "What's happening in your body?" is asked on the picker now, not on a
+// screen of its own -- `BodyView` was deleted on 23 September 2026 and the
+// four tiles sit under the four faces. The tile that was tapped is handed
+// over here as `sensation`. All it changes is the script's opening: the two
+// lines explaining that sensation, read over the pacer once the counted
+// breaths are done. The tab-bar panic button arrives with it unset and gets
+// the general opening, because nobody has said what their body is doing.
+//
+// **`showsIntro` is the difference between the two doors, and it is the only
+// difference.** Everything the picker opens starts on `GuidedIntro`, and the
+// tab-bar panic button starts on the pacer with nothing in front of it. That
+// button is pressed instead of waiting; a page with a Begin on it would be a
+// gate on the one screen built not to have one. The picker has already cost
+// a screen and a choice, so a page there is not in anybody's way.
 //
 // The lead-in is the single exception to the no-waiting rule, and it is
 // eleven seconds long. Someone arriving here is usually already breathing fast, so
@@ -55,6 +63,7 @@ import 'package:sidekick/features/panic/services/panic_voice.dart';
 class BreathingViewModel extends ViewModel<BreathingState> {
   BreathingViewModel({
     this.sensation,
+    this.showsIntro = false,
     PanicVoice? voice,
     DeviceSettingsService? deviceSettingsService,
   })  : _voice = voice ?? const SilentPanicVoice(),
@@ -65,9 +74,20 @@ class BreathingViewModel extends ViewModel<BreathingState> {
     addTeardown(_voice.dispose);
   }
 
-  // The tile tapped on the body screen, or null for the general script. See
-  // the note above the class.
+  // The tile tapped on the picker, or null for the general script. See the
+  // note above the class.
   final Sensation? sensation;
+
+  // Whether an introduction page stands in front of the pacer. See the note
+  // above the class: the picker's doors set it, the tab-bar panic button does
+  // not.
+  //
+  // It is read by the view, which decides which page to draw, and by nothing
+  // in here. What this class owns is `hasStarted`, and the only thing that
+  // sets it is [start] -- so a screen with no introduction is simply one
+  // where [start] is called a frame earlier, from the view's `initState`
+  // rather than from a button.
+  final bool showsIntro;
 
   // Silent by default, so a viewmodel test is a viewmodel test and not an
   // audio test.
@@ -173,11 +193,18 @@ class BreathingViewModel extends ViewModel<BreathingState> {
   // Called once, from the view's initState. The lead-in runs on timers rather
   // than on the animation, because the sidekick is not breathing yet and so
   // has no beats to offer.
+  // Called once: from the view's initState when there is no introduction, and
+  // from the Begin button when there is. Safe to call twice either way.
   void start() {
     if (_isStarted) return;
     _isStarted = true;
 
     addTeardown(() => _beat?.cancel());
+
+    // What swaps the introduction for the pacer. Emitted before the first
+    // beat rather than with it, so the page the reader is on changes on the
+    // tap rather than a frame later, under the first line.
+    emit(current.copyWith(hasStarted: true));
 
     // **The lead-in does not wait for this read.** Somebody arriving here
     // pressed a button rather than waiting, so the first beat goes up on the
@@ -367,6 +394,15 @@ class BreathingState {
   // out of step with the drawing.
   final String cue;
 
+  // False while the introduction page is up, and true for the whole of the
+  // rest of the screen.
+  //
+  // **It starts false even when there is no introduction**, because the view
+  // calls `start()` in `initState`, which flips it before the first build. A
+  // default of true would be the same screen described twice, free to
+  // disagree with itself the day somebody stops calling `start()` early.
+  final bool hasStarted;
+
   // True until the lead-in beats have played out. The sidekick idles rather
   // than paces while it is true, and neither the words nor the counter are on
   // screen -- one thing at a time, and this is the one thing.
@@ -400,6 +436,7 @@ class BreathingState {
     this.errors = const {},
     this.messages = const {},
     this.cue = '',
+    this.hasStarted = false,
     this.isLeadIn = true,
     this.leadInIndex = 0,
     this.breathCount = 0,
@@ -450,6 +487,7 @@ class BreathingState {
     Map<String, String>? errors,
     Map<String, String>? messages,
     String? cue,
+    bool? hasStarted,
     bool? isLeadIn,
     int? leadInIndex,
     int? breathCount,
@@ -464,6 +502,7 @@ class BreathingState {
       errors: errors ?? this.errors,
       messages: messages ?? this.messages,
       cue: cue ?? this.cue,
+      hasStarted: hasStarted ?? this.hasStarted,
       isLeadIn: isLeadIn ?? this.isLeadIn,
       leadInIndex: leadInIndex ?? this.leadInIndex,
       breathCount: breathCount ?? this.breathCount,

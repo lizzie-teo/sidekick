@@ -87,64 +87,138 @@ This is still the decision the script turns on.
 | The kind phrases are aimed at the self first | They are aimed outward first, then widened to include the self |
 | Failure is possible | There is nothing to produce and nothing is checked |
 
-**The character carries the company, and no line names her.** She is on screen
-sitting with the reader, doing nothing. The script never mentions her, because
-a line about a character on screen cannot be heard with closed eyes, and a line
-asking the reader to imagine somebody beside them is a task -- and a cruel one
-if their answer is nobody.
+**The screen carries an orb, and no line names it.** This script closes the
+reader's eyes at part 1 and then keeps attention on weight, warmth and words,
+so there is nobody watching after the fourth line. A character on screen would
+be a performance to an empty room, and a line asking the reader to imagine
+somebody beside them is a task -- and a cruel one if their answer is nobody.
 
-## Read or listen -- one script, two ways
+**The rule is app-wide and it is not about this script.** Anything that closes
+the reader's eyes, or turns attention onto body sensation, carries the orb.
+Anything that shows the reader a posture to copy -- the tighten script, the
+breathing pacer -- carries the character, because there the point is that she
+is looked at. The two never share a screen: two things moving on two clocks is
+what the breathing halo rule exists to prevent.
 
-Same four rules as `wound-up-tighten-and-stop.md`:
+The earlier version of this section put the character here, and there was a
+companion brief, `low-day-animation.md`, giving her seven minutes of poses.
+Both are deleted. Do not rebuild either from this paragraph.
 
-- **No line may require closed eyes.** "Your eyes can close, or stay open and
-  go loose" is the only line that touches them, and both answers are equal.
+## Heard, and read while the recordings are missing
+
+Same rules as `wound-up-tighten-and-stop.md`, with one change:
+
+- **Closed eyes are asked for, and the words stay on screen anyway.** The 39
+  recordings are not made yet, so the band is currently the only copy of the
+  script. "Close your eyes." is an invitation, not a lock: somebody who keeps
+  them open follows every line, and no line is hidden behind the instruction.
   Nothing at the end asks the reader to open them.
 - **No line may name the screen, the voice, or the sound.** That is also why
   the widening section uses air, feet and space rather than sounds in the room.
 - **Pauses carry both modes.** Heard, a pause is silence. Read, it is how long
   the line stays before the next one arrives.
-- **Every line fits one glance.** The longest is eleven words.
+- **Every line fits one glance.** The longest is fourteen words -- D1, "Now
+  bring one hand up, and rest it on the middle of your chest." This said
+  eleven until 20 September 2026, when the count was checked against the
+  recording script and found wrong. Fourteen is the ceiling, not a target.
 
 ## The shape
 
 | Part | Job | Lines | Approx |
 | --- | --- | --- | --- |
-| 1. Settling | Arrive. Give the permission. | 7 | 0:56 |
-| 2. Held | The chair takes the weight. | 4 | 0:44 |
-| 3. Somebody else | The kind words go outward, where they are easy. | 7 | 1:15 |
-| 4. Your own hand | Warm touch. The hinge between outward and inward. | 5 | 0:53 |
-| 5. And you too | The same words, now including the reader. | 8 | 1:40 |
-| 6. Wider | Attention goes out, off the chest and off the story. | 4 | 0:50 |
-| 7. Leaving | Soft, and with no job. | 5 | 0:52 |
+| 0. Opening | Name the method, say why the order, hand control over. | 4 | 0:28 |
+| 1. Settling | Arrive. Close the eyes. Let one breath out. | 7 | 0:44 |
+| 2. Held | Whatever is under you takes the weight. | 4 | 0:41 |
+| 3. Somebody else | The four wishes go outward, where they are easy. | 7 | 1:00 |
+| 4. Your own hand | Warm touch. The hinge between outward and inward. | 3 | 0:37 |
+| 5. And you too | The same four wishes, now including the reader. | 9 | 1:25 |
+| 6. Wider | Attention goes out, off the chest and off the story. | 3 | 0:36 |
+| 7. Leaving | Say it is over, and ask nothing. | 6 | 0:43 |
 
-Forty lines, about 7:10. `[pause Ns]` is a held silence, not a read line.
+Forty-three lines and **43 takes**. Every line is its own recording: the two
+sets of wishes are different words, so nothing is reused. About **6:16**. `[pause Ns]` is a held silence, not a read
+line.
+
+**The clock that matters is not the total. It is how long until the first kind
+word**, because the kind words are the exercise and everything before them is
+preamble. It was 2:41 on the morning of 20 September 2026 and it is 2:24 now.
+Three lines were cut for that number alone.
+
+Where the 2:24 goes, if it needs to come down again:
+
+| Before the first wish | Takes |
+| --- | --- |
+| 0. Opening | 0:28 |
+| 1. Settling | 0:44 |
+| 2. Held | 0:42 |
+| 3. Somebody else, up to the first wish | 0:30 |
+
+Part 2 is the one to argue with next. It is four lines of weight with 8, 8 and
+12 second silences, and it is doing real work -- the reader stops holding
+themselves up -- but it is the largest block between opening the screen and
+hearing anything kind.
 
 **Seven minutes, not ten.** The mountain script can run ten and a half because
 it is opened by somebody calm who chose to sit down. Low mood comes with poor
-task persistence, so length here is a real risk of abandonment. The first draft
-ran 6:25; the outward section is what added the extra forty seconds, and nothing
-else was allowed to grow.
+task persistence, so length here is a real risk of abandonment.
+
+**Rewritten 20 September 2026, and it did not get longer.** Four things were
+added -- an opening, a cued out-breath, the breath handed back, and a proper
+closure -- and three lines were cut to pay for them:
+
+| Cut | Why |
+| --- | --- |
+| "You are allowed to feel exactly what you feel." (part 3) | Aimed at the reader, in the one part whose whole job is to aim outward. Part 5 says it again, better, as "exactly this much". |
+| "Your feet are heavy, and your hands are resting." (part 7) | Part 6 had just said both, two lines earlier. |
+| "Nothing is finished, and nothing has to be." (part 7) | The new opening says "Nothing here has to be finished" first. |
+| "Right now, somebody else is feeling exactly this." (part 5) | Sent attention back out to a stranger two lines after it finally arrived at the reader. See the rule below. |
+| "There is nothing to answer." (part 3) | The script talking about itself -- reassurance about a task nobody was set. |
+| "So these words go to somebody you care about first." (part 0) | The script promising a thing it does a minute later. Part 3 does it better by doing it. |
+| "Then they come back to you." (part 0) | Same fault, and part 5 does it better. See the note on what the foreshadowing was worth. |
+| "Whoever turns up first. A person, or an animal." (part 3) | An extra beat in front of the kindness. The guard it carried now lives in the verb of the line above it. |
+| "Feel how much room there is around you." (part 6) | Three "Feel..." lines is a group; four is a checklist. It was also the only one asking for something the reader cannot touch -- air, feet and a hand are contact, "how much room" is a judgement about space made with the eyes shut. |
+| "Let yourself be heavy on it." (part 2) | Asked for a state, not an action. Being heavy is not something a body does on command, and the likeliest guess -- pressing down -- is effort, which is the opposite of the instruction. |
+| "Nothing has to be lifted right now." (part 2) | Nothing was being lifted, so it answered a question nobody had, and "lifted" points at no part of the body. |
+| "You are allowed to feel exactly this much." (part 5) | "Exactly this much" is a quantity, and a quantity invites the reader to measure what they have got -- on the one screen built around not going over your own state. |
+| "It is a human way to feel." (part 5) | "A human way to feel" is a construction, not a sentence. It makes the feeling a category of thing, which is work to do with the eyes shut. |
+| "This is your own hand." (part 4) | The script admiring its own idea. The reader already knows whose hand it is. |
+| "It has been warm all day." (part 4) | The same, one line later. The palm is already warm -- that is why the hand is the anchor -- so saying it again turns a sensation into a point being made. |
 
 ---
 
-## 1. Settling
+## 0. Opening
 
-Find a way to sit that you could hold for a while.
+People call this loving kindness.
 
-Let your back be tall, and let your shoulders drop.
+[pause 2s]
 
-Rest your hands wherever they land.
+It is easier to be kind to a friend than to yourself.
 
-[pause 5s]
+[pause 3s]
+
+Breathe normally the whole way through.
+
+[pause 3s]
 
 You can stop whenever you want. Nothing here has to be finished.
 
+[pause 4s]
+
+## 1. Settling
+
+Find a position you could stay in for a while.
+
+Close your eyes.
+
 [pause 5s]
 
-Your eyes can close, or stay open and go loose.
+Let your spine be long, and let your shoulders drop.
 
-[pause 8s]
+Rest your hands wherever they land.
+
+When your next breath comes, let it out slowly.
+
+[pause 6s]
 
 It is a low day.
 
@@ -154,17 +228,17 @@ You do not have to explain it to anyone.
 
 ## 2. Held
 
-Feel the chair, or the floor, holding your weight.
+Feel whatever is under you, holding your weight.
 
 It is doing all the work.
 
 [pause 8s]
 
-Let yourself be heavy on it.
+Let your weight sink down into it.
 
 [pause 8s]
 
-Nothing has to be lifted right now.
+You can stop holding yourself up.
 
 [pause 12s]
 
@@ -172,27 +246,29 @@ Nothing has to be lifted right now.
 
 Now let somebody you care about come to mind.
 
-Whoever turns up first. A person, or an animal.
-
-[pause 8s]
+[pause 6s]
 
 They are somewhere else right now, having their own day.
 
 [pause 8s]
 
-Some plain words for them. There is nothing to answer.
+Some simple kind words for them.
 
 [pause 5s]
 
-I hope today is easy.
+May you be safe.
 
-[pause 8s]
+[pause 3s]
 
-I hope you are alright.
+May you be well.
 
-[pause 8s]
+[pause 3s]
 
-You are allowed to feel exactly what you feel.
+May you be gentle with yourself.
+
+[pause 3s]
+
+May you have some peace, whatever today brings.
 
 [pause 10s]
 
@@ -208,13 +284,7 @@ Let it sit there with some weight.
 
 Feel the warmth of your palm coming through.
 
-[pause 10s]
-
-This is your own hand.
-
-It has been warm all day.
-
-[pause 10s]
+[pause 12s]
 
 ## 5. And you too
 
@@ -226,27 +296,31 @@ That is you.
 
 [pause 8s]
 
-The same words again, and they are for you as well.
+Now say them for yourself.
 
 [pause 5s]
 
-I hope today is easy.
+May I be safe.
+
+[pause 3s]
+
+May I be well.
+
+[pause 3s]
+
+May I be gentle with myself.
+
+[pause 3s]
+
+May I have some peace, whatever today brings.
+
+[pause 12s]
+
+You are allowed to feel like this.
 
 [pause 10s]
 
-I hope you are alright.
-
-[pause 10s]
-
-You are allowed to feel exactly this much.
-
-[pause 10s]
-
-Right now, somebody else is feeling exactly this.
-
-[pause 10s]
-
-It is a human way to feel.
+This is part of being human.
 
 [pause 10s]
 
@@ -260,19 +334,15 @@ Feel the air on your face.
 
 [pause 8s]
 
-Feel your feet on the floor.
-
-[pause 8s]
-
-Feel how much room there is around you.
+Feel the weight of your feet.
 
 [pause 10s]
 
 ## 7. Leaving
 
-Your feet are on the floor, and your hands are resting.
+Your breath is coming and going on its own.
 
-[pause 8s]
+[pause 6s]
 
 This is how it is today.
 
@@ -282,11 +352,11 @@ Stay as long as you want.
 
 [pause 8s]
 
-Nothing is finished, and nothing has to be.
-
-[pause 8s]
+When you are ready, let your eyes come back to the room.
 
 Your hand can go back there whenever you want.
+
+You can close this page when you are done.
 
 ---
 
@@ -297,22 +367,33 @@ does not get quietly undone later.
 
 ### The person comes to mind, and is never searched for
 
-"Now let somebody you care about come to mind. / Whoever turns up first."
+"Now let somebody you care about come to mind."
+
+This is the one place the script goes near memory at all, and it does so by
+explicit decision. **A named person is worth the cost**: a real person the
+reader cares about produces warmth that a stranger does not, and the warmth is
+the whole engine of the turn in part 5.
+
+**The guard against searching is the verb, and on 20 September 2026 it became
+the only guard.** "Whoever turns up first." followed this line and was cut --
+it was one more beat in front of the kindness on a script whose whole problem
+is how long that takes. What it was protecting against survives, because "let
+somebody come to mind" was always carrying it too:
+
+| Verb | What the reader does |
+| --- | --- |
+| **Let** somebody come to mind | Waits. Somebody arrives. |
+| **Bring** somebody to mind | Goes and gets one. |
+| **Think of** somebody | Picks, which means ranking the people they love with their eyes shut. |
+
+Change that verb and the guard is gone with it. That is the thing to watch in
+this line, not its length.
 
 | Rejected | Why |
 | --- | --- |
 | Bring to mind someone you love. | A search, and a ranking. Choosing from memory is time travel, which every script in this app bans. |
 | Someone who has been good to you. Someone who makes things easier. | The elaboration is what turns an arrival into a task. This is the same fault the mountain script had, and the same fix. |
-
-This is the one place the script goes near memory at all, and it does so by
-explicit decision. "Whoever turns up first" is what keeps it an arrival rather
-than a hunt. **A named person is worth this cost**: a real person the reader
-cares about produces warmth that a stranger does not, and the warmth is the
-whole engine of the turn in part 5.
-
-Rejected alternative: *"Somebody, somewhere, is having a day like this one."* No
-recall at all, and safe -- but the warmth is thin, so the turn to self in part 5
-has nothing to run on.
+| Somebody, somewhere, is having a day like this one. | No recall at all, and safe -- but the warmth is thin, so the turn to self in part 5 has nothing to run on. |
 
 ### The person is alive, and elsewhere
 
@@ -373,38 +454,168 @@ this face was designed around.
 today, so a reader with no mind's eye follows it exactly as well as anybody
 else.
 
-### Shared humanity is one person, right now
+### Attention goes out once, then in, and never back out
 
-"Right now, somebody else is feeling exactly this. / It is a human way to feel."
+**This is the rule that cut a line on 20 September 2026.** Part 5 used to end
+"Right now, somebody else is feeling exactly this. / It is a human way to
+feel." The first of those two is gone.
+
+It was the script's most direct piece of common humanity and it sat in the
+wrong place. The reader arrives at themselves at "That is you.", hears the
+words include them, and was then sent straight back out to a stranger. A
+script that keeps swapping who is being thought about never lets either one
+land, and the swap is work the reader has to do with their eyes closed.
+
+The shape is now: **somebody else, then you.** Once each, in that order.
 
 | Rejected | Why |
 | --- | --- |
+| Right now, somebody else is feeling exactly this. | Correct, well-evidenced, and in the wrong part. It bounces attention back out two lines after it finally arrived. |
 | Other people are feeling this today. | A crowd, and a crowd is abstract. Vague things are a puzzle, and solving a puzzle is leaving the room. |
 | You are not the only one. | To hear it, the reader must first build "I am the only one". The pink elephant problem, in the one line meant to cure it. |
 | Everybody feels like this sometimes. | Overclaims, and reads as brushing it off. |
 | The person you thought of has felt it too. | A claim about a real person that the script cannot know, and it can be plainly wrong. |
 
-One person, present tense, and "exactly this" rather than "something like it".
-That is the line that answers *nobody knows what this is like*. The second line
-frames it afterwards. Specific first, general second -- never the other way
-round.
+**Common humanity is not lost with it**, which is the only reason it could go.
+Neff's three parts are self-kindness, common humanity and mindfulness, and
+dropping one of the three would gut the script. Two things still carry it:
 
-### The wishes carry no "for you"
+- **Part 3 supplies it structurally.** Somebody else, somewhere else, having
+  their own day. The reader has already stood outside their own day once.
+- **"It is a human way to feel." says it outright**, and it points at no
+  second person. It is a fact about feelings, not a report about a stranger.
 
-"I hope today is easy." / "I hope you are alright."
+### The four wishes, said twice in different person
+
+| For somebody else | For the reader |
+| --- | --- |
+| May you be safe. | May I be safe. |
+| May you be well. | May I be well. |
+| May you be gentle with yourself. | May I be gentle with myself. |
+| May you have some peace, whatever today brings. | May I have some peace, whatever today brings. |
+
+**It was one set replayed word for word until 20 September 2026.** Identical
+words were a real mechanism -- nothing to notice, nothing to adjust, the
+second hearing simply wider than the first -- and it lost on ambiguity.
+
+"May you be safe." heard a second time is still grammatically aimed at
+whoever the reader had in mind. The redirection lived entirely in one framing
+line, and the reader had to perform it with their eyes shut. "May I" is the
+traditional self-practice form and it cannot be misheard.
+
+| What the change costs | What it buys |
+| --- | --- |
+| The echo. Eight words differ, and every one is the word this reader is most likely to flinch at | The self-aim is unmistakable, which is the point of part 5 existing |
+| Four extra recordings -- nothing is reused now | Nothing |
+
+**The order is what makes it survivable**, and it is the reason this was
+safe to change at all. Outward first, always. The fear of compassion is
+highest in people who are low and self-critical, so the words are warm before
+the "I" arrives.
+
+**If it turns out to sting, the fix is the framing line, not the wishes.**
+Going back to "May you" reopens the ambiguity it was changed to close.
+
+**There were two of them until 20 September 2026, and the set is better.** A
+pair reads as two sentences. Four short parallel lines read as a blessing --
+the form the reader already half-recognises, and the form that lets each wish
+be plain without any one of them having to carry everything.
+
+#### They are the traditional phrases, with two thrown out
+
+The classical loving-kindness set is safe, happy, healthy, at ease.
+
+| Traditional | Here | Why |
+| --- | --- | --- |
+| May you be safe | kept | Plain, and nothing about today contradicts it |
+| May you be happy | **cut** | It names the exact thing the reader has not got. On a low day it is the line most likely to sting |
+| May you be healthy | **cut** | Outside what this script is about, and plainly wrong for somebody ill |
+| May you live with ease | reshaped | "May you have some peace, whatever today brings." |
+
+The two additions are **"May you be well."** -- the broad one, and the one a
+reader is most likely to already say to themselves -- and **"May you be gentle
+with yourself."**, which is the Self-Compassion Break's own core phrase said in
+plain words.
+
+#### The rule every one of them passes
+
+**A wish about how somebody is met, never about how the day goes.**
+
+The wishes were rewritten three times in one afternoon, and the same two
+faults kept coming back:
+
+| Fault | Why it matters |
+| --- | --- |
+| "I hope" puts the speaker in the sentence | Fine aimed outward. Odd when the same recording is replayed to include the reader -- they end up hoping at themselves. |
+| A wish about **conditions** -- an easy day, good health, happiness | Today is free to contradict it. A reader having a hard day hears the words and reality disagrees in the same second. The wish then reads as the app not knowing what is going on. |
+
+**A wish about conditions can be falsified. A wish about how somebody is met
+cannot.** That is the distinction the compassion literature is built on:
+compassion is defined as a stance towards suffering -- sensitivity to it plus
+a commitment to ease it -- never as a guarantee the suffering stops (Gilbert's
+CFT; Neff & Germer's MSC). The evidence-backed phrases in MSC's
+Self-Compassion Break are all stance, never outcome: "may I be kind to
+myself", "may I give myself the compassion I need".
+
+"whatever today brings" says out loud that the day may be bad, and wishes for
+the person inside it rather than instead of it.
 
 | Rejected | Why |
 | --- | --- |
-| May you be well. May you be at ease. | Temple language. It makes a reader self-conscious and it is loving-kindness machinery. |
-| I hope today is easy **for you**. | Pins the words to one person, so the same line cannot be reused in part 5. The echo between parts 3 and 5 is the mechanism; a pinned line breaks it. |
+| I hope today is easy. / I hope you are alright. | The first drafts. Both faults at once. |
+| May today be easy on you. | Still a wish about conditions, in better grammar. |
+| May you be well, whatever today is. | Right shape, clumsy tail. "Whatever today is" is a state; "whatever today brings" is a thing happening to somebody. |
+| May you be happy. | Names the exact thing the reader has not got. |
+| May your heart be filled with love and kindness. | Asks the reader to produce a feeling, which is the one thing this script promises it will never do. |
+| May you be free from suffering. | Temple language, and a wish about conditions. |
+| May you be well **for you**. | Pins the words to one person, so the same line cannot be reused in part 5. The echo between parts 3 and 5 is the mechanism; a pinned line breaks it. |
 
-The lines are word-for-word the same in both parts, on purpose. Repetition
-settles. A synonym would be writing for a reader with their eyes open.
+#### The silence goes after the set, not between the wishes
+
+Three seconds between them, and ten or twelve after the last.
+
+A blessing is said as one run. Eight seconds between each phrase turns four
+wishes into four separate instructions, and the reader starts waiting rather
+than listening. It also cost nothing in length: four wishes with short gaps
+run barely longer than two wishes with long ones.
+
+#### What naming the method still does not let back in
+
+No rings of people ending in somebody difficult. No "may I be free from
+suffering". Nothing the reader has to feel. The grammar of a wish is borrowed.
+The liturgy is not.
+
+#### The reader is asked to say them, plainly and once
+
+"Now say them for yourself."
+
+It was written as "Now hear them in your own voice." for an hour, on the rule
+that **this script never asks the reader to produce anything** -- and that
+rule is about *feelings*. Warmth cannot be generated on command, so a script
+that asks for it hands the reader a way to fail. Saying four short sentences
+is not a feeling. There is nothing to fail at, and the saying is the exercise.
+
+Applying it there made the one line at the centre of the script weaker for no
+reason. The rule and its scope are now written down in CLAUDE.md under "Rules
+in this repo have a scope".
+
+| Rejected | Why |
+| --- | --- |
+| The same words again, and they are for you as well. | Was true when it was one set replayed. It is not the same words any more. |
+| Now hear them in your own voice. | Softens the ask to nothing, on a rule about feelings that does not reach speaking. |
+| Say them out loud, or just in your head if you'd rather. | Hedging the one instruction that matters is worse than asking for it. Ask plainly, once. |
+| Say them with me. | Invents a narrator at the emotional peak of the script. Nothing else in it has a speaker. |
+
+**The voice says them too.** Four new recordings, not the outward four
+replayed, so the reader is saying them alongside a voice rather than into
+silence.
 
 ### The permission is standing, and it is early
 
-Line four, in the settling: "You can stop whenever you want. Nothing here has
-to be finished."
+The last line of the opening: "You can stop whenever you want. Nothing here
+has to be finished." It was the fifth line of the settling until 20 September
+2026, which was already early; the opening is where it belongs, and it is
+word for word the tighten opening's line.
 
 | Rejected | Why |
 | --- | --- |
@@ -427,14 +638,25 @@ low mood already feels like, so leaning on it hands the reader their own symptom
 as the main image. One use is enough to make it allowed. The other five became
 "drop", "with some weight", "holding your weight" and "resting".
 
-### An animal counts
+### An animal counted, out loud, and now it does not
 
-"Whoever turns up first. A person, or an animal."
+**This is the one thing the 20 September 2026 trim cost, and it is written
+down rather than quietly dropped.** "A person, or an animal." is gone with the
+line it sat on.
 
-Isolation is a core feature of low mood, and a script that fails at line one for
-somebody with nobody is a bad script. The pet is standard in compassion
-training for exactly this reason. It is offered as words, like a body-sensation
-menu, rather than as a question to answer.
+The reason it existed has not gone anywhere. Isolation is a core feature of
+low mood, a script that fails at line one for somebody with nobody is a bad
+script, and the pet is standard in compassion training for exactly that. It
+was offered as words, like a body-sensation menu, rather than as a question to
+answer.
+
+What stands in its place is one word: **"somebody"**, which is permissive but
+reads human. Somebody whose honest answer is a dog has to decide for
+themselves that it is allowed, with their eyes shut, which is work.
+
+**If this strands people, the fix is a word inside "Now let somebody you care
+about come to mind." -- not the old line coming back.** The line was cut for
+the clock, and putting it back puts the clock back too.
 
 ### Nothing checks, and nothing scores
 
@@ -487,6 +709,121 @@ entirely. Part 6 then goes out to the air, the feet and the space, and the hand
 comes down at its first line. Anxious readers can open any tab, and held
 attention on the chest feeds the fear loop.
 
+### The opening names the method
+
+**The house rule against naming a technique is waived here, once.** That rule
+protects somebody who did not ask for any of this -- a lock screen line, an
+empty state, an error in front of a job they were trying to finish. This
+reader chose the face and opened the screen. Naming it gives them something to
+recognise next time and something to look up, which is worth more than the
+half-second of jargon costs.
+
+"People call this loving kindness." -- the app passing on a name other people
+use, not announcing a treatment.
+
+**Naming it lets none of the machinery back in.** No set phrases, no rings of
+people ending in somebody difficult, nothing the reader has to feel. The
+section above on the wishes holds that line.
+
+### The opening says what this is
+
+Added 20 September 2026. The script used to start on "Find a position you
+could stay in for a while." Somebody flat who tapped a face was told to get
+comfortable and then, four minutes later, asked to wish a stranger a good day
+with no idea what for. An exercise that will not say what it is leaves the
+reader with nothing to recognise next time and nothing to look up.
+
+Three lines do the explaining: why kindness is easier aimed outward, where the
+words go first, and where they end up.
+
+**It was rewritten three times in one afternoon**, and every rejected version
+is kept because each one failed differently.
+
+| Rejected | Why |
+| --- | --- |
+| This is a self-compassion practice. | A category, not a name. Nothing to look up and nothing to recognise. |
+| You are being too hard on yourself. | A verdict about somebody who may have tapped the face by accident. |
+| This works on the words, and not on the thinking. | It ruled out the right task, and "the thinking" is an abstraction. The tighten opening dropped the same line on the same day: these screens read at seven years old. |
+| A few kind words, and nothing to work out. | Names no mechanism, and "nothing to work out" is vague enough that the reader has to decide what it rules out -- which is the puzzle the line was trying to prevent. |
+| When a day is low, being kind to yourself gets hard. | Right idea, clumsy sentence, and it makes the difficulty a property of today rather than of self-kindness. |
+| So they go to somebody else first, and then they take you in too. | Two instructions in one sentence, and "take you in" reads as being tricked. |
+| They are easier to say to somebody else, so they start there. | "They start there" is a construction, not speech. Nobody says it. |
+| So these words go to somebody you care about first. | Correct and natural, and still cut. Part 3 does this a minute later, and doing it beats promising it. |
+| Then they come back to you. | Same fault. It bought foreshadowing of the turn, and the turn does not need it: part 5 arrives over two lines, not one. |
+
+**The opening is four lines and every one of them does something the script
+cannot do by happening.** A name, the reason for the order, a breath
+permission, a way out. Anything that merely previews a later part belongs in
+that later part.
+
+**"A friend", not "other people".** One person is something the reader is
+already holding by the next line. A crowd is abstract, and abstract things are
+a puzzle.
+
+**Nothing in the opening names a length.** A duration is a number, and a
+number hands the reader arithmetic.
+
+### One out-breath, cued. One in-breath, permitted. Never instructed in
+
+| Line | Where | What it is |
+| --- | --- | --- |
+| "Breathe normally the whole way through." | Opening | A permission. Asks for no size, no timing, no in-breath. |
+| "When your next breath comes, let it out slowly." | Settling, after the eyes close | The one cue. A single slow out-breath is how a clinical script marks the start. |
+| "Your breath is coming and going on its own." | Leaving | The breath handed back. An in-breath permitted, never instructed. |
+
+**The cue waits for the in-breath rather than asking for one, and that is the
+whole design of the line.** It read "Now let a breath out, slowly." and the
+note on the draft was right: a script cannot ask for an out-breath out of
+nowhere, because one has to go in first, and the reader is left wondering
+whether they are meant to take one.
+
+"Breathe in, then let a breath out, slowly." was the proposed fix and it
+cannot ship. The ban is app-wide, it has a randomised trial behind it, and the
+test suite fails on the substring. "When your next breath comes" does the same
+job from the other side: it names the in-breath that was arriving anyway,
+gives it no size and no timing, and puts the only instruction on the half that
+is safe to instruct.
+
+Three lines, and the script says nothing else about breathing anywhere.
+
+**The out-breath is the only half that may be asked for.** A stretched
+in-breath drops carbon dioxide and produces breathlessness, dizziness and
+tingling -- the exact sensations these scripts settle. The ban is app-wide and
+`_docs/affirmation-flow.md` holds the evidence.
+
+| Rejected | Why |
+| --- | --- |
+| Take a breath in, and let it go. | Instructs the in-breath, and "let it go" is banned outright. |
+| Now let one breath out, slowly. | "One" is a number, and a number starts a count. "A breath" says the same thing and counts nothing. |
+| *(an out-breath cue in each part)* | Four cues would make the breath the exercise. It is not: the words are. |
+
+### The script closes, it does not stop
+
+Three lines, in this order, and none of them scores the session:
+
+1. **The eyes come back.** The script closed them in part 1. One that never
+   reopens them has stopped rather than finished.
+2. **The hand is handed back.** "Your hand can go back there whenever you
+   want." The one thing the reader now owns.
+3. **The page may be closed.** "You can close this page when you are done."
+
+**The third is the one line in the script that names the screen, and this is
+the only place it is safe.** The standing rule is that no line may name the
+screen, the voice or the sound, so the script reads and listens the same way.
+That rule protects the session; here the session is over, there is nothing
+left to break out of, and the line is true spoken as well as read. The tighten
+script ends the same way.
+
+It is a permission, not an instruction. "Close this page" on its own would be
+the screen showing somebody the door after seven minutes of telling them they
+could stay as long as they wanted.
+
+| Rejected | Why |
+| --- | --- |
+| Open your eyes. | An order, at the one moment the script has no business giving one. "When you are ready" is the whole line. |
+| Well done. / Notice how much lighter you feel. | Marks out of ten. Somebody who feels no different has then failed. |
+| *(nothing -- the old ending)* | The screen simply went quiet with the reader's eyes still shut. That is stopping, not finishing. |
+
 ### App-wide bans, checked
 
 - No "deep breath", "breathe deeply", "fill your lungs", "big breath in".
@@ -496,11 +833,12 @@ attention on the chest feeds the fear loop.
   pictures nothing follows every line exactly as well as anybody else.
 - Every "not", "no" and "nothing" removes a task rather than planting an image.
 
-### The last line has no job in it
+### No line in the leaving has a job in it
 
-"Your hand can go back there whenever you want." It offers the one thing the
-reader now owns, and then stops. Rejected: "Use your hand whenever you need
-it today" -- that is homework.
+"Your hand can go back there whenever you want." offers the one thing the
+reader now owns. "You can close this page when you are done." offers the way
+out. Both are offers and neither is homework. Rejected: "Use your hand
+whenever you need it today" -- that is a task with a deadline on it.
 
 ---
 
@@ -522,13 +860,239 @@ So it is a **separate soft screen after the script ends**, and it is optional:
 
 Not built yet. It is the second half of this face and it is worth building.
 
-## Wiring -- not built
+## Wiring -- built 20 September 2026
 
-`Feeling.low` currently leads nowhere: `_pick` in
-`lib/features/panic/views/feeling_picker_view.dart` handles `cantCope` and
-`woundUp` only. This face needs the same treatment `woundUp` got -- a route in
-`lib/app/core/app_constants.dart`, a view, and one line in `_pick`.
+`Feeling.low` leads to `Routes.lowDay`, the same treatment `woundUp` got.
 
-The shape animates through the pauses, so a reader is never left looking at a
-still screen. The character sits with the reader and does nothing else; she is
-company, not a pacer, and no line in the script refers to her.
+| Piece | Where |
+| --- | --- |
+| The words and their holds | `lib/features/play/models/low_day_script.dart` |
+| The clock | `lib/features/play/viewmodels/low_day_viewmodel.dart` |
+| The screen | `lib/features/play/views/low_day_view.dart` |
+| What is pinned | `test/low_day_viewmodel_test.dart` |
+| Every line reaching the band | `test/low_day_view_test.dart` |
+
+Dart owns the clock, as it does on the tighten screen. The holds in the script
+file are the `[pause Ns]` above folded into the line before them, so the words
+and the pauses are already the timing and the recordings drop in without a
+rewrite.
+
+**The screen was rebuilt on the tighten screen's shape on 20 September 2026.**
+It had a pale, palette-coloured orb idling on the scene gradient. It now sits
+on the plain page ground with an orb of its own, and the script drives it.
+
+| Piece | Before | Now |
+| --- | --- | --- |
+| Ground | `SkScenePanel` gradient | `sk.canvas`, so the orb is the only colour |
+| Orb colour | The palette's pale slot, faint | Two fixed warm colours that never change with the theme |
+| Orb level | Idling, nothing drives it | `LowDayStep.warmth`, on two lines of the script |
+| Words | `onScene` | `ink` -- `onScene` is only legible on the gradient |
+
+**The warmth is the script's own image.** A palm on the chest that "has been
+warm all day" is the one physical thing the script asks for, so a warm orb is
+the same instruction said twice rather than a second idea. It is warm and
+never hot: this reader is flat, not burning.
+
+**A moving orb is allowed here for one reason, and it is the same reason the
+tighten orb and the breathing screen's flower are allowed.** It has no clock
+of its own. `warmth` is a field on the same step as the line being read,
+emitted in the same `emit`, so the orb and the words cannot drift apart.
+
+**Two lines move it, and the travel is fifteen to twenty seconds.** They are
+the only two places the reader's own body changes -- "Feel the warmth of your
+palm coming through." and "Now let your hand come down, and rest it wherever
+it lands." Every other line leaves it alone.
+
+| | Level | Travel |
+| --- | --- | --- |
+| Resting -- opening to the words for somebody else | 0.45 | 15s |
+| Warm -- the palm, and every kind line after it | 0.60 | 20s |
+| Settled -- the hand comes down, and the leaving | 0.25 | 15s |
+
+**A line is on screen for three to twelve seconds and the orb takes fifteen to
+twenty**, so the orb is still moving long after the line that started it has
+gone. The two cannot be connected by watching. That is the whole design: it is
+noticed to have changed, never seen changing.
+
+A change per line was considered and dropped -- the line arriving is already
+visible, so a per-line swell adds nothing, and a screen that changes whenever
+you look at it is a screen that asks you to look.
+
+**The floor is 0.45 and it was found by looking, not reasoning.** The widget's
+own default is 0.30, and at that level the disc has a blown-out white core on
+a pale page -- it reads as a hole. It looks correct in the tighten screen's
+deep lavender and wrong in a warm colour. Nothing below 0.45 belongs here, the
+settled level included: 0.12 put the hollow look back at the exact moment the
+script closes, which would have been the reader's last look at the screen.
+
+**The tighten screen's numbers deliberately do not travel.** It runs 0.05 to
+1.00 and floods to full in 1.2 seconds, because a squeeze is the loudest thing
+that screen has. A palm resting on a chest is not.
+
+No line in the script refers to the orb.
+
+**Still missing: the voice.** 38 takes, listed in
+this document. **The separate recording script was deleted on 23 September
+2026** -- this brief is the single copy of the words. Until they exist the script is
+read rather than heard, which is why the words stay on screen after "Close
+your eyes."
+
+---
+
+## The introduction page
+
+Added 23 September 2026, at the same time as the wound-up face's. The face now
+opens on a page that says what the exercise is and carries a **Begin** button.
+The script starts when Begin is pressed, and not before. The reasoning is the
+same on both faces and is written out once, in
+`_docs/briefs/wound-up-tighten-and-stop.md`.
+
+**Two of the three lines are this script's own opening, moved rather than
+written**, along with the standing permission:
+
+| Line | Was |
+| --- | --- |
+| People call this loving kindness. | Step 0, a 5s hold |
+| It is easier to be kind to a friend than to yourself. | Step 1, a 7.2s hold |
+| So a few kind words go to a friend first. Then they come back to you. | **New** |
+| You can stop whenever you want. Nothing here has to be finished. | Step 3, a 9s hold |
+
+The script is now about **6 minutes 30**.
+
+### The third line is new, and it is a scope decision rather than a reversal
+
+Two lines very like it were cut from the opening on 20 September 2026 -- "So
+these words go to somebody you care about first." and "Then they come back to
+you." -- and that decision stands **inside the script**. There they previewed a
+part arriving a minute later, and part 3 does it better by doing it than the
+opening did by promising it.
+
+That reason does not reach a page read before the reader has committed to
+anything. The question this page exists to answer is what the next seven
+minutes would be spent on, and "loving kindness" alone does not answer it for
+anybody who has not met the name. It is not a preview of a later part; it is
+the shape of the whole thing, which is what somebody deciding needs.
+
+It is still not a promise about how the reader will feel. It says where the
+words go, and nothing about what they will do.
+
+### She says it, and the orb does not come to this page
+
+Added 23 September 2026. The page is the sidekick standing over a speech
+bubble, with the three lines inside it.
+
+**This is not the eyes-closed rule being broken.** That rule sends a script
+that closes the reader's eyes to the orb, and its test is whether anybody is
+watching -- a character performing to shut eyes is work for nothing. Nobody's
+eyes are shut on this page. It is read, with a finger on a button, before any
+instruction exists, so the rule's question has the opposite answer here.
+
+The other half of the rule is kept exactly: the two never share a screen. She
+is on the introduction, the orb is on the script, and Begin swaps one whole
+page for the other.
+
+**She stands over the bubble rather than beside it.** A tail pointing up is
+the only one that points at somebody above, and the side-by-side layout the
+practice lessons use leaves the bubble about half a phone wide -- three words
+a line at 200% text.
+
+**The lines are left-aligned inside the bubble**, where the script's lines are
+centred. Centring is right for one line alone on a page; three sentences are
+read down a left edge, and at 200% a centred paragraph loses that edge.
+
+### Body text with one bold phrase, and a title one step down
+
+Corrected 23 September 2026, the day after the page was built.
+
+| | Was | Is | Why |
+| --- | --- | --- | --- |
+| Title | `largeTitle` 34/700 | `sceneLine` 24/600 | 34 read as a magazine cover over a page whose job is to be read and left. Still the only thing at its size, which is what makes it the title |
+| Her lines | `cardTitle` 18/600 | `rowLabel` 17/400, leading 1.6 | A paragraph that is semibold end to end has no emphasis left to give. 17/400 is the app's body size and the fastest read for somebody wound up or flat |
+| One phrase | -- | 600 | Weight is the one axis that lifts a phrase without taking it out of its sentence |
+
+**One bold phrase per page, and the type says so.** The rule is
+`SwapIntroText.emphasis`, which the practice lessons already run on: bold is
+worth exactly what it is rationed to, and three emphasised phrases are three
+things competing to be the one thing, which is the same as none. It is a
+single `String` field on the script, not a list and not asterisks in the line
+-- so the lines stay plain words that a test and a recording can read.
+
+**A phrase that drifts out of the lines renders flat rather than throwing**,
+because a reader should not meet a crash over a bold word. Nobody notices a
+missing bold, so a test is the only thing that does: it checks the phrase
+appears across the lines exactly once, and that it is never a whole line.
+
+**The phrase is "come back to you"** -- the turn, because the turn is the part
+the reader has not guessed. "Loving kindness" names the thing and "easier for
+a friend" explains the order; neither says the reader is where it ends up, and
+that is what somebody deciding is actually being offered.
+
+It says where the words go and nothing about how the reader will feel. A
+promise about warmth is the one thing this script may never make: warmth
+cannot be produced on command, so promising it hands the reader a way to fail
+before they have started.
+
+### The way out is a quiet line, and a boxed version was tried and removed
+
+23 September 2026, both ways in one afternoon.
+
+It was made an `SkStatusBlock` in the `info` tone -- a wash, a hairline and
+the icon that tone carries. The argument for it was real: a caption is the
+treatment this app gives decoration, and a caption under a card is the easiest
+thing on a page to skip, while this is the one line that has to survive being
+skimmed by somebody wound up or flat.
+
+**It came back out the same day.** A tinted panel with an icon is the shape
+this app uses for something the reader has to *deal with*, and putting one
+between her bubble and the Begin button made the last thing before starting
+look like a condition attached to starting. This line is the opposite of
+that -- it is there to take a condition away. It was also the only boxed thing
+on the page, which put a hard edge across the quietest screen in the app.
+
+**Do not reach for a status tone here again.** The four tones report on
+something that happened: right, wrong, be careful, worth knowing. Nothing has
+happened yet.
+
+**If skipping ever proves to be the real problem, the fix is not a box.** The
+line can move above the bubble, or the Begin band can carry it, or it can be
+said in her voice as a fourth sentence. All three keep the page flat.
+
+### The page opens on the situation, not on the name
+
+Rewritten 23 September 2026. It opened on "People call this loving kindness.",
+which answers *what is this called* before it has answered *why would I*.
+Somebody flat enough to tap the Low face is holding the second question, and a
+name they have not met does not touch it.
+
+| Line | Its job |
+| --- | --- |
+| When you are low, being kind to yourself gets hard. | The situation, as a fact about people |
+| It is easier to be kind to a friend, so this exercise starts there. | Why it begins somewhere else |
+| Then the same kind words come back to you. | Where it ends up -- the turn |
+| People call this loving kindness. | Something to recognise next time, and to look up |
+
+It is now the same shape as the wound-up page: the situation, then what the
+exercise does about it.
+
+**The name moved to the end and was not cut.** The argument for it still
+holds -- a practice that will not say what it is leaves somebody with nothing
+to recognise next time and nothing to look up. Only its place changed. "People
+call this" rather than "this is": the app is passing on a name other people
+use, not announcing a treatment.
+
+**"When you are low" is a condition, not a verdict.** Same shape as "When you
+are wound up, your muscles go tight." -- a fact about people in a state, which
+somebody who tapped the face by accident can read without being told something
+about themselves. "You are being too hard on yourself" is still rejected, for
+being a claim about this reader.
+
+**It is not "When a day is low"**, rejected on 20 September 2026 for making
+the difficulty a property of today rather than of self-kindness. Being kind to
+yourself is what gets hard, and it is hard in a way that outlasts the day.
+
+**Line two gives the reason and the order in one sentence**, which a read page
+may do where a spoken line may not. One idea per line is a rule about a line
+heard once with the eyes closed.
+
+**No line promises how the reader will feel.** Every one says where the words
+go. None says what they will do.

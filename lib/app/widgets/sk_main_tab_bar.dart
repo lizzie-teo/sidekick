@@ -16,15 +16,25 @@ import 'package:sidekick/app/widgets/sk_tab_bar.dart';
 // SkTabBar is the presentation; this is where the labels, the icons and the
 // destinations live, so a screen only says which slot it is.
 class SkMainTabBar extends StatelessWidget {
-  // Index into Routes.tabs: 0 Home, 1 Good things, 2 Meditate, 3 Me.
+  // Index into Routes.tabs: 0 Home, 1 Good things, 2 Practice, 3 Me.
   final int selected;
 
   const SkMainTabBar({super.key, required this.selected});
 
+  // **Slot 2 was Meditate and the wind icon until 20 September 2026.** The tab
+  // now holds two kinds of thing -- lessons somebody does, and meditations
+  // somebody sits through -- and "Practice" is the one word that covers both:
+  // nobody learns a meditation, they do one.
+  //
+  // The wind went with the name. It stood for breathing, and breathing is not
+  // what the tab is any more -- it is the panic button in the centre of this
+  // bar, where somebody who could not wait can reach it.
+  //
+  // `_docs/briefs/practice-tab-layout.md` holds the decision.
   static const List<SkTabItem> _items = <SkTabItem>[
     SkTabItem(icon: Icons.home_rounded, label: 'Home'),
     SkTabItem(icon: Icons.auto_awesome, label: 'Good things'),
-    SkTabItem(icon: Icons.air_rounded, label: 'Meditate'),
+    SkTabItem(icon: Icons.self_improvement, label: 'Practice'),
     SkTabItem(icon: Icons.person_outline_rounded, label: 'Me'),
   ];
 

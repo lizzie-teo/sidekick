@@ -12,6 +12,8 @@ import 'package:sidekick/app/widgets/sk_outline_button.dart';
 import 'package:sidekick/app/widgets/sk_scene_panel.dart';
 import 'package:sidekick/app/widgets/sk_text.dart';
 import 'package:sidekick/app/widgets/sk_text_button.dart';
+import 'package:sidekick/app/widgets/guided_intro.dart';
+import 'package:sidekick/features/panic/models/breathing_script.dart';
 import 'package:sidekick/features/panic/models/sensation.dart';
 import 'package:sidekick/features/panic/services/panic_voice.dart';
 import 'package:sidekick/features/panic/viewmodels/breathing_viewmodel.dart';
@@ -42,19 +44,42 @@ import 'package:sidekick/features/panic/widgets/breath_ring.dart';
 // in the flow with trial evidence behind it; the reasoning is on
 // BreathingViewModel.leadIn.
 //
-// Nothing is asked on this screen. It has two doors and both of them arrive
-// ready to breathe: the tab-bar panic button, pressed instead of waiting, and
-// the body screen on the picker's path, which has already asked its one
-// question. `sensation` says which tile was tapped there, and all it changes
-// is the script's opening -- that sensation's two lines instead of the
-// general ones, read once the counted breaths are done.
+// Nothing is asked on this screen once it is running. It has two kinds of
+// door, and they differ in one thing only -- whether an introduction page
+// stands in front of the pacer:
+//
+// | Door | Opens on | Script |
+// | --- | --- | --- |
+// | The tab-bar panic button | The pacer, at once | General |
+// | The picker's "Can't cope" | `GuidedIntro`, then the pacer | General |
+// | One of the picker's four sensations | `GuidedIntro`, then the pacer | That sensation's |
+//
+// **The tab-bar button never gets the page.** It is pressed instead of
+// waiting, and a Begin button in front of it is the gate this screen is built
+// not to have. The picker's doors have already cost a screen and a choice, so
+// a page there is not in anybody's way -- the argument that used to put
+// `BodyView` on that path and keep it off this one.
+//
+// `sensation` says which tile was tapped, and all it changes is one line on
+// the introduction and the script's opening -- that sensation's two lines
+// instead of the general ones, read once the counted breaths are done.
 class BreathingView extends StatefulWidget {
-  const BreathingView({super.key, this.sensation});
+  const BreathingView({super.key, this.sensation, this.showsIntro = false});
 
-  // Set only when arriving from the body screen. The default is the general
-  // script, so a restored route or a deep link never opens on words that
-  // belong to a tile nobody tapped.
+  // Set only when arriving from one of the picker's four sensation tiles. The
+  // default is the general script, so a restored route or a deep link never
+  // opens on words that belong to a tile nobody tapped.
   final Sensation? sensation;
+
+  // Whether to open on the introduction page. Set by the picker's doors and
+  // unset by the tab-bar panic button -- see the table above the class.
+  //
+  // **Off is the default, and that is the safe way round.** A restored route
+  // or a deep link that lost its parameters lands on the pacer, which is the
+  // thing somebody came here for. The other way round would put a page with a
+  // Begin button in front of a panic attack because a query string went
+  // missing.
+  final bool showsIntro;
 
   @override
   State<BreathingView> createState() => _BreathingViewState();
@@ -67,6 +92,7 @@ class _BreathingViewState extends State<BreathingView> {
   // teardown.
   late final BreathingViewModel _viewModel = BreathingViewModel(
     sensation: widget.sensation,
+    showsIntro: widget.showsIntro,
     voice: JustAudioPanicVoice(loggerService: getIt<LoggerService>()),
     deviceSettingsService: getIt<DeviceSettingsService>(),
   );
@@ -80,7 +106,12 @@ class _BreathingViewState extends State<BreathingView> {
   @override
   void initState() {
     super.initState();
-    _viewModel.start();
+
+    // With an introduction there is nothing to start yet: Begin is what calls
+    // this, and until then the pacer, the lead-in timers and the voice are all
+    // asleep. Without one the pacer begins on the frame the screen is built,
+    // because the reader pressed a button rather than waiting.
+    if (!widget.showsIntro) _viewModel.start();
   }
 
   @override
@@ -193,18 +224,58 @@ class _BreathingViewState extends State<BreathingView> {
     // gradient short.
     final double bottomInset = MediaQuery.paddingOf(context).bottom;
 
-    return Scaffold(
-      body: SkScenePanel(
-        fullScreen: true,
-        child: Padding(
-          padding: EdgeInsets.only(bottom: bottomInset),
-          child: ValueListenableBuilder<BreathingState>(
-            valueListenable: _viewModel.state,
-            builder: (context, state, _) {
+    // **The listener wraps the Scaffold rather than sitting inside it**, so
+    // the same emit that starts the lead-in also swaps the whole page. Inside
+    // the Scaffold it would only ever rebuild the column, and the gate below
+    // would never be read again. The same shape as `TightenView`.
+    return ValueListenableBuilder<BreathingState>(
+      valueListenable: _viewModel.state,
+      builder: (BuildContext context, BreathingState state, Widget? _) {
+        // The introduction, until Begin. A whole page of its own, so the scene
+        // gradient, the rings and the Rive character are not built behind it
+        // -- and the sidekick on it is standing still rather than pacing.
+        //
+        // **It sits on `sk.canvas` while the pacer sits on the scene
+        // gradient**, which is the one thing about this screen that does move
+        // at Begin. `GuidedIntro` is a page of reading, and the gradient is
+        // the room the breathing happens in. The two controls that survive
+        // Begin -- the X and the speaker -- do not move: same corners, same
+        // 52 circle, same order.
+        if (!state.hasStarted) {
+          return GuidedIntro(
+            title: BreathingScript.introTitle,
+            lines: BreathingScript.introFor(widget.sensation),
+            emphasis: BreathingScript.introEmphasisFor(widget.sensation),
+            permission: BreathingScript.introPermission,
+            permissionNote: BreathingScript.introPermissionNote,
+            onBegin: _viewModel.start,
+            onLeave: _leave,
+
+            // **The speaker is on this page, and that is not decoration.**
+            // The standing rule is that it never waits for a stage: somebody
+            // who opened this in an office or on a bus needs the room quiet
+            // before the first line speaks. With a page in front of the
+            // pacer, the first frame is this one -- so a speaker that only
+            // appeared after Begin would appear after the voice did.
+            trailing: SkCircleIconButton(
+              icon: state.isVoiceOn
+                  ? Icons.volume_up_rounded
+                  : Icons.volume_off_rounded,
+              color: sk.ink,
+              onPressed: _viewModel.toggleVoice,
+            ),
+          );
+        }
+
+        return Scaffold(
+          body: SkScenePanel(
+            fullScreen: true,
+            child: Padding(
+              padding: EdgeInsets.only(bottom: bottomInset),
               // A tap anywhere skips the lead-in and nothing else. Once the
               // pacer is running the screen has real buttons on it, and a
               // whole-screen target would swallow the ones that matter.
-              return GestureDetector(
+              child: GestureDetector(
                 behavior: HitTestBehavior.opaque,
                 onTap: state.isLeadIn ? _viewModel.skipLeadIn : null,
                 // The rings paint under the whole screen and hand back the
@@ -401,11 +472,11 @@ class _BreathingViewState extends State<BreathingView> {
                     ],
                   ),
                 ),
-              );
-            },
+              ),
+            ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 }

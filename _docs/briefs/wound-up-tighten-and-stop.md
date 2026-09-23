@@ -1,8 +1,23 @@
 # Tighten, and stop
 
 The **Wound up** face of the feeling picker. An original progressive muscle
-relaxation script, about **4 minutes 25** read at a slow pace with the pauses
+relaxation script, about **6 minutes 13** read at a slow pace with the pauses
 honoured.
+
+**It was 4 minutes 25 when it was written**, and it grew twice on 20 September
+2026:
+
+| Added | Cost |
+| --- | --- |
+| Opening, breath permission, two closing lines | about 42s |
+| A relax beat in each round, the stretch, the closing permission | about 68s |
+
+The reasoning for each is in "Rules for changing a line" below.
+
+**Six minutes is near the edge, and the next addition should take something
+out.** Length is this script's failure mode and it has now been spent twice.
+The first candidates for a trim are the opening and the stretch. The holds,
+the stops and the sensation menus are the clinical parts and are not.
 
 It replaces the scribble pad on this face. The pad is not deleted; it moves to
 the **Play** button on Home. See "The scribble pad's new home" at the bottom.
@@ -49,7 +64,8 @@ screen. That puts four hard rules on it:
 - **No line may require closed eyes.** "Your eyes can close, or stay here" is
   the only line that touches them, and both answers are equal.
 - **No line may name the screen, the voice, or the sound.** Anything that says
-  "listen" breaks the reading mode and the reverse.
+  "listen" breaks the reading mode and the reverse. **One exception, the last
+  line, added 20 September 2026** -- see "The last two lines" below.
 - **Pauses carry both modes.** Heard, a pause is silence. Read, it is how long
   the line stays before the next one arrives.
 - **Every line fits one glance.** Longest line is thirteen words, and it is in
@@ -105,17 +121,26 @@ and length is this script's failure mode. One round, four groups.
 
 | Part | Job | Lines | Approx |
 | --- | --- | --- | --- |
-| 1. Settling | Arrive, set the effort, make every part optional. | 7 | 0:35 |
-| 2. Hands | The first group. Teach the whole pattern. | 7 | 0:51 |
-| 3. Shoulders | Where anger sits highest. | 6 | 0:48 |
-| 4. Jaw | Where anger is held longest. | 6 | 0:48 |
-| 5. All of it | One whole squeeze, and the longest stop. | 8 | 0:57 |
-| 6. Leaving | Put it down. Ask nothing. | 3 | 0:25 |
+| 0. Opening | Say what this works on. Hand control over. | 5 | 0:31 |
+| 1. Settling | Arrive, set the effort, make every part optional. | 6 | 0:35 |
+| 2. Hands | The first group. Teach the whole pattern. | 9 | 0:58 |
+| 3. Shoulders | Where anger sits highest. | 8 | 0:56 |
+| 4. Jaw | Where anger is held longest. | 8 | 0:56 |
+| 5. All of it | One whole squeeze, and the longest stop. | 8 | 0:59 |
+| 6. Stretching | Move again, gently, before standing up. | 7 | 0:41 |
+| 7. Leaving | Put it down. Ask nothing. | 6 | 0:39 |
 
-Thirty-seven lines. `[pause Ns]` is a held silence, not a read line.
+Fifty-seven lines. `[pause Ns]` is a held silence, not a read line.
 
-**Each group is tighten, stop, loosen, settle.** Four beats, the same four
-every time. An earlier draft had three: it named the part going tight but
+The counts and the timings above are the ones in
+`lib/features/play/models/tighten_script.dart`, section for section -- the code
+is assembled from named lists with these names. `test/tighten_viewmodel_test.dart`
+fails if the total leaves the window 290-320 seconds, in **either** direction:
+a silent trim is as much a drift as a silent addition.
+
+**Each group is tighten, stop, loosen, relax, settle.** Five beats, the same
+five every time. The relax beat was added on 20 September 2026 and has its own
+rule below. An earlier draft had three: it named the part going tight but
 never named it coming loose, so "stop" was the whole of the second half. That
 is the half the method is for.
 
@@ -135,6 +160,24 @@ next instruction arriving early -- it is attention being put back on the same
 place. Moving it, or cutting it, cuts the working part of the method.
 
 ---
+
+## 0. Opening
+
+When you are wound up, your muscles go tight.
+
+Your fists. Your shoulders. Your jaw.
+
+This exercise takes the tightness out of your muscles.
+
+[pause 3s]
+
+Breathe normally the whole way through.
+
+[pause 3s]
+
+You can stop whenever you want. Nothing here has to be finished.
+
+[pause 4s]
 
 ## 1. Settling
 
@@ -172,6 +215,10 @@ Your fists are uncurling.
 
 [pause 12s]
 
+Let your hands grow heavier.
+
+[pause 3s]
+
 Your fingers are where they fell.
 
 Warm, or heavy, or tingling. Or nothing much.
@@ -194,6 +241,10 @@ Your shoulders are dropping.
 
 [pause 12s]
 
+Let them sink further down your back.
+
+[pause 3s]
+
 Your arms are hanging from them.
 
 Heavy, or warm, or soft. Or nothing much.
@@ -215,6 +266,10 @@ Breathe out, and stop.
 Your jaw is coming loose.
 
 [pause 12s]
+
+Let it hang soft, and open.
+
+[pause 3s]
 
 Your mouth can rest open a little.
 
@@ -240,26 +295,93 @@ All of it is loosening.
 
 [pause 15s]
 
+Let every part of you settle a little lower.
+
+[pause 3s]
+
 The floor, or the chair, is holding all of it.
 
 [pause 12s]
 
-## 6. Leaving
+## 6. Stretching
+
+Now a little movement. Keep all of it small.
+
+[pause 2s]
+
+Let your chin drop towards your chest.
+
+[pause 3s]
+
+Roll your head slowly across to your left shoulder.
+
+[pause 3s]
+
+And slowly back across to your right.
+
+[pause 3s]
+
+Let your head come up.
+
+Now stretch your arms out wide.
+
+[pause 4s]
+
+And let them come down.
+
+[pause 2s]
+
+## 7. Leaving
+
+Your breath is coming and going on its own.
 
 You can stay here for as long as you want.
 
 [pause 10s]
 
+There is nothing else to do.
+
+[pause 6s]
+
 When you are ready, let your eyes come back to the room.
 
-You can open your hands like that whenever you want to.
+You can open your hands whenever you want to.
+
+You can close this page when you are done.
 
 ---
 
 ## The shape map
 
-The soft shape on screen is the second copy of the instruction. Someone who
-will not read follows it alone.
+The shape on screen is `SkBlobOrb`, and it is the second copy of the
+instruction. Someone who will not read follows it alone.
+
+**It is the orb and not the sidekick.** She was here for one day. The poses she
+would have shown were never built in `assets/rive/character.riv`, and this
+script closes the reader's eyes at its third line -- and a pose nobody watches
+is a performance to an empty room. The full argument is at the top of
+`lib/features/play/views/tighten_view.dart`. If her poses are ever built this
+is a decision to reopen, not a bug to fix quietly.
+
+**The disc is the same size at every line. The colour inside it is what
+swells and contracts.** The orb has one number, 0 to 1, and raising it makes
+the field flow faster -- but it also used to *shorten* the petals, which left
+more of the circle white. The holds therefore came out pale and thin, the
+opposite of what "compressed and held, colour deepened" below asks for. The
+petal length was reversed on 20 September 2026, so a higher number now colours
+more of the circle. One number, two readings, and they now agree.
+
+**At "Hold." the disc is completely purple.** Petal length alone could not do
+it -- a petal is an ellipse in angle as well as radius, so however long it
+grows some angles stay white, and the longest petals stopped at about two
+thirds of the disc. A floor under the field closes the rest. The whole disc is
+coloured from "Close them into fists" until "Breathe out, and stop" takes it
+away, which is the squeeze said in colour.
+
+**Shrinking the whole orb was tried first and rejected.** A disc that changes
+size is a different object at every line. A fixed disc whose colour fills and
+empties is one object doing the exercise -- which is also what the shape map
+below has always described.
 
 | Script moment | Shape |
 | --- | --- |
@@ -301,6 +423,7 @@ words are banned app-wide so nobody has to judge the case each time.
 | --- | --- |
 | Now release your hands. | Now stop holding. |
 | Let the tension go. | And stop. |
+| This exercise is a way of releasing tension. | This exercise takes the tightness out of your muscles. |
 
 "Stop" is also more accurate. The reader made the tension a second ago. They
 are not getting rid of something; they are stopping doing something.
@@ -453,6 +576,242 @@ It names a second thing to do rather than predicting distress.
 | --- | --- |
 | If this gets too much, you can stop. | Anything you would rather leave alone, leave heavy. |
 
+### There are two ways out, and they are not the same one
+
+Added 20 September 2026. The line above covers a **part of the body**. The
+opening covers the **session**.
+
+| Line | Covers | Where |
+| --- | --- | --- |
+| You can stop whenever you want. Nothing here has to be finished. | The whole thing | Opening |
+| Anything you would rather leave alone, leave heavy. | One group | Settling |
+
+Neither replaces the other, and the session one has to be first: it is the
+cheapest sentence in the script to hear and the most expensive to arrive late.
+
+**It is phrased about the script, never about the reader.** That is what makes
+it a permission rather than the rejected line above it:
+
+| Wrong | Right |
+| --- | --- |
+| If it gets too much for you, stop. | You can stop whenever you want. Nothing here has to be finished. |
+
+The wrong version predicts distress, which plants what it meant to cushion.
+The right version is a fact about the session, needs no answer, and is still
+true five minutes later.
+
+### The opening teaches the button, says what this is for, and reads at seven
+
+Added 20 September 2026 and rewritten the same day. Somebody wound up arriving
+at a screen expects to be told to calm down or to think differently. Neither
+happens here, and a reader braced for it spends the first squeeze waiting for
+it.
+
+| Wrong | Right |
+| --- | --- |
+| This takes about five minutes. | *(no line -- a duration is a number)* |
+| Let's calm your mind down together. | This exercise takes the tightness out of your muscles. |
+| This exercise is a way of releasing tension. | This exercise takes the tightness out of your muscles. |
+| You are angry, and that is okay. | When you are wound up, your muscles go tight. |
+| This works on those, and not on the thinking. | This exercise takes the tightness out of your muscles. |
+
+Four things to keep:
+
+- **No duration.** It is the same rule that keeps "Hold it for five" off the
+  hold: a number hands the reader arithmetic. The test enforces it.
+- **A fact about bodies, not a verdict on this reader.** "You are wound up" is
+  a claim about somebody who may have tapped the face by accident.
+- **The first line teaches the button.** "Wound up" is an idiom, and this is
+  its plain meaning arriving ten seconds after somebody presses it. See below.
+- **The third line says what the exercise is for**, in the plainest words the
+  script has. It replaced "This works on those, and not on the thinking",
+  which ruled out a task -- useful -- but "the thinking" is an abstraction and
+  this screen has to read at seven years old.
+- **"Takes the tightness out", never "releases tension".** The ban below was
+  reopened on 20 September 2026 for exactly this line, and it held. "Release"
+  sounds permissive and means *get rid of*; "tightness" is the legal word and
+  also the plainer one, and it passes the brief's own film test -- a fist
+  opening is a picture, tension being released is not. **"Tension" on its own
+  is fine** and is used all through this document. Only "release" and "let go"
+  are banned.
+
+### "Wound up" stays on the button, and the script explains it
+
+Reopened and kept on 20 September 2026, when the label was tested against a
+seven-year-old reader.
+
+| Candidate | Why it lost |
+| --- | --- |
+| Angry | Plainest word there is, and a hard self-label. Some people will not press it |
+| Cross | Soft and pressable, but fades outside the UK |
+| Grumpy | Makes real anger sound small |
+| Mad | Means silly or unwell in British English |
+| Fed up | That is the Low face |
+| Like I might burst | Reads as panic, and "Can't cope right now" is already that door |
+| All tight | Not a feeling word. An angry child scanning the list may not see themselves, and tight also describes panic |
+
+**"Wound up" is the only candidate that reads as anger without being a hard
+self-label**, and it already carries the body meaning: a wound-up spring is
+tight. Its neighbours are no plainer -- "Low" is the harder word for a child,
+and nobody has flagged it.
+
+**The button also carries a drawn face**, and a child reads the face before
+the label. The word is doing less work than it looks like it is doing.
+
+**So the readability fix went into the script instead**, where it costs
+nothing and teaches the idiom outright. That is the first line above.
+
+### The breath is unhooked once, early, and the in-breath is only ever permitted
+
+Added 20 September 2026. Tensing hard makes people hold their breath, and a
+held breath is the thing this screen exists to undo. "Breathe out, and stop"
+ends four held breaths. It does not stop the fifth from starting.
+
+| Where | Line | What it does |
+| --- | --- | --- |
+| Settling | Your breath keeps going the whole way through. | Covers all four squeezes, before the first one |
+| Each stop | Breathe out, and stop. | Ends the held breath the squeeze produced |
+| Leaving | Your breath is coming and going on its own. | Closes the cycle. The breath is the reader's again |
+
+**The settling line is the same shape as the effort cap above it**: said once,
+early, never repeated. A breath correction arriving mid-squeeze interrupts the
+squeeze.
+
+**Nothing instructs an in-breath, and nothing ever will.** The ban in
+`_docs/affirmation-flow.md` is on the stretched in-breath, and the test fails
+any line containing "breathe in", "breathe deeply" or "deep breath".
+
+| Banned | Allowed |
+| --- | --- |
+| Breathe in. | Your breath is coming and going on its own. |
+| Take a deep breath. | Your breath keeps going the whole way through. |
+| Breathe in through your nose. | And let it come back in on its own. |
+
+The allowed versions are an in-breath **permitted** rather than instructed,
+which is also the clinical shape. `TightenBreath` in the code holds the fact --
+`out` or `back` -- so a voice track, a future haptic and a test all read the
+same thing rather than parsing the sentence.
+
+**The breath never drives the shape on screen.** The shape follows muscle
+tension and nothing else. "Breathe out" and "stop" land on the same line
+today, so the two look like one thing -- but a breath cue on a line where the
+tension does not change leaves the shape where it is. Two drivers is two
+clocks.
+
+### The close removes the deadline and claims nothing
+
+Added 20 September 2026. The script used to stop after three lines of leaving,
+which is a script running out rather than one finishing.
+
+| Wrong | Right |
+| --- | --- |
+| You did it. | There is nothing else to do. |
+| Notice how much calmer you are now. | There is nothing else to do. |
+| Your hands know how to do this on their own now. | You can open your hands like that whenever you want to. |
+
+"There is nothing else to do" says the time has passed and takes the deadline
+away. The first two wrong versions are marks out of ten, and somebody who
+feels no different has then failed. The last line stays what it was: an offer,
+and still the last thing on screen for as long as the reader leaves it there.
+
+### The relax beat names a direction, and never says "relax"
+
+Added 20 September 2026, one per round, after the loosening line's silence.
+
+| Round | The beat |
+| --- | --- |
+| Hands | Let your hands grow heavier. |
+| Shoulders | Let them sink further down your back. |
+| Jaw | Let it hang soft, and open. |
+| All of it | Let every part of you settle a little lower. |
+
+**This reopens "Relax your hands", which is banned above, and the ban still
+stands.** The fault in that line is that it is an instruction with no action
+in it: tightening has an obvious how and relaxing does not, so the reader
+invents one, usually a second gentler squeeze.
+
+A direction is the missing how.
+
+| Wrong | Right |
+| --- | --- |
+| Relax your hands. | Let your hands grow heavier. |
+| Try to relax your shoulders. | Let them sink further down your back. |
+| Feel your jaw relaxing. | Let it hang soft, and open. |
+
+**The test for a new one: could a squeeze produce it?** Nothing gets heavier,
+lower or softer by being clenched, so these four cannot be done wrong the way
+"relax" can. "Feel your jaw relaxing" fails a different test -- it is a mark
+out of ten, and somebody whose jaw stays tight has failed it.
+
+**They are worded differently every time, and that is the one place this
+script does not repeat itself.** Elsewhere repetition is settling. Four
+identical relax lines would read as a form being filled in, and by the third
+one the reader is hearing a template rather than an instruction.
+
+### The stretch is movement, capped, and stays in the front half
+
+Added 20 September 2026, between the last round and the leaving.
+
+Somebody who has been still and loose for four minutes is asked to move a
+little before standing up, which is what every clinical relaxation does at the
+end.
+
+**It goes before the leaving, not after it.** After it, the script would be
+asking for work having just said there was nothing else to do.
+
+**The effort is capped on its first line, exactly like the squeezes.** The
+neck is this section's jaw -- the part most easily overdone, and a wound-up
+person will go further than asked.
+
+| Wrong | Right |
+| --- | --- |
+| Roll your head all the way round. | Let your chin drop towards your chest. / Roll your head slowly across to your left shoulder. |
+| Have a good big stretch. | Now a little movement. Keep all of it small. |
+| Reach up as high as you can. | Now stretch your arms out wide. |
+
+**The head stays in the front half of the circle.** Chin to chest, across to
+one shoulder, back across to the other, then up. A full roll takes the head
+backwards, which compresses the neck and is left out of clinical sequences for
+that reason. The test in `test/tighten_viewmodel_test.dart` fails any stretch
+line containing "all the way round" or "circle".
+
+**Every line works standing or sitting**, the same rule the rest of the script
+is written to. That is why there is no floor or chair anywhere in it.
+
+**The stretch carries no shape command.** It is movement, not a squeeze, and
+an orb that tightened here would contradict the line on screen.
+
+### The last two lines, and the one place the screen may be named
+
+**"like that" was cut.** The line was "You can open your hands like that
+whenever you want to", and "like that" pointed at a demonstration that is not
+on the screen -- the sidekick was swapped for the orb, and an orb has no
+hands. A line referring to something the reader cannot see is a puzzle, and
+solving a puzzle is leaving the room.
+
+| Wrong | Right |
+| --- | --- |
+| You can open your hands like that whenever you want to. | You can open your hands whenever you want to. |
+
+**"You can close this page when you are done" breaks the read-or-listen rule
+above, deliberately, and it is the only line that may.** That rule protects
+the session: a line naming the screen breaks the listening mode and a line
+naming the voice breaks the reading mode. Here the session is over, there is
+nothing left to break out of, and the sentence is true spoken as well as read.
+
+| Wrong | Right |
+| --- | --- |
+| Close this page. | You can close this page when you are done. |
+| Tap the X when you are finished. | You can close this page when you are done. |
+
+The first wrong version is the screen showing somebody the door after four
+minutes of telling them they could stay as long as they wanted. The second
+names a control, which is the read-or-listen rule failing for real.
+
+**The script still ends by running out.** No pause follows the last line and
+no timer is booked, so it stays on screen for as long as the reader leaves it
+there.
+
 ### Two more checks, already done
 
 - No **imagery** anywhere. This script asks for no pictures at all, so somebody
@@ -527,3 +886,147 @@ advances on a timer is page state, so it belongs there rather than in a widget.
 
 Audio is not in this list. The script is written so a voice track drops in
 later with no rewrite: the lines and the pauses are already the timing.
+
+---
+
+## The introduction page
+
+Added 23 September 2026. The face now opens on a page that says what the
+exercise is for and carries a **Begin** button. The script starts when Begin
+is pressed, and not before.
+
+**The words on it are this script's own opening, moved rather than written.**
+Three lines and the standing permission came out of the timed script:
+
+| Line | Was |
+| --- | --- |
+| When you are wound up, your muscles go tight. | Step 0, a 3.5s hold |
+| Your fists. Your shoulders. Your jaw. | Step 1, a 3.5s hold |
+| This exercise takes the tightness out of your muscles. | Step 2, a 4s hold |
+| You can stop whenever you want. Nothing here has to be finished. | Step 4, a 9s hold |
+
+### Why the words moved rather than being written again
+
+They were argued over line by line on 20 September 2026 and every rejected
+version is kept above. Writing a second set for a new page would have thrown
+that away and started the same argument again -- and then the reader would be
+told the same thing twice, ten seconds apart, the second time on a timer.
+
+### Why a page rather than the first lines of the script
+
+**The commitment happens before the explanation, and that is the wrong order.**
+Tapping the face started a six-minute clock. What the six minutes were for then
+arrived over the next fifteen seconds, four seconds at a time, to somebody who
+had already committed. On a page the answer comes first, at the reader's own
+reading speed, with nothing moving and no line about to replace itself.
+
+**It is also the trim this brief asked for.** "Six minutes is near the edge,
+and the next addition should take something out. The first candidates are the
+opening and the stretch." The opening went. The script is now about **5 minutes
+50**, and the stretch is the remaining candidate.
+
+### What the page may not do
+
+- **No duration.** The same rule as the script. A number hands the reader
+  arithmetic, and "about six minutes" is also a promise about how long they
+  have to stay.
+- **No count, no record, no skip-next-time.** All three are a tally of how
+  often somebody felt wound up. The page is identical on the first visit and
+  the fiftieth.
+- **No fourth explaining line.** Three is what the script carried and what the
+  reader will actually read.
+
+### The permission moved with them, and that was the one line worth arguing
+
+A way out has to be given early, while the reader is still surfaced -- offered
+at the hard part it is a decision, which is work, and a prediction that the
+hard part is coming. It was already early, at the end of the opening.
+
+The page is earlier still, and it is the last thing above the button, so the
+reader carries it in rather than remembering it. What backs it up is that the
+way out never leaves the screen afterwards: "That's enough for now" is on the
+script page from its first frame to its last line. The permission is stated
+once and then demonstrated for six minutes.
+
+### "Begin"
+
+Not "Start", which is what a stopwatch does on a page that has deliberately not
+said how long anything takes. Not "I'm ready", which asks the reader to claim
+something about themselves on the way into a screen about being wound up.
+
+### She says it, and the orb does not come to this page
+
+Added 23 September 2026. The page is the sidekick standing over a speech
+bubble, with the three lines inside it.
+
+**This is not the eyes-closed rule being broken.** That rule sends a script
+that closes the reader's eyes to the orb, and its test is whether anybody is
+watching -- a character performing to shut eyes is work for nothing. Nobody's
+eyes are shut on this page. It is read, with a finger on a button, before any
+instruction exists, so the rule's question has the opposite answer here.
+
+The other half of the rule is kept exactly: the two never share a screen. She
+is on the introduction, the orb is on the script, and Begin swaps one whole
+page for the other.
+
+**She stands over the bubble rather than beside it.** A tail pointing up is
+the only one that points at somebody above, and the side-by-side layout the
+practice lessons use leaves the bubble about half a phone wide -- three words
+a line at 200% text.
+
+**The lines are left-aligned inside the bubble**, where the script's lines are
+centred. Centring is right for one line alone on a page; three sentences are
+read down a left edge, and at 200% a centred paragraph loses that edge.
+
+### Body text with one bold phrase, and a title one step down
+
+Corrected 23 September 2026, the day after the page was built.
+
+| | Was | Is | Why |
+| --- | --- | --- | --- |
+| Title | `largeTitle` 34/700 | `sceneLine` 24/600 | 34 read as a magazine cover over a page whose job is to be read and left. Still the only thing at its size, which is what makes it the title |
+| Her lines | `cardTitle` 18/600 | `rowLabel` 17/400, leading 1.6 | A paragraph that is semibold end to end has no emphasis left to give. 17/400 is the app's body size and the fastest read for somebody wound up or flat |
+| One phrase | -- | 600 | Weight is the one axis that lifts a phrase without taking it out of its sentence |
+
+**One bold phrase per page, and the type says so.** The rule is
+`SwapIntroText.emphasis`, which the practice lessons already run on: bold is
+worth exactly what it is rationed to, and three emphasised phrases are three
+things competing to be the one thing, which is the same as none. It is a
+single `String` field on the script, not a list and not asterisks in the line
+-- so the lines stay plain words that a test and a recording can read.
+
+**A phrase that drifts out of the lines renders flat rather than throwing**,
+because a reader should not meet a crash over a bold word. Nobody notices a
+missing bold, so a test is the only thing that does: it checks the phrase
+appears across the lines exactly once, and that it is never a whole line.
+
+**The phrase is "takes the tightness out"** -- the answer to "what would this
+do for me?", which is the question somebody is holding while they decide
+whether to press Begin. Not "wound up": they have already told the app that by
+tapping the face. Not the whole of "takes the tightness out of your muscles",
+which would leave "This exercise" standing alone and read as a heading.
+
+### The way out is a quiet line, and a boxed version was tried and removed
+
+23 September 2026, both ways in one afternoon.
+
+It was made an `SkStatusBlock` in the `info` tone -- a wash, a hairline and
+the icon that tone carries. The argument for it was real: a caption is the
+treatment this app gives decoration, and a caption under a card is the easiest
+thing on a page to skip, while this is the one line that has to survive being
+skimmed by somebody wound up or flat.
+
+**It came back out the same day.** A tinted panel with an icon is the shape
+this app uses for something the reader has to *deal with*, and putting one
+between her bubble and the Begin button made the last thing before starting
+look like a condition attached to starting. This line is the opposite of
+that -- it is there to take a condition away. It was also the only boxed thing
+on the page, which put a hard edge across the quietest screen in the app.
+
+**Do not reach for a status tone here again.** The four tones report on
+something that happened: right, wrong, be careful, worth knowing. Nothing has
+happened yet.
+
+**If skipping ever proves to be the real problem, the fix is not a box.** The
+line can move above the bubble, or the Begin band can carry it, or it can be
+said in her voice as a fourth sentence. All three keep the page flat.

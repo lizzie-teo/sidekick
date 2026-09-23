@@ -37,11 +37,7 @@ class SkTextButton extends StatelessWidget {
         onPressed: onPressed,
         child: Text(
           label,
-          style: SkText.rowLabel.copyWith(
-            color: color ?? sk.muted,
-            fontSize: 15,
-            fontWeight: FontWeight.w600,
-          ),
+          style: SkText.buttonGhost.copyWith(color: color ?? sk.muted),
         ),
       ),
     );

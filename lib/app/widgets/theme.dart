@@ -37,7 +37,7 @@ ThemeData _themeFrom(SkColors sk, Brightness brightness) {
     useMaterial3: true,
     colorScheme: scheme,
     scaffoldBackgroundColor: sk.canvas,
-    fontFamily: 'Lexend',
+    fontFamily: 'Poppins',
 
     // Taps read as a brief press, not an Android ink ripple.
     splashFactory: NoSplash.splashFactory,

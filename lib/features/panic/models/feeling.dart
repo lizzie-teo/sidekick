@@ -2,16 +2,17 @@ import 'package:sidekick/app/core/app_constants.dart';
 
 // The four faces on the picker, in the order they appear.
 //
-// "Can't cope right now" is first and stays first. It is the reason the screen
-// exists, and someone reaching for it is not reading -- so it is drawn double
-// size at the top, where a thumb lands without aiming.
+// "Can't cope" is first and stays first. It is the reason the screen
+// exists, and someone reaching for it is not reading -- so it is top left in
+// the grid, where a thumb lands without aiming, and it is the only card
+// wearing the panic ring.
 //
 // The other three are the Play faces. Each one is allowed to end in nothing:
 // scribbling it out saves no row, and sitting with the sidekick saves nothing
 // either. That is the point of them, not an omission.
 enum Feeling {
   cantCope(
-    label: "Can't cope right now",
+    label: "Can't cope",
     artboardBase: 'feeling-cant-cope',
   ),
   woundUp(

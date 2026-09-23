@@ -14,7 +14,7 @@ new chat.
 | --- | --- |
 | `_docs/briefs/wound-up-poses-brief.md` | **The spec for the next job.** The five timelines, part by part, with the craft rules and the self-check |
 | `_docs/briefs/wound-up-tighten-and-stop.md` | The words, the evidence, and why every line is worded the way it is |
-| `_docs/briefs/voice-scripts/02-wound-up.md` | The same script as the voice actor will read it |
+| `_docs/briefs/wound-up-tighten-and-stop.md` | Also the voice actor's copy, since 23 September 2026 |
 | `.claude/skills/rive-animator/SKILL.md` | Load this **before** the first `mcp__rive__` call |
 
 ---

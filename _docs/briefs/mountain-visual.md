@@ -5,7 +5,7 @@ meditation on the Meditate tab.
 
 Written 19 September 2026. A draft to argue with, not an order.
 
-Pairs with `_docs/briefs/voice-scripts/04-mountain.md` (the words and their take
+Pairs with `_docs/briefs/mountain-meditation.md` (the words and their take
 labels) and `_docs/briefs/mountain-meditation.md` (where the script came from).
 
 ---
