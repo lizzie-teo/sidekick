@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:sidekick/app/widgets/sk_colors.dart';
 import 'package:sidekick/app/widgets/sk_main_tab_bar.dart';
 import 'package:sidekick/app/widgets/sk_text.dart';
+import 'package:sidekick/app/widgets/sk_contrast.dart';
 
 // A tab that exists so the bar has somewhere to go, before the feature behind
 // it is built.
@@ -45,7 +46,9 @@ class TabPlaceholderView extends StatelessWidget {
                         style: SkText.largeTitle.copyWith(color: sk.ink)),
                     const SizedBox(height: 12),
                     Text(line,
-                        style: SkText.rowLabel.copyWith(color: sk.muted)),
+                        style: SkText.rowLabel.copyWith(
+                          color: SkContrast.captionOn(sk.canvas),
+                        )),
                   ],
                 ),
               ),

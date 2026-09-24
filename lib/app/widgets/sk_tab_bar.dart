@@ -4,6 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart' show Icons;
 
 import 'package:sidekick/app/widgets/sk_colors.dart';
+import 'package:sidekick/app/widgets/sk_contrast.dart';
 import 'package:sidekick/app/widgets/sk_pressable.dart';
 
 class SkTabItem {
@@ -67,9 +68,19 @@ class SkTabBar extends StatelessWidget {
             child: Container(
               constraints: const BoxConstraints(minHeight: 49),
               alignment: Alignment.center,
+              // **The tab says which one it is and whether it is the one
+              // you are on.** Sighted readers are told by the fill colour and
+              // full opacity; without `selected` the four tabs announce
+              // identically and nothing says which page is open. The icon is
+              // the picture of the label, so it is excluded rather than read
+              // a second time.
               child: Semantics(
+                button: true,
+                selected: isSelected,
                 label: item.label,
-                child: Icon(item.icon, size: 25, color: colour),
+                child: ExcludeSemantics(
+                  child: Icon(item.icon, size: 25, color: colour),
+                ),
               ),
             ),
           ),
@@ -92,10 +103,16 @@ class SkTabBar extends StatelessWidget {
             child: DecoratedBox(
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(999),
-                boxShadow: const [
+                // **The theme's own ink at 14%, not a black literal.** It
+                // was `0x24000000` and `visual-style.md` had it listed as a
+                // leak: a fixed black shadow under a glass bar is a shadow
+                // designed for one of twelve schemes. 0.14 is what
+                // `0x24000000` measures, so nothing about the bar changed
+                // except where the colour comes from.
+                boxShadow: [
                   BoxShadow(
-                    color: Color(0x24000000),
-                    offset: Offset(0, 10),
+                    color: sk.ink.withValues(alpha: 0.14),
+                    offset: const Offset(0, 10),
                     blurRadius: 24,
                   ),
                 ],
@@ -142,7 +159,14 @@ class SkTabBar extends StatelessWidget {
             top: 0,
             child: Center(
               child: _PanicFab(
-                  onPressed: onPanic, ring: sk.canvas, fill: sk.panic),
+                onPressed: onPanic,
+                ring: sk.canvas,
+                fill: sk.panic,
+                onFill: SkContrast.readable(
+                  const Color(0xFFFFFFFF),
+                  sk.panic,
+                ),
+              ),
             ),
           ),
         ],
@@ -156,10 +180,20 @@ class _PanicFab extends StatelessWidget {
   final Color ring;
   final Color fill;
 
+  // The icon and the press wash on the fill.
+  //
+  // **Handed in rather than a white literal, and it is still white in every
+  // theme.** `panic` never changes, so the colour that reads on it never
+  // changes either -- but the value now comes from the palette's own
+  // `onAction` family rather than from a hex in a widget, which is the rule
+  // this file was breaking in three places.
+  final Color onFill;
+
   const _PanicFab({
     required this.onPressed,
     required this.ring,
     required this.fill,
+    required this.onFill,
   });
 
   @override
@@ -179,7 +213,9 @@ class _PanicFab extends StatelessWidget {
       ),
       child: SkPressable(
         onPressed: onPressed,
-        wash: const Color(0xFFFFFFFF),
+        // The press wash on the panic button is the label's own colour, so
+        // the two are one decision. It was a white literal.
+        wash: onFill,
         shape: BoxShape.circle,
         child: Container(
           width: 62,
@@ -194,11 +230,10 @@ class _PanicFab extends StatelessWidget {
           // word under it, so without this a screen reader announces it as
           // nothing at all.
           child: Semantics(
+            button: true,
             label: 'Breathe with me',
-            child: const Icon(
-              Icons.support,
-              size: 30,
-              color: Color(0xFFFFFFFF),
+            child: ExcludeSemantics(
+              child: Icon(Icons.support, size: 30, color: onFill),
             ),
           ),
         ),

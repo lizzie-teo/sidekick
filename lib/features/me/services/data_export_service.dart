@@ -116,14 +116,12 @@ class DataExportService {
     }
 
     Future<void> addSwitch(String label, String key, bool fallback) async {
-      final bool value =
-          await _deviceSettingsService.getBool(key) ?? fallback;
+      final bool value = await _deviceSettingsService.getBool(key) ?? fallback;
       settings.add(ExportSetting(label, value ? 'On' : 'Off'));
     }
 
     Future<void> addTime(String label, String key, int fallback) async {
-      final int minutes =
-          await _deviceSettingsService.getInt(key) ?? fallback;
+      final int minutes = await _deviceSettingsService.getInt(key) ?? fallback;
       settings.add(ExportSetting(label, clockLabel(minutes)));
     }
 
@@ -137,8 +135,8 @@ class DataExportService {
         'Good things nudge', SettingsKeys.goodThingsNudgeEnabled, false);
     await addTime('Nudge time', SettingsKeys.goodThingsNudgeMinutes,
         NotificationService.defaultGoodThingsMinutes);
-    await addSwitch('Voice on the breathing screen',
-        SettingsKeys.panicVoiceEnabled, true);
+    await addSwitch(
+        'Voice on the breathing screen', SettingsKeys.panicVoiceEnabled, true);
 
     final String? firstOpened =
         await _deviceSettingsService.getString(SettingsKeys.firstOpenedAt);

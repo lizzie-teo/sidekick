@@ -142,8 +142,7 @@ void main() {
     // The out-breath is the middle of a breath, not the end of one.
     test('counts on the in-breath that closes the loop', () {
       viewModel.onExhale();
-      expect(state().breathCount, 0,
-          reason: 'the user is still breathing out');
+      expect(state().breathCount, 0, reason: 'the user is still breathing out');
 
       viewModel.onInhale();
       expect(state().breathCount, 1);
@@ -258,8 +257,8 @@ void main() {
         }
 
         expect(picked.state.value.line, sensation.script.first);
-        expect(picked.state.value.lines,
-            BreathingScript.forSensation(sensation));
+        expect(
+            picked.state.value.lines, BreathingScript.forSensation(sensation));
         expect(picked.state.value.lines,
             isNot(contains(BreathingScript.generalOpening.first)),
             reason: 'the general opening belongs to the reader who never '
@@ -597,8 +596,7 @@ void main() {
       expect(settings.values[SettingsKeys.panicVoiceEnabled], isFalse);
     });
 
-    test('the button brings it back for the next thing said, not this one',
-        () {
+    test('the button brings it back for the next thing said, not this one', () {
       toPacer();
       vm.toggleVoice();
       vm.toggleVoice();

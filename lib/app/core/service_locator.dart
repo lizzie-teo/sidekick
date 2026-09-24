@@ -157,8 +157,7 @@ Future<void> setupServiceLocator() async {
 Future<void> _stampFirstOpen() async {
   final DeviceSettingsService settings = getIt<DeviceSettingsService>();
 
-  final String? stamped =
-      await settings.getString(SettingsKeys.firstOpenedAt);
+  final String? stamped = await settings.getString(SettingsKeys.firstOpenedAt);
   if (stamped != null) return;
 
   await settings.setString(

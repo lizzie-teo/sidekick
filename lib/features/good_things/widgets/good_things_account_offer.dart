@@ -4,6 +4,7 @@ import 'package:sidekick/app/widgets/sk_colors.dart';
 import 'package:sidekick/app/widgets/sk_outline_button.dart';
 import 'package:sidekick/app/widgets/sk_primary_button.dart';
 import 'package:sidekick/app/widgets/sk_text.dart';
+import 'package:sidekick/app/widgets/sk_contrast.dart';
 
 // The one account ask in the product, shown once, after the first save.
 //
@@ -40,6 +41,11 @@ class GoodThingsAccountOffer extends StatelessWidget {
       context: context,
       isScrollControlled: true,
       backgroundColor: context.sk.canvas,
+      // **What the dark area behind the sheet is called.** Without it a
+      // screen reader announces the barrier as "Scrim", which names a paint
+      // effect rather than the way out -- and swiping this sheet away counts
+      // as an answer, so the way out has to be findable.
+      barrierLabel: 'Close this offer',
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
       ),
@@ -71,7 +77,9 @@ class GoodThingsAccountOffer extends StatelessWidget {
             Text(
               'Add an email so you can get these back on a new phone.',
               textAlign: TextAlign.center,
-              style: SkText.caption.copyWith(color: sk.muted),
+              style: SkText.caption.copyWith(
+                color: SkContrast.captionOn(sk.canvas),
+              ),
             ),
             const SizedBox(height: 24),
             SkPrimaryButton(label: 'Add an email', onPressed: onAccept),

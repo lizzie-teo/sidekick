@@ -40,9 +40,29 @@ import 'package:sidekick/features/practice/models/teacher.dart';
 class SwapDrillViewModel extends ViewModel<SwapDrillState> {
   SwapDrillViewModel() : super(const SwapDrillState());
 
-  // The next step. The last one has no next: its forward control leaves the
-  // screen instead, so this is never called there and does nothing if it is.
+  // The next thing, which on an introduction page is not always the next
+  // step.
+  //
+  // **An introduction page arrives a beat at a time**, so Continue uncovers
+  // the rest of the page before it turns it. See [SwapIntroHold] for why the
+  // pages wait, and [SwapDrillState.beatsShown] for what is remembered.
+  //
+  // **One control does both**, rather than a reveal control beside a forward
+  // one. The reader is doing one thing -- carrying on -- and two buttons on a
+  // reading page would make them choose between them before every line.
+  //
+  // The last step has no next: its forward control leaves the screen instead,
+  // so this is never called there and does nothing if it is.
   void carryOn() {
+    if (current.hasMoreBeats) {
+      final Map<int, int> shown = Map<int, int>.of(current.beatsShown);
+      shown[current.step.index] = current.beatsShownHere + 1;
+
+      emit(current.copyWith(beatsShown: shown));
+
+      return;
+    }
+
     if (current.isLast) return;
 
     emit(_leavingStep(current.stepIndex + 1));
@@ -301,6 +321,22 @@ class SwapDrillState {
   // takes a serial rather than watching the trigger name.
   final int poseSerial;
 
+  // How many beats of each introduction page are on screen, by page index.
+  //
+  // **A page with no entry is showing its first beat**, so the default state
+  // needs no map and a page with one beat never writes to it.
+  //
+  // **It is kept per page rather than as one number, and that is what makes
+  // Back honest.** A page can only be left once the whole of it is uncovered,
+  // so coming back to it finds it whole -- the same rule as an answered
+  // question coming back answered. One number would have re-covered every page
+  // behind the reader.
+  //
+  // **It is not a count of the reader.** It is where they are inside one page,
+  // it never leaves this object, and closing the drill forgets it. Rule 15 is
+  // about a tally over time and there is nothing here to accumulate.
+  final Map<int, int> beatsShown;
+
   // Whether the explanation page is open over the question.
   //
   // **It is a page rather than a step**, and that is the decision. The
@@ -332,10 +368,26 @@ class SwapDrillState {
     this.parts = const <SwapPart, String>{},
     this.pose,
     this.poseSerial = 0,
+    this.beatsShown = const <int, int>{},
     this.isExplaining = false,
   });
 
   SwapStep get step => SwapDrillScript.steps[stepIndex];
+
+  // How many beats of this page are on screen, and how many it has. Both are
+  // zero anywhere but an introduction page, which is what makes
+  // [hasMoreBeats] false everywhere else without a second test for the kind.
+  int get beatsShownHere => step.kind == SwapStepKind.introduction
+      ? beatsShown[step.index] ?? 1
+      : 0;
+
+  int get beatsHere => step.kind == SwapStepKind.introduction
+      ? SwapDrillScript.introduction[step.index].beats.length
+      : 0;
+
+  // Whether there is more of this page to uncover before the next tap turns
+  // it.
+  bool get hasMoreBeats => beatsShownHere < beatsHere;
 
   bool get isFirst => stepIndex == 0;
   bool get isLast => stepIndex == SwapDrillScript.steps.length - 1;
@@ -478,6 +530,13 @@ class SwapDrillState {
   String get forwardLabel {
     switch (step.kind) {
       case SwapStepKind.introduction:
+        // **A page with more of itself to show says "Continue", whichever
+        // page it is.** The last page only starts the drill once the whole of
+        // it is on screen -- a "Start" over a half-uncovered page would
+        // promise a question that is not the next thing, which is the same
+        // fault as the old contents line three pages early.
+        if (hasMoreBeats) return SwapDrillScript.carryOn;
+
         // The last page of the introduction starts the drill; the ones before
         // it carry on reading. A label that said "Start" three pages early
         // would be promising a question that is not the next thing.
@@ -512,10 +571,10 @@ class SwapDrillState {
       case SwapStepKind.shape:
         return SwapDrillScript.next;
 
+      // One screen holds all three parts now, so there is no "next part" for
+      // this label to promise. It goes straight to the whole sentence.
       case SwapStepKind.slot:
-        return step.index == SwapDrillScript.slots.length - 1
-            ? SwapDrillScript.seeIt
-            : SwapDrillScript.next;
+        return SwapDrillScript.seeIt;
 
       case SwapStepKind.finished:
         return SwapDrillScript.oneLastThing;
@@ -549,10 +608,16 @@ class SwapDrillState {
       case SwapStepKind.situation:
         return hasSituation;
 
+      // **All three, not just one.** The builder is one screen, so the gate
+      // that used to hold each step until its own part was filled now holds
+      // the screen until the sentence is whole. The finish screen still never
+      // sees a hole in it.
       case SwapStepKind.slot:
-        final String? value = parts[SwapDrillScript.slots[step.index].part];
+        return SwapDrillScript.slots.every((SwapSlot slot) {
+          final String? value = parts[slot.part];
 
-        return value != null && value.isNotEmpty;
+          return value != null && value.isNotEmpty;
+        });
     }
   }
 
@@ -568,6 +633,7 @@ class SwapDrillState {
     Map<SwapPart, String>? parts,
     String? pose,
     int? poseSerial,
+    Map<int, int>? beatsShown,
     bool? isExplaining,
   }) {
     return SwapDrillState(
@@ -582,6 +648,7 @@ class SwapDrillState {
       parts: parts ?? this.parts,
       pose: pose ?? this.pose,
       poseSerial: poseSerial ?? this.poseSerial,
+      beatsShown: beatsShown ?? this.beatsShown,
       isExplaining: isExplaining ?? this.isExplaining,
     );
   }

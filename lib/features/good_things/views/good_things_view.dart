@@ -18,6 +18,7 @@ import 'package:sidekick/data/services/good_things_service.dart';
 import 'package:sidekick/features/good_things/models/good_things_arguments.dart';
 import 'package:sidekick/features/good_things/viewmodels/good_things_viewmodel.dart';
 import 'package:sidekick/features/good_things/widgets/good_things_account_offer.dart';
+import 'package:sidekick/app/widgets/sk_contrast.dart';
 
 // Three good things -- the entry form, and the second tab.
 //
@@ -163,17 +164,24 @@ class _GoodThingsViewState extends State<GoodThingsView> {
                         children: <Widget>[
                           //
 
-                          Text(
-                            'Three things that went well',
-                            style:
-                                SkText.largeTitle.copyWith(color: sk.ink),
+                          // Marked as a heading, so "next heading" lands on
+                          // it the way it does on the picker and the guided
+                          // introduction pages.
+                          Semantics(
+                            header: true,
+                            child: Text(
+                              'Three things that went well',
+                              style: SkText.largeTitle.copyWith(color: sk.ink),
+                            ),
                           ),
 
                           const SizedBox(height: 8),
 
                           Text(
                             'Small things count. One word is fine.',
-                            style: SkText.caption.copyWith(color: sk.muted),
+                            style: SkText.caption.copyWith(
+                              color: SkContrast.captionOn(sk.canvas),
+                            ),
                           ),
 
                           const SizedBox(height: 22),
@@ -205,7 +213,9 @@ class _GoodThingsViewState extends State<GoodThingsView> {
                             'for bad things. This gives it good things to '
                             'find too. Doing it often is what helps, not '
                             'doing it perfectly.',
-                            style: SkText.caption.copyWith(color: sk.muted),
+                            style: SkText.caption.copyWith(
+                              color: SkContrast.captionOn(sk.canvas),
+                            ),
                           ),
 
                           if (state.errors['general'] != null) ...<Widget>[
@@ -223,7 +233,9 @@ class _GoodThingsViewState extends State<GoodThingsView> {
                             Text(
                               state.messages['general']!,
                               textAlign: TextAlign.center,
-                              style: SkText.caption.copyWith(color: sk.muted),
+                              style: SkText.caption.copyWith(
+                                color: SkContrast.captionOn(sk.canvas),
+                              ),
                             ),
                           ],
 

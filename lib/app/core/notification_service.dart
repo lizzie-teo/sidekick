@@ -124,7 +124,8 @@ class NotificationService {
   Future<void> initialize() async {
     try {
       tz_data.initializeTimeZones();
-      tz.setLocalLocation(tz.getLocation(await FlutterTimezone.getLocalTimezone()));
+      tz.setLocalLocation(
+          tz.getLocation(await FlutterTimezone.getLocalTimezone()));
 
       await _plugin.initialize(
         const InitializationSettings(
@@ -289,14 +290,12 @@ class NotificationService {
       );
     }
 
-    await _deviceSettingsService.setInt(
-        SettingsKeys.lastReminderLine, cursor);
+    await _deviceSettingsService.setInt(SettingsKeys.lastReminderLine, cursor);
   }
 
   Future<void> _bookGoodThings() async {
     for (int day = 0; day < daysBooked; day++) {
-      final tz.TZDateTime when =
-          _nextOccurrence(_goodThingsMinutes.value, day);
+      final tz.TZDateTime when = _nextOccurrence(_goodThingsMinutes.value, day);
 
       await _plugin.zonedSchedule(
         _goodThingsIdBase + day,

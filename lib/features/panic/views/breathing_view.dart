@@ -85,6 +85,17 @@ class BreathingView extends StatefulWidget {
   State<BreathingView> createState() => _BreathingViewState();
 }
 
+// **The one fixed colour on this screen, and it is a light rather than a
+// surface.** A hair of warm white, mixed 18% into the halo so the glow around
+// her reads as sunlight gathering rather than as a lamp switched on. It was an
+// unexamined literal that `visual-style.md` had flagged to check in dark mode;
+// it stays fixed on purpose, and the 18% is why that is safe -- the other 82%
+// is the palette's own middle scene stop, so a blue theme glows blue and a
+// green one green. Taking this from the theme instead would make the warmth a
+// different amount in every palette, which is the opposite of one light
+// falling on twelve rooms.
+const Color _sunlight = Color(0xFFFFF2DC);
+
 class _BreathingViewState extends State<BreathingView> {
   // The player is built here rather than resolved from getIt: it belongs to
   // this screen and nothing else plays audio, so a singleton would outlive the
@@ -200,7 +211,7 @@ class _BreathingViewState extends State<BreathingView> {
             (scene.lightness + (sceneIsLight ? 0.06 : 0.34)).clamp(0.0, 0.97),
           )
           .toColor(),
-      const Color(0xFFFFF2DC),
+      _sunlight,
       0.18,
     )!;
 
@@ -246,8 +257,6 @@ class _BreathingViewState extends State<BreathingView> {
             title: BreathingScript.introTitle,
             lines: BreathingScript.introFor(widget.sensation),
             emphasis: BreathingScript.introEmphasisFor(widget.sensation),
-            permission: BreathingScript.introPermission,
-            permissionNote: BreathingScript.introPermissionNote,
             onBegin: _viewModel.start,
             onLeave: _leave,
 
@@ -261,6 +270,11 @@ class _BreathingViewState extends State<BreathingView> {
               icon: state.isVoiceOn
                   ? Icons.volume_up_rounded
                   : Icons.volume_off_rounded,
+              // **The label says what the press will do, not what is true
+              // now.** "Voice on" would leave a reader guessing whether they
+              // are being told the state or offered the switch.
+              label:
+                  state.isVoiceOn ? 'Turn the voice off' : 'Turn the voice on',
               color: sk.ink,
               onPressed: _viewModel.toggleVoice,
             ),
@@ -311,6 +325,7 @@ class _BreathingViewState extends State<BreathingView> {
                         children: [
                           SkCircleIconButton(
                             icon: Icons.close,
+                            label: 'Close',
                             color: sk.onScene,
                             onPressed: _leave,
                           ),
@@ -318,6 +333,9 @@ class _BreathingViewState extends State<BreathingView> {
                             icon: state.isVoiceOn
                                 ? Icons.volume_up_rounded
                                 : Icons.volume_off_rounded,
+                            label: state.isVoiceOn
+                                ? 'Turn the voice off'
+                                : 'Turn the voice on',
                             color: sk.onScene,
                             onPressed: _viewModel.toggleVoice,
                           ),

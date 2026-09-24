@@ -38,9 +38,9 @@ class GoodThingsViewModel extends ViewModel<GoodThingsViewModelState> {
   Future<void> init() async {
     // Whether the account offer has already been made and answered. A No is
     // final, so this is read once and never asked about again.
-    _offerAnswered =
-        await _deviceSettingsService.getBool(SettingsKeys.accountOfferAnswered) ??
-            false;
+    _offerAnswered = await _deviceSettingsService
+            .getBool(SettingsKeys.accountOfferAnswered) ??
+        false;
 
     // The offer is only ever for someone with no email on their account, and
     // that can change while this screen is open -- a code verified on the

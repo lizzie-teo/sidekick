@@ -10,7 +10,34 @@ import 'package:sidekick/features/dashboard/models/affirmation_lines.dart';
 import 'package:sidekick/features/dashboard/widgets/affirmation_sheet.dart';
 
 import 'support/load_fonts.dart';
-import 'support/pump_app.dart';
+
+// Opens the sheet directly, over the real theme.
+//
+// **It used to be opened by tapping the line on Home, and that door is
+// gone.** Home has shown a noticing prompt since 24 September 2026, and a
+// prompt has nothing behind it -- see `_docs/briefs/noticing-prompts.md`. The
+// one live door to a sheet today is a tapped 8:30 pm check-in, which Home
+// answers by opening this over itself; the browsable set in Practice is step 2
+// of that brief and is not built yet.
+//
+// Not awaited: show() completes when the sheet is closed, so awaiting it here
+// would hang until the test timed out.
+Future<void> openSheet(WidgetTester tester, String line) async {
+  late BuildContext captured;
+
+  // The real theme: the sheet reads its colours from the Sidekick theme
+  // extension, and a bare MaterialApp does not carry one.
+  await tester.pumpWidget(MaterialApp(
+    theme: appTheme(),
+    home: Builder(builder: (BuildContext context) {
+      captured = context;
+      return const Scaffold();
+    }),
+  ));
+
+  unawaited(AffirmationSheet.show(captured, line));
+  await tester.pumpAndSettle();
+}
 
 void main() {
   // **The real face, loaded once, before any test runs.**
@@ -27,7 +54,6 @@ void main() {
     await loadPoppins();
   });
 
-
   // The rule seven lines were cut from the set to hold. A set where some
   // lines open something and others do not makes tapping a gamble, and the
   // two files can drift apart without anything failing to compile.
@@ -35,8 +61,7 @@ void main() {
     expect(AffirmationExplanations.coversEveryLine, isTrue);
 
     for (final String line in AffirmationLines.all) {
-      final AffirmationExplanation? e =
-          AffirmationExplanations.forLine(line);
+      final AffirmationExplanation? e = AffirmationExplanations.forLine(line);
       expect(e, isNotNull, reason: 'no explanation for: $line');
       expect(e!.rule.trim(), isNotEmpty);
       expect(e.why.trim(), isNotEmpty);
@@ -50,19 +75,15 @@ void main() {
     }
   });
 
-  testWidgets('tapping the line on Home opens its explanation',
-      (WidgetTester tester) async {
-    await pumpApp(tester);
-    await tester.pumpAndSettle();
-
+  testWidgets('a line opens its explanation', (WidgetTester tester) async {
     final String line = AffirmationLines.all.first;
+
+    await openSheet(tester, line);
+
+    final AffirmationExplanation e = AffirmationExplanations.forLine(line)!;
+
+    // The line itself is still at the top of the sheet.
     expect(find.text(line), findsOneWidget);
-
-    await tester.tap(find.text(line));
-    await tester.pumpAndSettle();
-
-    final AffirmationExplanation e =
-        AffirmationExplanations.forLine(line)!;
 
     // The three parts, in order, and the line still at the top of the sheet.
     expect(find.text(e.category), findsOneWidget);
@@ -74,21 +95,14 @@ void main() {
     expect(find.text(e.truth), findsOneWidget);
   });
 
-  testWidgets('closing puts the reader back on the same line',
+  testWidgets('closing puts the reader back where they were',
       (WidgetTester tester) async {
-    await pumpApp(tester);
-    await tester.pumpAndSettle();
-
-    final String line = AffirmationLines.all.first;
-
-    await tester.tap(find.text(line));
-    await tester.pumpAndSettle();
+    await openSheet(tester, AffirmationLines.all.first);
 
     await tester.tap(find.text('Close'));
     await tester.pumpAndSettle();
 
     expect(find.text('Why it does not hold'), findsNothing);
-    expect(find.text(line), findsOneWidget);
   });
 
   testWidgets('a line with nothing written for it opens nothing',
@@ -139,26 +153,11 @@ void main() {
   testWidgets('a thought-shape line opens with the thought, not a rule',
       (WidgetTester tester) async {
     const String line = 'Once is not always.';
-    final AffirmationExplanation e =
-        AffirmationExplanations.forLine(line)!;
+    final AffirmationExplanation e = AffirmationExplanations.forLine(line)!;
 
     expect(e.ruleHeading, 'What it sounds like');
 
-    late BuildContext captured;
-    // The real theme: the sheet reads its colours from the Sidekick theme
-    // extension, and a bare MaterialApp does not carry one.
-    await tester.pumpWidget(MaterialApp(
-      theme: appTheme(),
-      home: Builder(builder: (BuildContext context) {
-        captured = context;
-        return const Scaffold();
-      }),
-    ));
-
-    // Not awaited: show() completes when the sheet is closed, so awaiting it
-    // here would hang until the test timed out.
-    unawaited(AffirmationSheet.show(captured, line));
-    await tester.pumpAndSettle();
+    await openSheet(tester, line);
 
     expect(find.text('What it sounds like'), findsOneWidget);
     expect(find.text('The rule you were given'), findsNothing);
@@ -197,11 +196,7 @@ void main() {
   // family is not announced twice.
   testWidgets('the category is a chip, and every family has an icon',
       (WidgetTester tester) async {
-    await pumpApp(tester);
-    await tester.pumpAndSettle();
-
-    await tester.tap(find.text(AffirmationLines.all.first));
-    await tester.pumpAndSettle();
+    await openSheet(tester, AffirmationLines.all.first);
 
     expect(find.byType(SkCategoryChip), findsOneWidget);
 
@@ -226,11 +221,7 @@ void main() {
   // the sheet is arguing against. Two blocks say old-thing, new-thing.
   testWidgets('the argument is two cards, not three parts',
       (WidgetTester tester) async {
-    await pumpApp(tester);
-    await tester.pumpAndSettle();
-
-    await tester.tap(find.text(AffirmationLines.all.first));
-    await tester.pumpAndSettle();
+    await openSheet(tester, AffirmationLines.all.first);
 
     // Two tinted grounds inside the sheet, and the three headings still
     // between them.
@@ -295,9 +286,13 @@ void main() {
         AffirmationExplanations.byLine.entries.reduce(
       (MapEntry<String, AffirmationExplanation> a,
               MapEntry<String, AffirmationExplanation> b) =>
-          (a.key.length + a.value.rule.length + a.value.why.length +
+          (a.key.length +
+                      a.value.rule.length +
+                      a.value.why.length +
                       a.value.truth.length) >
-                  (b.key.length + b.value.rule.length + b.value.why.length +
+                  (b.key.length +
+                      b.value.rule.length +
+                      b.value.why.length +
                       b.value.truth.length)
               ? a
               : b,
@@ -362,5 +357,4 @@ void main() {
     // category name -- would show up here rather than on the screen.
     expect(categories.length, 7);
   });
-
 }

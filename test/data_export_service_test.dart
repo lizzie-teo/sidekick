@@ -54,8 +54,7 @@ void main() {
 
   // A setting nobody has touched still has a value the app is using. Leaving
   // it out would make the document claim less than the truth.
-  test('an untouched setting is written out as the default in force',
-      () async {
+  test('an untouched setting is written out as the default in force', () async {
     final ExportData data = await service.gather();
 
     final ExportSetting voice = data.settings.firstWhere(

@@ -10,8 +10,13 @@ import 'package:sidekick/features/practice/models/answer_pose.dart';
 // September 2026 for being the second of those, up to seven times a sitting,
 // on a lesson about criticism.
 //
-// Your sidekick reacts to **you** exactly once, on the score step, and that
-// is `AnswerPose`. Nothing else in the drill reacts to the reader.
+// **The score step is hers as well, since 24 September 2026.** It was the
+// reader's own character wearing `AnswerPose` -- the one place in the drill
+// anything reacted to the reader. Moving it here keeps the whole marked half
+// in one pair of hands: she asked the seven questions and marked every one,
+// so the step that says how they went is the end of her run rather than a
+// friend arriving to grade somebody. The reader's own character now has one
+// step, the finish, where the sentence in the bubble is theirs.
 //
 // `_docs/briefs/teacher-rabbit-brief.md` holds the full argument.
 abstract final class Teacher {

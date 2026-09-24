@@ -219,8 +219,8 @@ class BreathingViewModel extends ViewModel<BreathingState> {
   }
 
   Future<void> _loadVoiceSetting() async {
-    final bool? stored = await _deviceSettingsService
-        ?.getBool(SettingsKeys.panicVoiceEnabled);
+    final bool? stored =
+        await _deviceSettingsService?.getBool(SettingsKeys.panicVoiceEnabled);
     if (stored == null || stored == current.isVoiceOn) return;
 
     emit(current.copyWith(isVoiceOn: stored));

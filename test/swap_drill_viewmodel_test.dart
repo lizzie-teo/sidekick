@@ -15,6 +15,19 @@ void main() {
 
   SwapDrillState state() => viewModel.state.value;
 
+  // Presses Continue until the step actually changes.
+  //
+  // **An introduction page takes more than one press**, because it arrives a
+  // beat at a time and the first presses uncover the rest of the page. See
+  // `SwapIntroHold`. Everywhere else this is one press.
+  void carryOnAStep() {
+    while (state().hasMoreBeats) {
+      viewModel.carryOn();
+    }
+
+    viewModel.carryOn();
+  }
+
   // Walks forward to the first step of the given kind, answering whatever is
   // in the way.
   void walkTo(SwapStepKind kind) {
@@ -27,8 +40,9 @@ void main() {
         case SwapStepKind.situation:
           viewModel.chooseSituation(0);
         case SwapStepKind.slot:
-          final SwapPart part = SwapDrillScript.slots[state().step.index].part;
-          viewModel.choose(part, state().chipsFor(part).first);
+          for (final SwapSlot slot in SwapDrillScript.slots) {
+            viewModel.choose(slot.part, state().chipsFor(slot.part).first);
+          }
         case SwapStepKind.introduction:
         case SwapStepKind.score:
         case SwapStepKind.shape:
@@ -78,7 +92,117 @@ void main() {
       for (int i = 0; i < SwapDrillScript.steps.length; i++) {
         expect(state().progress, greaterThan(last), reason: 'step $i');
         last = state().progress;
+        carryOnAStep();
+      }
+    });
+
+    // **Uncovering a beat is not progress through the lesson**, so the bar
+    // holds still while an introduction page fills in. The page growing is
+    // what reports the tap; the bar reports how far through the drill the
+    // reader is, and they are no further for having read the second half of a
+    // page they are still on.
+    test('the bar does not move while a page is still arriving', () {
+      expect(state().step.kind, SwapStepKind.introduction);
+
+      // Page one arrives whole, so the first Continue turns it.
+      carryOnAStep();
+
+      expect(state().hasMoreBeats, isTrue, reason: 'page two waits');
+
+      final double before = state().progress;
+      final int step = state().stepIndex;
+
+      viewModel.carryOn();
+
+      expect(state().beatsShownHere, 2);
+      expect(state().stepIndex, step);
+      expect(state().progress, before);
+    });
+  });
+
+  // The introduction arrives a beat at a time. `SwapIntroHold` holds the
+  // reasoning; these pin the behaviour it was built for.
+  group('a page arriving a beat at a time', () {
+    test('every page starts on its first beat and holds nothing back twice',
+        () {
+      for (int i = 0; i < SwapDrillScript.introduction.length; i++) {
+        expect(state().step.kind, SwapStepKind.introduction);
+        expect(state().step.index, i);
+        expect(state().beatsShownHere, 1, reason: 'page ${i + 1}');
+
+        carryOnAStep();
+      }
+    });
+
+    // **A page can only be left once the whole of it is on screen**, which is
+    // what makes the next assertion mean anything: there is no way to reach
+    // the following page over a beat that was never read.
+    test('the page turns only after its last beat', () {
+      carryOnAStep();
+
+      final int page = state().step.index;
+
+      while (state().hasMoreBeats) {
         viewModel.carryOn();
+        expect(state().step.index, page);
+      }
+
+      viewModel.carryOn();
+      expect(state().step.index, page + 1);
+    });
+
+    // The same rule as an answered question coming back answered. A page the
+    // reader has already read is not covered up again behind them.
+    test('back finds a page whole', () {
+      carryOnAStep();
+      carryOnAStep();
+
+      expect(state().step.index, 2);
+
+      viewModel.goBack();
+
+      expect(state().step.index, 1);
+      expect(state().hasMoreBeats, isFalse);
+      expect(state().beatsShownHere, state().beatsHere);
+    });
+
+    // A "Start" over half a page promises a question that is not the next
+    // thing -- the same fault as the contents line that came off page one.
+    test('the last page says Start only once the whole of it is on screen',
+        () {
+      while (state().step.index != SwapDrillScript.introduction.length - 1) {
+        carryOnAStep();
+      }
+
+      expect(state().hasMoreBeats, isTrue);
+      expect(state().forwardLabel, SwapDrillScript.carryOn);
+
+      viewModel.carryOn();
+
+      expect(state().hasMoreBeats, isFalse);
+      expect(state().forwardLabel, SwapDrillScript.start);
+    });
+
+    // Nothing outside the introduction has beats, so nothing outside it can
+    // swallow a Continue.
+    test('no other kind of step holds anything back', () {
+      for (final SwapStepKind kind in <SwapStepKind>[
+        SwapStepKind.card,
+        SwapStepKind.fixOne,
+        SwapStepKind.score,
+        SwapStepKind.situation,
+        SwapStepKind.shape,
+        SwapStepKind.slot,
+        SwapStepKind.finished,
+        SwapStepKind.beforeYouTry,
+      ]) {
+        viewModel.dispose();
+        viewModel = SwapDrillViewModel();
+
+        walkTo(kind);
+
+        expect(state().hasMoreBeats, isFalse, reason: '$kind');
+        expect(state().beatsHere, 0, reason: '$kind');
       }
     });
   });
@@ -246,15 +370,18 @@ void main() {
       expect(state().canGoForward, isTrue);
       viewModel.carryOn();
 
+      // **One screen holds all three now**, so the gate is on the whole
+      // sentence rather than on a part at a time: it stays shut until the
+      // last of the three lands.
+      expect(state().step.kind, SwapStepKind.slot);
+
       for (final SwapSlot slot in SwapDrillScript.slots) {
-        expect(state().step.kind, SwapStepKind.slot);
         expect(state().canGoForward, isFalse, reason: slot.label);
-
         viewModel.choose(slot.part, state().chipsFor(slot.part).first);
-        expect(state().canGoForward, isTrue, reason: slot.label);
-
-        viewModel.carryOn();
       }
+
+      expect(state().canGoForward, isTrue);
+      viewModel.carryOn();
 
       expect(state().step.kind, SwapStepKind.finished);
       expect(state().parts.length, SwapDrillScript.slots.length);
@@ -262,6 +389,11 @@ void main() {
 
     test('picks a line, and tapping it again clears it and blocks Next', () {
       walkTo(SwapStepKind.slot);
+
+      // The other two first, so the gate is resting on the one being
+      // toggled. All three are required, so a single pick can never open it.
+      viewModel.choose(SwapPart.when, state().chipsFor(SwapPart.when).first);
+      viewModel.choose(SwapPart.want, state().chipsFor(SwapPart.want).first);
 
       viewModel.choose(SwapPart.feel, 'worried');
       expect(state().parts[SwapPart.feel], 'worried');
@@ -284,20 +416,22 @@ void main() {
       expect(state().parts[SwapPart.feel], lines[1]);
     });
 
-    test('parts survive moving between steps', () {
+    test('parts survive leaving the builder and coming back', () {
       walkTo(SwapStepKind.slot);
 
       final String feel = state().chipsFor(SwapPart.feel).first;
-      viewModel.choose(SwapPart.feel, feel);
-      viewModel.carryOn();
-
       final String when = state().chipsFor(SwapPart.when).first;
+      viewModel.choose(SwapPart.feel, feel);
       viewModel.choose(SwapPart.when, when);
+
+      // Back onto the shape step and forward again. The builder is one step
+      // now, so this is the move that used to be made between two of them.
       viewModel.goBack();
-
-      expect(state().parts[SwapPart.feel], feel);
-
+      expect(state().step.kind, SwapStepKind.shape);
       viewModel.carryOn();
+
+      expect(state().step.kind, SwapStepKind.slot);
+      expect(state().parts[SwapPart.feel], feel);
       expect(state().parts[SwapPart.when], when);
     });
   });
@@ -599,9 +733,9 @@ void main() {
           case SwapStepKind.situation:
             viewModel.chooseSituation(0);
           case SwapStepKind.slot:
-            final SwapPart part =
-                SwapDrillScript.slots[state().step.index].part;
-            viewModel.choose(part, state().chipsFor(part).first);
+            for (final SwapSlot slot in SwapDrillScript.slots) {
+              viewModel.choose(slot.part, state().chipsFor(slot.part).first);
+            }
           case SwapStepKind.introduction:
           case SwapStepKind.card:
           case SwapStepKind.fixOne:

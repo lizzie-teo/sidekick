@@ -6,7 +6,6 @@ import 'package:sidekick/app/core/theme_service.dart';
 import 'package:sidekick/app/widgets/sk_character.dart';
 import 'package:sidekick/app/widgets/sk_circle_icon_button.dart';
 import 'package:sidekick/app/widgets/sk_colors.dart';
-import 'package:sidekick/app/widgets/sk_contrast.dart';
 import 'package:sidekick/app/widgets/sk_layout.dart';
 import 'package:sidekick/app/widgets/sk_primary_button.dart';
 import 'package:sidekick/app/widgets/sk_speech_bubble.dart';
@@ -34,19 +33,28 @@ import 'package:sidekick/app/widgets/sk_text.dart';
 // had already asked for: "the next addition should take something out, and
 // the first candidate is the opening".
 //
-// **The standing permission moved here too, and that was the one line worth
-// arguing about.** "You can stop whenever you want. Nothing here has to be
-// finished." is a trauma-informed choice point: a script that turns attention
-// inward needs one line that hands control back, given early, while the
-// reader is still surfaced. This screen is the earliest surfaced moment there
-// is -- before the clock, before the eyes close. It is also the last thing
-// read before Begin, so it is carried in rather than remembered from ten
-// seconds ago.
+// **The standing permission was on this page and is gone, as of 24 September
+// 2026.** "You can stop whenever you want. Nothing here has to be finished."
+// sat under the bubble on all three intros. It was cut from all three at the
+// user's request, and the parameter went with it rather than being left
+// unused -- an optional slot nothing fills is an invitation to half-restore
+// it on one screen.
 //
-// What backs it up is that the way out never leaves the screen: "That's
-// enough for now" is on the script page from its first frame and stays there
-// to the last line. The permission is stated once and then demonstrated for
-// six minutes, which is stronger than stating it twice.
+// **The argument against cutting it is kept here because it has not stopped
+// being true.** It is a trauma-informed choice point: the meditation-writer
+// skill asks every inward-turning script for one line that hands control
+// back, given early while the reader is still surfaced. This screen was the
+// earliest surfaced moment there is -- before the clock, before the eyes
+// close.
+//
+// What makes it affordable is that the way out was never the sentence.
+// "That's enough for now" is on every script page from its first frame and
+// stays there to the last line, and the X is there before that. Control sits
+// in buttons the reader can see rather than in a line they have to remember.
+//
+// **Restoring it means restoring it to all three**, which is what this note
+// is for. One page saying it and two not is how two faces come to read as two
+// different rules.
 //
 // **No duration anywhere on this page.** The briefs ban it in the script for
 // a reason that does not stop at the edge of the script: a number hands the
@@ -120,8 +128,6 @@ class GuidedIntro extends StatelessWidget {
     super.key,
     required this.title,
     required this.lines,
-    required this.permission,
-    required this.permissionNote,
     this.emphasis,
     required this.onBegin,
     required this.onLeave,
@@ -138,12 +144,6 @@ class GuidedIntro extends StatelessWidget {
   // a page with nothing to lift. See `TightenScript.emphasis` for why there
   // is only ever one.
   final String? emphasis;
-
-  // The standing way out, read before anything starts.
-  final String permission;
-
-  // The second half of it, set under the first.
-  final String permissionNote;
 
   // Starts the script. The same screen carries on underneath.
   final VoidCallback onBegin;
@@ -176,11 +176,6 @@ class GuidedIntro extends StatelessWidget {
   Widget build(BuildContext context) {
     final SkColors sk = context.sk;
 
-    // A caption is a darker shade of its own ground, never `muted`. The
-    // ground here is the page itself -- these screens have no scene gradient,
-    // so the Scaffold's `canvas` is what the words sit on.
-    final Color captionInk = SkContrast.captionOn(sk.canvas);
-
     return Scaffold(
       body: SafeArea(
         child: Padding(
@@ -196,6 +191,7 @@ class GuidedIntro extends StatelessWidget {
                 children: <Widget>[
                   SkCircleIconButton(
                     icon: Icons.close,
+                    label: 'Close',
                     color: sk.ink,
                     onPressed: onLeave,
                   ),
@@ -302,8 +298,7 @@ class GuidedIntro extends StatelessWidget {
                                     for (int i = 0;
                                         i < lines.length;
                                         i++) ...<Widget>[
-                                      if (i > 0)
-                                        SizedBox(height: SkLayout.md),
+                                      if (i > 0) SizedBox(height: SkLayout.md),
                                       _Line(
                                         lines[i],
                                         emphasis: emphasis,
@@ -314,41 +309,6 @@ class GuidedIntro extends StatelessWidget {
                                 ),
                               ),
 
-                              // Nested gaps again: the permission is outside
-                              // the bubble and further from it than the
-                              // sentences are from each other, so it reads as
-                              // a fact about the session rather than as a
-                              // fourth thing she said.
-                              SizedBox(height: SkLayout.xxl),
-
-                              // **A quiet line, not a box.** It was an
-                              // `SkStatusBlock` in the `info` tone for an
-                              // afternoon on 23 September 2026 and was taken
-                              // back out. The argument for it was that a
-                              // caption is the easiest thing on a page to
-                              // skip; what it cost was worse. A tinted panel
-                              // with an icon is the shape this app uses for
-                              // something the reader has to deal with, and it
-                              // made the last thing before Begin look like a
-                              // condition attached to starting. This line is
-                              // the opposite of that -- it is there to take a
-                              // condition away.
-                              //
-                              // It is also the only boxed thing that would
-                              // have been on the page, sitting between her
-                              // bubble and the action, which put a hard edge
-                              // across the quietest screen in the app.
-                              //
-                              // **Do not reach for a status tone here
-                              // again.** The four tones report on something
-                              // that happened -- right, wrong, careful, worth
-                              // knowing. Nothing has happened yet.
-                              Text(
-                                '$permission $permissionNote',
-                                textAlign: TextAlign.center,
-                                style: SkText.caption
-                                    .copyWith(color: captionInk),
-                              ),
                             ],
                           ),
                         ),
@@ -399,8 +359,7 @@ class _Line extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final TextStyle style =
-        SkText.rowLabel.copyWith(color: ink, height: 1.6);
+    final TextStyle style = SkText.rowLabel.copyWith(color: ink, height: 1.6);
 
     final String? phrase = emphasis;
     final int at = phrase == null ? -1 : text.indexOf(phrase);

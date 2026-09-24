@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import 'package:sidekick/app/widgets/sk_colors.dart';
+import 'package:sidekick/app/widgets/sk_text.dart';
 
 // MaterialApp is plumbing here: routing, MediaQuery, dark-mode switching and
 // ThemeExtension. Its visual defaults are switched off -- no ripple, no
@@ -37,7 +38,9 @@ ThemeData _themeFrom(SkColors sk, Brightness brightness) {
     useMaterial3: true,
     colorScheme: scheme,
     scaffoldBackgroundColor: sk.canvas,
-    fontFamily: 'Poppins',
+    // **The name lives in `SkText`, not here.** It was the string 'Poppins'
+    // in both places, which is two places a font swap has to be remembered.
+    fontFamily: SkText.body,
 
     // Taps read as a brief press, not an Android ink ripple.
     splashFactory: NoSplash.splashFactory,

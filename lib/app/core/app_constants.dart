@@ -185,9 +185,18 @@ abstract class Routes {
 // recovering onto a new phone. Anything the user would miss goes to the
 // server instead.
 abstract class SettingsKeys {
-  // Index of the pairing shown on Home last time it opened, so the next open
-  // can pick a different one.
-  static const String lastHomePairing = 'last_home_pairing';
+  // Which noticing prompt Home is on, and the day it was picked.
+  //
+  // Two keys rather than one because the prompt is one per **day**, not one
+  // per open -- rule 8 of `_docs/briefs/noticing-prompts.md`. A prompt that
+  // changed every time the reader came back would make the first one a thing
+  // they missed. The index alone cannot say whether today has had its turn.
+  //
+  // The day is stored as a plain `yyyy-mm-dd` stamp in the phone's own zone,
+  // not as a timestamp: the question is only "is this still the same day the
+  // reader was looking at", and a timestamp would invite arithmetic on it.
+  static const String homePromptIndex = 'home_prompt_index';
+  static const String homePromptDay = 'home_prompt_day';
 
   // Whether the offer of an account has been made and answered. It is made
   // once, after the first save, and a No is final -- so this records "asked",
@@ -235,9 +244,9 @@ abstract class SettingsKeys {
   static const String goodThingsNudgeMinutes = 'good_things_nudge_minutes';
 
   // Where the scheduler had got to in AffirmationLines the last time it
-  // booked a fortnight. Its own cursor, separate from lastHomePairing: Home
-  // and the lock screen move at different rates, and sharing one cursor would
-  // mean opening the app changed what tomorrow's alert says.
+  // booked a fortnight. Its own cursor, and now the only reader of the
+  // affirmation set: Home shows a noticing prompt instead, so the two sets no
+  // longer share anything to drift over.
   static const String lastReminderLine = 'last_reminder_line';
 
   // Which side of the Practice tab was showing last: lessons or meditations.

@@ -65,17 +65,18 @@ void main() {
       expect(find.text(line), findsOneWidget, reason: line);
     }
 
-    // **The way out, last thing before the button, and it is a quiet line.**
-    // It was an `SkStatusBlock` in the `info` tone for an afternoon on 23
-    // September 2026: a tinted panel with an icon is the shape this app uses
-    // for something the reader has to deal with, and it made the last thing
-    // before Begin look like a condition attached to starting. This line
-    // exists to take a condition away.
+    // **No permission line on this page, as of 24 September 2026.** It read
+    // "You can stop whenever you want. Nothing here has to be finished." and
+    // was cut from all three guided intros at the user's request, with the
+    // argument against kept in `tighten_script.dart` and `guided_intro.dart`.
+    //
+    // This asserts absence rather than going away, because the failure it
+    // guards against is the line coming back on one screen and not the other
+    // two -- which is how the app ends up with two rules.
     expect(
-      find.text(
-        '${TightenScript.permission} ${TightenScript.permissionNote}',
-      ),
-      findsOneWidget,
+      find.text('You can stop whenever you want. '
+          'Nothing here has to be finished.'),
+      findsNothing,
     );
 
     // No status tone on this page. Nothing has happened yet for one to
@@ -96,7 +97,7 @@ void main() {
     // The whole reason the lines moved rather than being written twice. A
     // line on both pages is read, then read again ten seconds later on a
     // timer, which is worse than either on its own.
-    final Set<String> intro = <String>{...TightenScript.intro, TightenScript.permission};
+    final Set<String> intro = <String>{...TightenScript.intro};
 
     for (final TightenStep step in TightenScript.steps) {
       expect(intro.contains(step.line), isFalse, reason: step.line);

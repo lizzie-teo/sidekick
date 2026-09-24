@@ -82,7 +82,8 @@ void main() {
       location: Routes.connect,
     );
 
-    await tester.tap(find.text('I already have a code for someone@example.com'));
+    await tester
+        .tap(find.text('I already have a code for someone@example.com'));
     await tester.pumpAndSettle();
 
     expect(router.state.uri.path, Routes.verify);

@@ -10,6 +10,7 @@ import 'package:sidekick/app/widgets/sk_text_button.dart';
 import 'package:sidekick/features/play/models/tighten_script.dart';
 import 'package:sidekick/app/widgets/guided_intro.dart';
 import 'package:sidekick/features/play/viewmodels/tighten_viewmodel.dart';
+import 'package:sidekick/app/widgets/sk_contrast.dart';
 
 // Tighten, and stop -- the picker's Wound up face.
 //
@@ -346,8 +347,6 @@ class _TightenViewState extends State<TightenView>
             title: TightenScript.title,
             lines: TightenScript.intro,
             emphasis: TightenScript.emphasis,
-            permission: TightenScript.permission,
-            permissionNote: TightenScript.permissionNote,
             onBegin: _begin,
             onLeave: _leave,
           );
@@ -355,12 +354,12 @@ class _TightenViewState extends State<TightenView>
 
         return Scaffold(
           body: SafeArea(
-        // **The horizontal padding is on the bands, not on the column.** The
-        // orb fills the box it is given, so it runs edge to edge and the words
-        // and the buttons keep their gutters. This was load-bearing when the
-        // sidekick was here -- a shoulder lift is about a seventh of her head
-        // height, and 20pt gutters left it a handful of pixels -- and it is
-        // now simply what gives the orb the widest box on the screen.
+            // **The horizontal padding is on the bands, not on the column.** The
+            // orb fills the box it is given, so it runs edge to edge and the words
+            // and the buttons keep their gutters. This was load-bearing when the
+            // sidekick was here -- a shoulder lift is about a seventh of her head
+            // height, and 20pt gutters left it a handful of pixels -- and it is
+            // now simply what gives the orb the widest box on the screen.
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
@@ -377,6 +376,7 @@ class _TightenViewState extends State<TightenView>
                     children: [
                       SkCircleIconButton(
                         icon: Icons.close,
+                        label: 'Close',
                         color: sk.ink,
                         onPressed: _leave,
                       ),
@@ -468,7 +468,7 @@ class _TightenViewState extends State<TightenView>
                       label: state.isLastLine
                           ? "I'm done"
                           : "That's enough for now",
-                      color: sk.muted,
+                      color: SkContrast.captionOn(sk.canvas),
                       onPressed: _leave,
                     ),
                   ),

@@ -12,6 +12,7 @@ import 'package:sidekick/app/widgets/sk_text.dart';
 import 'package:sidekick/features/good_things/models/good_things_arguments.dart';
 import 'package:sidekick/features/panic/models/feeling.dart';
 import 'package:sidekick/features/play/models/actually_okay_lines.dart';
+import 'package:sidekick/app/widgets/sk_contrast.dart';
 
 // "Actually okay" -- the third Play face, and the one path that is allowed to
 // end in nothing.
@@ -126,6 +127,7 @@ class _ActuallyOkayViewState extends State<ActuallyOkayView> {
                 children: [
                   SkCircleIconButton(
                     icon: Icons.close,
+                    label: 'Close',
                     color: sk.ink,
                     onPressed: _leave,
                   ),
@@ -179,7 +181,9 @@ class _ActuallyOkayViewState extends State<ActuallyOkayView> {
                       Text(
                         ActuallyOkayLines.closing,
                         textAlign: TextAlign.center,
-                        style: SkText.caption.copyWith(color: sk.muted),
+                        style: SkText.caption.copyWith(
+                          color: SkContrast.captionOn(sk.canvas),
+                        ),
                       ),
                     ],
                   ),

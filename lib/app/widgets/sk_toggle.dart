@@ -1,5 +1,5 @@
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart' show Theme, Brightness, Colors;
+import 'package:flutter/material.dart' show Theme, Brightness;
 
 import 'package:sidekick/app/widgets/sk_colors.dart';
 
@@ -29,7 +29,12 @@ class SkToggle extends StatelessWidget {
       onChanged: onChanged,
       activeTrackColor: sk.action,
       inactiveTrackColor: sk.toggleOff,
-      thumbColor: isDark ? sk.ink : Colors.white,
+      // **`sk.surface`, not `Colors.white`.** The thumb is the part of the
+      // switch that moves, so it has to read against both `action` and
+      // `toggleOff` -- and a fixed white is a thumb designed for one of six
+      // light palettes. `surface` is the slot that already means "a thing
+      // lifted off the page", which is exactly what the thumb is.
+      thumbColor: isDark ? sk.ink : sk.surface,
     );
   }
 }

@@ -42,9 +42,9 @@ documented; three are leaks worth fixing.
 | `tighten_view.dart`, `low_day_view.dart` orb colours | **Correct, and argued.** A soothing colour that went coral in one palette and teal in another would be six different promises. The page ground *is* the palette; the orb is not |
 | `theme_sheet_view.dart` device frame | **Correct.** It is a picture of a phone, not part of the app's surface |
 | `data_export_service.dart` PDF greys | **Correct.** A PDF has no theme and is read outside the app |
-| `sk_tab_bar.dart` — `0x24000000`, `0xFFFFFFFF` | **A leak.** The glass bar's shadow and wash should be `sk.ink` and `sk.surface` at an alpha |
-| `design_system_view.dart` — `Colors.white` | **A leak**, on the one screen that exists to show the palettes |
-| `breathing_view.dart` — `0xFFFFF2DC` | **Unexamined.** Named nowhere. Check it in dark mode |
+| `sk_tab_bar.dart` — `0x24000000`, `0xFFFFFFFF` | ~~A leak~~ **Fixed 24 September 2026.** The shadow is `sk.ink` at 14% (what `0x24000000` measured), and the panic icon and its press wash take `SkContrast.readable(white, sk.panic)` |
+| `design_system_view.dart` — `Colors.white` | ~~A leak~~ **Fixed 24 September 2026.** The two swatch labels take `SkContrast.captionOn` of the swatch they sit on |
+| `breathing_view.dart` — `0xFFFFF2DC` | ~~Unexamined~~ **Named and argued, 24 September 2026.** It is `_sunlight`, mixed 18% into the halo so the glow reads as sunlight rather than a lamp. The other 82% is the palette's own middle scene stop, so it stays a light rather than becoming a surface |
 
 **If a colour genuinely must not follow the theme, say why in a comment beside
 it.** The orb comments are the model: they name the alternative, say what was
@@ -92,11 +92,81 @@ the slot, not the check.
 
 ---
 
-## 3. Captions are a darker shade of their own ground
+## 3. Text on a coloured ground is that ground's own darkest tint
 
-**The rule.** A caption, a section header, a chip label — anything smaller and
-quieter than body text — is **the colour it is sitting on, moved in lightness
-until it is legible.** Not a grey. Not a separate slot.
+**The rule, in one line.** Words on a coloured ground — a tinted block, a
+speech bubble, a status wash, a coloured card — are set in **the darkest tint
+of that same colour**. Same hue, taken down until it is legible, and stopped
+there. Never a grey, never plain black, never a colour from somewhere else on
+the screen.
+
+**Why.** A ground and the words on it are one object. Grey on a cream panel is
+two colour families inside one box, and it reads as a mistake nobody can name.
+The cream taken to a deep tan is the same panel, spoken quietly.
+
+**Two pieces of machinery, and which one depends on where the colour comes
+from:**
+
+| The words are | Take | Whose hue it keeps |
+| --- | --- | --- |
+| A caption or a header on a tint | `SkContrast.captionOn(ground)` | The **ground's**, moved in lightness until 4.5:1 |
+| A heading or an icon that carries the meaning | `SkContrast.readable(tone, ground)` | The **tone's**, at its own strength |
+| A paragraph on a tint | `SkContrast.inkOn(tone, ground, ink)` — or `style.body` | The **tone's**, taken past itself |
+
+**"Darkest" means furthest from the ground, not nearest to black.** On a light
+tint it is a deep shade; on the same tint in the dark set it is a pale one.
+All three helpers pick the direction from where the headroom is, never from
+the app's light/dark mode — a dark card can sit on a light screen.
+
+**Measure against the flattened fill, not the page behind it.** A tint is
+translucent, so `SkContrast.over(hue, ground, alpha)` first. `destructive at
+10%` is not a colour any checker can read.
+
+**Where this rule stops.** It is about a ground that carries a *colour*, so it
+does not reach:
+
+- **The page ground.** Body text on `canvas` is `ink`. That is the whole point
+  of the slot.
+- **A filled action pill.** `onAction` is the label on `action`, and it is
+  chosen for that fill.
+- **An exercise page**, which reads `context.exercise` rather than
+  `context.sk`. Same rule, different set.
+
+### A paragraph on a tint, and the rule it reversed
+
+Until 24 September 2026 a paragraph on a status wash was **`ink`**, written
+down in four places, with the same reason each time: *a paragraph set in a
+status colour reads as shouting.*
+
+That reason is real, and it is narrower than it reads. What it protects
+against is a paragraph set in **the tone itself** — `style.text`, a mid-tone
+red sitting at about 4.5:1. That is a raised voice for five lines somebody has
+to read through. It is not an argument against the tone taken *past* itself.
+
+`SkStatusStyle.body` is that: the same colour family, darkened until it
+carries **the contrast `ink` already had on that fill**. So it is never
+louder than the tone and never fainter than the ink it replaced, and a
+paragraph stops being a neutral marooned in a coloured box.
+
+Three assertions hold it, in `test/exercise_contrast_test.dart` and
+`test/contrast_test.dart`, over every tone, both exercise sets and all twelve
+schemes:
+
+1. It clears 4.5:1 on its fill.
+2. It is **no fainter than `ink`** was on that fill.
+3. It is **no lighter than `style.text`** — the surviving half of the old rule.
+
+The five places it changed: `SkStatusBlock`, `SkFeedbackSheet`, the swap
+drill's note and its example-bubble sentence, and the affirmation sheet's
+cards.
+
+---
+
+### Captions are the commonest case of it
+
+A caption, a section header, a chip label — anything smaller and quieter than
+body text — is **the colour it is sitting on, moved in lightness until it is
+legible.** Not a grey. Not a separate slot.
 
 ```
 Text(heading, style: SkText.sheetHeading.copyWith(
@@ -301,6 +371,39 @@ the surface.
 3. **Weight carries state, size carries hierarchy.** A heading is bigger, not
    just bolder, so the order survives somebody turning text up.
 
+### Reported 24 September 2026: the practice lessons read too heavy
+
+**The type in a practice lesson feels heavier than it should.** Reported by
+the user against the swap drill, not yet measured and not yet fixed.
+
+Where the weight actually is, so the next person does not start by guessing:
+
+| On screen | Style | Size / weight |
+| --- | --- | --- |
+| The sentence in an example bubble | `cardTitle` | 18 / **600** |
+| An option card's sentence | `cardTitle` | 18 / **600** |
+| A step heading | `sceneLine` | 24 / 600 |
+| The kind label in a bubble | `chipLabel` | 14 / 600 |
+| A beat label over a group | `sectionHeader` | 13 / 600 uppercase |
+| A paragraph | `rowLabel` | 17 / 400 |
+
+So a lesson page can hold four or five blocks at 600 and one at 400, and the
+600 blocks are the big ones. The body is the lightest thing on the page and
+the smallest, which is the hierarchy upside down.
+
+**Two candidate fixes, neither taken yet:**
+
+1. **Drop the sentences to 500.** `cardTitle` is shared with cards elsewhere,
+   so this wants a named lesson style rather than a change to `cardTitle`.
+2. **Spend less of the page at 600.** The beat labels and the kind labels are
+   small and uppercase; 600 is doing work there. The 18-point sentences are
+   the blocks actually carrying the weight.
+
+Whatever is chosen, rule 2 above holds: **nothing lighter than 400**, and
+weight still carries state rather than rank.
+
+---
+
 ### Visual hierarchy
 
 **Rank is size, then weight, then colour — in that order, and colour is last
@@ -426,25 +529,19 @@ Measure with `SkContrast.ratio`. Flatten anything translucent with
 are **gates** — `ink` on every surface, and `captionOn` on any ground — and
 they have never failed.
 
-### The audit baseline
+### The audit baseline, and how it was closed
 
-Eleven foreground/background pairs across five palettes are under 4.5:1 today,
-four of them under 3.0:1. They are **listed, not fixed**, because fixing them
-means choosing new colours for shipped themes, which is a design decision.
+**The baseline is closed, as of 24 September 2026.** Eleven
+foreground/background pairs across five palettes used to be listed rather than
+fixed, four of them under 3.0:1. Two different fixes closed them:
 
-| Palette | Pair | Ratio |
-| --- | --- | --- |
-| Harvest moon light | `onAction` on `action` | 4.07 |
-| Harvest moon dark | `onScene` on scene stop 0 | **2.78** |
-| Harvest moon dark | `onScene` on scene stop 1 | 4.42 |
-| Moonlit valley light | `onScene` on scene stop 2 | 4.00 |
-| Moonlit valley dark | `onScene` on scene stop 1 | 3.88 |
-| Night forest light | `onScene` on scene stop 0 | **2.41** |
-| Night forest dark | `onScene` on scene stop 0 | 4.16 |
-| Coral diorama light | `onAction` on `action` | 3.58 |
-| Coral diorama dark | `onScene` on scene stop 0 | **2.79** |
-| Dusk terrarium light | `onScene` on scene stop 2 | **2.60** |
-| Dusk terrarium dark | `onScene` on scene stop 0 | 3.98 |
+| Pair | What moved |
+| --- | --- |
+| `onAction` on `action`, twice | The **fill**. A white label cannot get lighter, so Harvest moon light went `#B06F2C` -> `#A46729` and Coral diorama light `#E8564A` -> `#E22C1D`. The only place a shipped palette changed |
+| `onScene` on a gradient stop, nine times | The **ground**. Five of the nine could not reach 4.5:1 at *any* lightness -- pure white on the Harvest moon dark sky tops out at 3.08 -- so `SkScenePanel` lays `SkContrast.sceneScrim` under the words. Nothing at all on the three palettes that already cleared it |
+
+`test/contrast_test.dart` is now a gate with an empty list: any pair under
+4.5:1 is a regression.
 
 Moss — the default — passes everything.
 
@@ -536,10 +633,12 @@ Things this guide names that are not finished:
 
 | Gap | Where |
 | --- | --- |
-| Three hardcoded colours are leaks | `sk_tab_bar.dart`, `design_system_view.dart`, `breathing_view.dart` |
-| Eleven palette pairs under 4.5:1 | Section 8. Listed, not fixed |
+| ~~Three hardcoded colours are leaks~~ | Fixed 24 September 2026. The tab bar takes `sk.ink` and the palette's own label colour, the swatches take `captionOn`, and the breathing glow's warm white is a named, argued constant |
+| ~~Eleven palette pairs under 4.5:1~~ | Fixed 24 September 2026. Two accents darkened, a scrim under the scene words. Section 8 |
+| ~~`muted` used as a text colour in 31 places~~ | Fixed 24 September 2026. `test/accessibility_source_test.dart` reads the source so it cannot come back |
 | `SkLayout` is new and only the explanation sheet uses it | Every other screen still has its numbers inline |
 | No focus-visible treatment | Keyboard and switch control have no visible ring anywhere |
 | No reduced-motion path | `MediaQuery.disableAnimations` is read nowhere |
 | The design system screen shows colours, not rules | It could show the contrast numbers live |
+| The practice lessons read too heavy | Reported 24 September 2026. Four or five blocks at 600 per page, body the lightest thing on it. Section 5 |
 | The status tones have no quiz to appear in yet | `SkStatusBlock` exists; the practice screens do not mark answers yet |

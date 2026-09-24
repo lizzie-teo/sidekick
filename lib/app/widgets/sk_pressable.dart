@@ -43,6 +43,19 @@ class SkPressable extends StatefulWidget {
   // buzzing on touch is noise, not feedback.
   final bool haptics;
 
+  // What the control is called out loud, when the child carries no words of
+  // its own. An icon-only button needs it; a button with a label in it does
+  // not, and passing one there would have the control announced twice.
+  final String? semanticLabel;
+
+  // Whether this control is the one currently chosen -- a tab, a segment, a
+  // palette dot.
+  //
+  // **A screen reader has no other way to know.** Sighted readers are told by
+  // a fill, a ring or full opacity; without this the four tabs announce
+  // identically and nothing says which page is open.
+  final bool? selected;
+
   const SkPressable({
     super.key,
     required this.child,
@@ -53,6 +66,8 @@ class SkPressable extends StatefulWidget {
     this.opacity = 0.10,
     this.pressedScale = 0.96,
     this.haptics = true,
+    this.semanticLabel,
+    this.selected,
   });
 
   @override
@@ -70,10 +85,26 @@ class _SkPressableState extends State<SkPressable> {
 
   @override
   Widget build(BuildContext context) {
-    if (widget.onPressed == null) return widget.child;
+    // **A disabled control is still announced as one.** It used to return the
+    // bare child, which dropped the button role and the label with it -- so a
+    // greyed-out "Save" was read as plain text and a reader had no way to
+    // learn there was a control there at all, let alone why it would not
+    // work.
+    if (widget.onPressed == null) {
+      return Semantics(
+        button: true,
+        enabled: false,
+        label: widget.semanticLabel,
+        selected: widget.selected,
+        child: widget.child,
+      );
+    }
 
     return Semantics(
       button: true,
+      enabled: true,
+      label: widget.semanticLabel,
+      selected: widget.selected,
       onTap: widget.onPressed,
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,

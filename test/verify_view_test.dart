@@ -110,8 +110,7 @@ void main() {
     expect(router.state.uri.path, Routes.home);
   });
 
-  testWidgets('a wrong code leaves the user here to try again',
-      (tester) async {
+  testWidgets('a wrong code leaves the user here to try again', (tester) async {
     final authService = FakeAuthService()
       ..verifyError = const AuthException('Token has expired or is invalid');
 

@@ -56,6 +56,17 @@ dependencies:
   path_provider: ^2.1.6
   share_plus: ^13.3.0
 
+  # Used for short, one-off entrance effects -- a line fading in, a card
+  # sliding up -- so a screen does not hand-roll an AnimationController for
+  # three seconds of movement. It is a convenience over Flutter's own
+  # animation, not a replacement for it.
+  #
+  # It is NOT for the character or the breathing pacer. Those are Rive, and
+  # the pacer's one rule is that its timing comes from the Rive events and
+  # nothing else. A second clock on that screen is the bug the rule exists
+  # to stop.
+  flutter_animate: ^4.5.2
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

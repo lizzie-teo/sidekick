@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:sidekick/app/widgets/sk_colors.dart';
 import 'package:sidekick/app/widgets/sk_text.dart';
+import 'package:sidekick/app/widgets/sk_contrast.dart';
 
 // A one-line (or few-line) input on a surface card. Errors come from the
 // viewmodel's state.errors and are passed in as errorText, per the MVVM
@@ -48,7 +49,12 @@ class SkTextField extends StatelessWidget {
             cursorColor: sk.action,
             decoration: InputDecoration(
               hintText: hint,
-              hintStyle: SkText.rowLabel.copyWith(color: sk.muted),
+              // **A placeholder is text somebody has to read**, so it is
+              // held to the same 4.5:1 as the words they type. `muted`
+              // measures under 3.3:1 on every light palette.
+              hintStyle: SkText.rowLabel.copyWith(
+                color: SkContrast.captionOn(sk.surface),
+              ),
               border: InputBorder.none,
               contentPadding: const EdgeInsets.symmetric(
                 horizontal: 16,

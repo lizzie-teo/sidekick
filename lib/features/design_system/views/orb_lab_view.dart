@@ -7,6 +7,7 @@ import 'package:sidekick/app/widgets/sk_blob_orb.dart';
 import 'package:sidekick/app/widgets/sk_colors.dart';
 import 'package:sidekick/app/widgets/sk_segmented.dart';
 import 'package:sidekick/app/widgets/sk_text.dart';
+import 'package:sidekick/app/widgets/sk_contrast.dart';
 
 // A workbench for the orb. **Debug builds only** -- the route is registered
 // behind kDebugMode in DesignSystemModule, so it cannot ship.
@@ -264,7 +265,8 @@ class _OrbLabViewState extends State<OrbLabView>
                       'The ramp is black, Edge, Core, white. The two ends are '
                       'fixed: they are what let the orb reach real shadow and '
                       'real highlight. Edge is the darker of the two.',
-                      style: SkText.tabLabel.copyWith(color: sk.muted),
+                      style: SkText.tabLabel
+                          .copyWith(color: SkContrast.captionOn(sk.canvas)),
                     ),
                     const SizedBox(height: 10),
                     SkSegmented(
@@ -368,7 +370,9 @@ class _OrbLabViewState extends State<OrbLabView>
                     maxLines: 2,
                     style: SkText.tabLabel.copyWith(
                       fontSize: 9,
-                      color: slot == current ? sk.ink : sk.muted,
+                      color: slot == current
+                          ? sk.ink
+                          : SkContrast.captionOn(sk.canvas),
                     ),
                   ),
                 ],
@@ -384,7 +388,8 @@ class _OrbLabViewState extends State<OrbLabView>
       padding: const EdgeInsets.only(bottom: 8),
       child: Text(
         text.toUpperCase(),
-        style: SkText.sectionHeader.copyWith(color: sk.muted),
+        style: SkText.sectionHeader
+            .copyWith(color: SkContrast.captionOn(sk.canvas)),
       ),
     );
   }
@@ -424,7 +429,9 @@ class _OrbLabViewState extends State<OrbLabView>
               ),
             ],
           ),
-          Text(hint, style: SkText.tabLabel.copyWith(color: sk.muted)),
+          Text(hint,
+              style: SkText.tabLabel
+                  .copyWith(color: SkContrast.captionOn(sk.canvas))),
           Slider.adaptive(
             value: value.clamp(min, max),
             min: min,
@@ -463,7 +470,8 @@ class _OrbLabViewState extends State<OrbLabView>
         children: <Widget>[
           Text(
             'THESE NUMBERS',
-            style: SkText.sectionHeader.copyWith(color: sk.muted),
+            style: SkText.sectionHeader
+                .copyWith(color: SkContrast.captionOn(sk.canvas)),
           ),
           const SizedBox(height: 8),
           SelectableText(

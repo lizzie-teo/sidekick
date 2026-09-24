@@ -145,10 +145,17 @@ class SwapSlot {
   // a struck-through example on the first step, which is a page of reading in
   // front of a one-word answer.
   //
-  // **It appears on this part's own step and nowhere else, since 21 September
-  // 2026.** The introduction's three tiles used to carry it too, which is the
-  // same instruction read three screens before there is anything to do with
-  // it.
+  // **It moved onto the shape step on 24 September 2026**, under this part's
+  // own label. It had a step of its own until then -- one part, one helper,
+  // two cards -- and the three steps became one word-bank screen, where three
+  // helpers over a bank of tiles is three instructions on a screen that is
+  // asking for taps.
+  //
+  // The shape step already carries the three labels, it is the screen
+  // immediately before, and it is now the only place the instruction can be
+  // read at all. `_Parts` in the view holds the argument -- it used to ban
+  // exactly this, and the ban was written when the builder still had a step
+  // per part to say it on.
   final String helper;
 
   // What stands in the sentence until this part is filled.
@@ -196,6 +203,27 @@ class SwapSituation {
         return want;
     }
   }
+
+  // Every line this situation offers, each carrying the part it belongs in.
+  //
+  // **The order is the sentence's own order, and it is never shuffled.** A
+  // shuffled bank is Duolingo's, and Duolingo shuffles because finding the
+  // right tile is the exercise. Here the tile cannot be wrong, so shuffling
+  // would only make the reader hunt -- and the order the parts go in is the
+  // thing this lesson is teaching, so scrambling it on the one screen that
+  // shows all three would teach against the step before it.
+  List<SwapChip> get chips => <SwapChip>[
+        for (final SwapPart part in SwapPart.values)
+          for (final String line in chipsFor(part)) SwapChip(part, line),
+      ];
+}
+
+// One tile in the bank: a line, and the part of the sentence it drops into.
+class SwapChip {
+  final SwapPart part;
+  final String line;
+
+  const SwapChip(this.part, this.line);
 }
 
 // One block on an introduction page.
@@ -439,6 +467,39 @@ class SwapIntroChain extends SwapIntroBlock {
   const SwapIntroChain(this.items);
 }
 
+// A place the page stops and waits for Continue. It draws nothing.
+//
+// **The four pages arrive a beat at a time, since 24 September 2026.** They
+// were four whole pages, and the load across them was not even: page one was
+// two blocks and page two was nine. A reader met a wall on the screen after
+// the lightest one in the drill, and the only control was a Continue that
+// turned the page.
+//
+// A hold splits a page into beats. Everything up to the hold is on screen;
+// everything after it waits for the next tap and fades in under what is
+// already there. Nothing is replaced and nothing is hidden afterwards, so the
+// reader can still scroll back over the whole page before they leave it.
+//
+// **The break is always before the consequence.** On pages 2 and 3 it sits in
+// front of "What happens next", which is the one beat those pages are built
+// to deliver; on page 4 it sits between the two bubbles, so the swap is a
+// reveal rather than a comparison already made. That is the generation
+// effect, which is the only reason a tap is worth what it costs.
+//
+// **It is a marker rather than a field on the page**, because the split is a
+// position inside the list and a count beside the list would be free to
+// disagree with it. [SwapIntroPage.beats] is what reads it.
+//
+// **Splitting automatically at every [SwapIntroBeat] label was tried and
+// dropped.** Three beats a page put the first one on screen with no character
+// at all -- her head arrives with the example sentence, which is in the second
+// beat -- and a lesson she is absent from for one tap and present on for the
+// next is the "one of her on every step" rule broken in a new place. The hold
+// is authored, so the page can always keep her.
+class SwapIntroHold extends SwapIntroBlock {
+  const SwapIntroHold();
+}
+
 // `SwapIntroParts` was here until 23 September 2026: a block that drew the
 // three parts of the sentence from `slots`, used once, on the last page of the
 // introduction. The parts now have a step of their own between the situation
@@ -455,6 +516,36 @@ class SwapIntroPage {
   final List<SwapIntroBlock> blocks;
 
   const SwapIntroPage({required this.title, required this.blocks});
+
+  // The page cut into the groups it arrives in, one per Continue.
+  //
+  // **A page with no [SwapIntroHold] in it is one beat**, which is the whole
+  // page at once -- so a page that has nothing to gain from waiting does not
+  // wait. Page one is that page.
+  //
+  // Worked out from [blocks] rather than stored beside it, so there is no
+  // second list to keep in step. The holds themselves are dropped: they mark
+  // a boundary and are never drawn.
+  List<List<SwapIntroBlock>> get beats {
+    final List<List<SwapIntroBlock>> out = <List<SwapIntroBlock>>[
+      <SwapIntroBlock>[],
+    ];
+
+    for (final SwapIntroBlock block in blocks) {
+      if (block is SwapIntroHold) {
+        out.add(<SwapIntroBlock>[]);
+        continue;
+      }
+
+      out.last.add(block);
+    }
+
+    // A hold at either end would leave an empty group, which is a tap that
+    // shows nothing.
+    return List<List<SwapIntroBlock>>.unmodifiable(
+      out.where((List<SwapIntroBlock> beat) => beat.isNotEmpty),
+    );
+  }
 }
 
 // What a step is.
@@ -688,7 +779,8 @@ abstract final class SwapDrillScript {
         // so all three lines are now one meal.
         SwapIntroBeat('One evening'),
         SwapIntroText(
-          "Say you're having dinner together, and the phone comes out again.",
+          "Say you're having dinner together with your loved ones, and they "
+          'are on the phone all the time.',
         ),
         SwapIntroBeat('What we say'),
         // **"When something's bothering us," came off the front of this line
@@ -709,6 +801,12 @@ abstract final class SwapDrillScript {
           said: introCriticismExample,
           face: LessonFace.cross,
         ),
+
+        // The page waits here. The scene and the sentence are on screen; what
+        // the sentence does arrives on the next tap, which is the beat this
+        // page exists to deliver.
+        SwapIntroHold(),
+
         SwapIntroBeat('What happens next'),
         // **The colon went with the label, on 23 September 2026.** "and then:"
         // was pointing at the chain under it, and the label now does that job
@@ -720,7 +818,8 @@ abstract final class SwapDrillScript {
           'They stop listening.',
         ]),
         SwapIntroText(
-          'The thing that was actually bothering you never gets talked about.',
+          'The situation that was actually bothering you never gets talked '
+          'about.',
           emphasis: 'never gets talked about',
         ),
       ],
@@ -738,7 +837,7 @@ abstract final class SwapDrillScript {
         // backwards. The pair now runs the same way twice, which is what makes
         // it a pair.
         SwapIntroBeat('Same evening'),
-        SwapIntroText('Same dinner, and the same thing bothering you.'),
+        SwapIntroText('At dinner time, the same thing bothers you again.'),
         SwapIntroBeat('What to say instead'),
         // **"how you feel and what you prefer" is load-bearing** and a test
         // holds it: it is the promise the builder's three parts have to keep.
@@ -754,15 +853,21 @@ abstract final class SwapDrillScript {
           said: introExpressingExample,
           face: LessonFace.neutral,
         ),
+
+        // Held in the same place as page 2, because the two pages are one
+        // pair with one thing changed between them. A pair that broke in
+        // different places would stop reading as a pair.
+        SwapIntroHold(),
+
         SwapIntroBeat('What happens next'),
         // **The same label as page 2, over the opposite outcome.** There the
         // chain ends in the thing never getting talked about; here it ends in
         // the thing being said. One pair, one difference.
         SwapIntroText(
-          "It describes your side of it, so there's nothing in it to argue "
-          "with, and that makes it easier to hear. It's the same thing you "
-          "wanted. It's just about you now, instead of about them.",
-          emphasis: "there's nothing in it to argue with",
+          'It describes your side of the story, and that makes it easier for '
+          'the other person to hear. It is easier to say what you want when '
+          'they are listening instead of defending themselves.',
+          emphasis: 'easier for the other person to hear',
         ),
       ],
     ),
@@ -794,7 +899,7 @@ abstract final class SwapDrillScript {
         // builder's one-line helpers came off this page on 21 September 2026
         // for exactly this reason -- an instruction is worth most at the
         // moment it is followed. See `shapeTitle`.
-        SwapIntroText('Same evening, said both ways:'),
+        SwapIntroText('The same dinner, said two ways:'),
 
         // **The swap is said in the layout as well as in the words.** Her on
         // the left with the criticism, the reader on the right with the "I"
@@ -807,6 +912,17 @@ abstract final class SwapDrillScript {
           said: introCriticismExample,
           face: LessonFace.cross,
         ),
+
+        // **The swap is a reveal here, not a comparison laid out flat.** The
+        // reader has read three pages about what "I" does; giving them the
+        // criticism on its own for one tap is the moment they can answer it
+        // themselves before the page does.
+        //
+        // **Both halves are still on screen together afterwards**, which is
+        // the thing this page was built for and the reason the hold is
+        // between them rather than a second page.
+        SwapIntroHold(),
+
         SwapIntroExample(
           label: expressingLabel,
           said: introExpressingExample,
@@ -885,9 +1001,9 @@ abstract final class SwapDrillScript {
       said: 'You always keep me waiting.',
       kind: SwapKind.criticism,
       tell: 'always',
-      why: '"Always" makes this about what they\'re like, not about your '
-          "evening. So that's what they'll argue about, and the hour you spent "
-          'waiting never comes up.',
+      why: 'Once you say "always", you\'re talking about what they\'re like, '
+          "not about tonight. So that's what they'll dig in about, and the "
+          'hour you sat there waiting never comes up.',
     ),
     SwapCard(
       said: "I've been sitting here an hour and I've had to cancel my evening.",
@@ -896,24 +1012,25 @@ abstract final class SwapDrillScript {
       // cannot see the conversation, and that was a claim about what the
       // other person would feel. What is left is a claim about the sentence,
       // which is all a screen can honestly make.
-      why: 'This says what happened, and what it cost you. People usually '
-          "leave the cost out — it's the bit the other person can't guess.",
+      why: 'This one says what happened, and what it cost you. Most people '
+          "skip the cost bit — which is a shame, because it's the one thing "
+          'the other person has no way of knowing.',
     ),
     SwapCard(
       said: "I feel like you're being selfish.",
       kind: SwapKind.criticism,
       tell: 'selfish',
-      why: 'This one catches nearly everybody. It starts with "I", but '
-          '"selfish" is a word about them, so it still lands as a criticism. '
-          "It isn't the first word that matters. It's who the sentence is "
-          'about.',
+      why: 'This one catches nearly everybody. It starts with "I", true — '
+          'but "selfish" is still a word about them, so it lands as a '
+          'criticism anyway.',
     ),
     SwapCard(
       said: 'You never tell me anything.',
       kind: SwapKind.criticism,
       tell: 'never',
-      why: '"Never" does the same job as "always". One quiet week turns into '
-          "what they're like, and that's the bit they'll argue with.",
+      why: '"Never" works the same way as "always". One quiet week turns '
+          "into who they are, and that's the bit they'll push back on, not "
+          'the thing that actually bothered you.',
     ),
     SwapCard(
       said: "I didn't know that was coming, so I had no answer in front of "
@@ -924,16 +1041,17 @@ abstract final class SwapDrillScript {
       // The phrase that replaces it is the introduction's own emphasised
       // line, so the test the reader was taught is the test they are marked
       // against.
-      why: "This is your side of it, and nothing else. There's nothing in it "
-          "to argue with. It doesn't ask for anything yet, though — that's "
-          'the next one.',
+      why: "That's just your side of it, so there's nothing there to argue "
+          "with. It doesn't ask for anything yet, mind — that's the next "
+          'one.',
     ),
     SwapCard(
       said: "I'd rather you asked me first.",
       kind: SwapKind.expressing,
-      why: "Short, and it's the half people leave out. If you don't ask for "
-          'anything, nothing changes. It does say "you", and that\'s fine '
-          "here — it's about next time, not about what they're like.",
+      why: "Short, and it's the half most people skip. Asking is what gives "
+          'them something to do differently next time. It does say "you", '
+          "and that's fine here — it's about what happens next, not about "
+          "what they're like.",
     ),
   ];
 
@@ -1029,13 +1147,30 @@ abstract final class SwapDrillScript {
     ),
   ];
 
-  // The three builder steps.
+  // The three parts of the sentence, filled in on one screen.
   //
-  // **Nothing here can be wrong,** which is why no explanation follows a
-  // pick. Each one offers two of the chosen situation's own lines and takes a
-  // tap on one of them. All three are required: a sentence missing one is not
-  // the sentence this lesson taught, and the finish screen used to be able to
-  // show "I'd like what you want." as if that were a finished line.
+  // **They were three steps until 24 September 2026, and they are now one.**
+  // Each step showed one part's label, its helper and two cards. The screen
+  // is a word bank now: the whole sentence stands at the top with three
+  // blanks in it, and every one of the situation's lines is a tile
+  // underneath. Tapping a tile drops it into its own blank.
+  //
+  // **The reason is the one in `/lesson-design` rule 3.** A part on its own
+  // is not a subject -- "I feel disappointed" teaches nothing without "when
+  // plans change on the day" beside it. The teaching *is* that the three read
+  // down as one sentence, and one part at a time behind a Next button is the
+  // single arrangement in which that is invisible. It is the same call the
+  // four-part frame made, and the skill uses that page as its worked example.
+  //
+  // **A tile can never land in the wrong blank.** Every line belongs to
+  // exactly one part, and the app puts it there -- the reader is not being
+  // asked which slot it goes in. Duolingo's word bank marks the answer;
+  // nothing here can be wrong, so nothing here is marked.
+  //
+  // **Nothing here can be wrong,** which is also why no explanation follows a
+  // pick. All three are required: a sentence missing one is not the sentence
+  // this lesson taught, and the finish screen used to be able to show "I'd
+  // like what you want." as if that were a finished line.
   static const List<SwapSlot> slots = <SwapSlot>[
     SwapSlot(
       part: SwapPart.feel,
@@ -1076,6 +1211,22 @@ abstract final class SwapDrillScript {
   static const String joinWhen = ' when ';
   static const String joinWant = ". I'd like ";
   static const String joinEnd = '.';
+
+  // ---- The builder screen ------------------------------------------------
+
+  // Its heading. **It names whose sentence it is**, which is the one thing
+  // that changes when the drill stops being about her six sentences and
+  // starts being about the reader's evening.
+  static const String builderTitle = 'Your sentence';
+
+  // The one line under it.
+  //
+  // **It says how to undo before the reader needs to undo.** A tile that goes
+  // in and cannot obviously come out again is a decision somebody is stuck
+  // with, on the one screen in the lesson where nothing can be wrong -- and a
+  // reader who thinks they are stuck stops tapping.
+  static const String builderLead =
+      'Tap a line to put it in. Tap it again to take it back out.';
 
   // The step between picking a situation and building the sentence, added 23
   // September 2026 with the shape it shows.
@@ -1351,7 +1502,7 @@ abstract final class SwapDrillScript {
     const SwapStep(SwapStepKind.score),
     const SwapStep(SwapStepKind.situation),
     const SwapStep(SwapStepKind.shape),
-    for (int i = 0; i < slots.length; i++) SwapStep(SwapStepKind.slot, i),
+    const SwapStep(SwapStepKind.slot),
     const SwapStep(SwapStepKind.finished),
     const SwapStep(SwapStepKind.beforeYouTry),
   ];

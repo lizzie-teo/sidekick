@@ -89,104 +89,111 @@ class _VerifyViewState extends State<VerifyView> {
           onPressed: _back,
         ),
       ),
-      body: GestureDetector(
-        onTap: () => FocusScope.of(context).unfocus(),
-        behavior: HitTestBehavior.opaque,
-        child: Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 400),
-              child: ValueListenableBuilder<VerifyViewModelState>(
-                valueListenable: _viewModel.state,
-                builder: (context, state, child) {
-                  return Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      //
+      // **The body is inside a SafeArea.** The AppBar insets the top, but
+      // nothing insets the bottom -- so at a large text size the last row of
+      // the scroll view finishes under the home indicator.
+      body: SafeArea(
+        child: GestureDetector(
+          onTap: () => FocusScope.of(context).unfocus(),
+          behavior: HitTestBehavior.opaque,
+          child: Center(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 400),
+                child: ValueListenableBuilder<VerifyViewModelState>(
+                  valueListenable: _viewModel.state,
+                  builder: (context, state, child) {
+                    return Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        //
 
-                      Text(
-                        'Enter your code',
-                        style: Theme.of(context).textTheme.headlineMedium,
-                        textAlign: TextAlign.center,
-                      ),
-
-                      const SizedBox(height: 8),
-
-                      Text(
-                        'Sent to ${widget.email}',
-                        style: Theme.of(context).textTheme.bodyMedium,
-                        textAlign: TextAlign.center,
-                      ),
-
-                      const SizedBox(height: 32),
-
-                      // Focused on arrival: the user came here to type six
-                      // digits and nothing else on the screen takes input.
-                      TextField(
-                        controller: _controller,
-                        keyboardType: TextInputType.number,
-                        autocorrect: false,
-                        autofocus: true,
-                        autofillHints: const [AutofillHints.oneTimeCode],
-                        maxLength: VerifyViewModel.codeLength,
-                        inputFormatters: [
-                          FilteringTextInputFormatter.digitsOnly
-                        ],
-                        textInputAction: TextInputAction.go,
-                        onSubmitted: (_) => _verify(),
-                        decoration: InputDecoration(
-                          labelText: 'Code',
-                          border: const OutlineInputBorder(),
-                          errorText: state.errors['code'],
-                          counterText: '',
-                        ),
-                      ),
-
-                      if (state.errors['general'] != null) ...[
-                        const SizedBox(height: 12),
                         Text(
-                          state.errors['general']!,
-                          style:
-                              Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                    color: Theme.of(context).colorScheme.error,
-                                  ),
+                          'Enter your code',
+                          style: Theme.of(context).textTheme.headlineMedium,
                           textAlign: TextAlign.center,
                         ),
-                      ],
 
-                      if (state.messages['general'] != null) ...[
-                        const SizedBox(height: 12),
+                        const SizedBox(height: 8),
+
                         Text(
-                          state.messages['general']!,
+                          'Sent to ${widget.email}',
                           style: Theme.of(context).textTheme.bodyMedium,
                           textAlign: TextAlign.center,
                         ),
-                      ],
 
-                      const SizedBox(height: 24),
+                        const SizedBox(height: 32),
 
-                      AsyncButton(
-                        onPressed: _verify,
-                        child: const Text('Verify'),
-                      ),
-
-                      const SizedBox(height: 12),
-
-                      TextButton(
-                        onPressed:
-                            state.canResend ? _viewModel.resendCode : null,
-                        child: Text(
-                          state.canResend
-                              ? 'Resend code'
-                              : 'Resend in '
-                                  '${TimeFormatUtils.formatCountdown(state.resendCooldown)}',
+                        // Focused on arrival: the user came here to type six
+                        // digits and nothing else on the screen takes input.
+                        TextField(
+                          controller: _controller,
+                          keyboardType: TextInputType.number,
+                          autocorrect: false,
+                          autofocus: true,
+                          autofillHints: const [AutofillHints.oneTimeCode],
+                          maxLength: VerifyViewModel.codeLength,
+                          inputFormatters: [
+                            FilteringTextInputFormatter.digitsOnly
+                          ],
+                          textInputAction: TextInputAction.go,
+                          onSubmitted: (_) => _verify(),
+                          decoration: InputDecoration(
+                            labelText: 'Code',
+                            border: const OutlineInputBorder(),
+                            errorText: state.errors['code'],
+                            counterText: '',
+                          ),
                         ),
-                      ),
-                    ],
-                  );
-                },
+
+                        if (state.errors['general'] != null) ...[
+                          const SizedBox(height: 12),
+                          Text(
+                            state.errors['general']!,
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodyMedium
+                                ?.copyWith(
+                                  color: Theme.of(context).colorScheme.error,
+                                ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
+
+                        if (state.messages['general'] != null) ...[
+                          const SizedBox(height: 12),
+                          Text(
+                            state.messages['general']!,
+                            style: Theme.of(context).textTheme.bodyMedium,
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
+
+                        const SizedBox(height: 24),
+
+                        AsyncButton(
+                          onPressed: _verify,
+                          child: const Text('Verify'),
+                        ),
+
+                        const SizedBox(height: 12),
+
+                        TextButton(
+                          onPressed:
+                              state.canResend ? _viewModel.resendCode : null,
+                          child: Text(
+                            state.canResend
+                                ? 'Resend code'
+                                : 'Resend in '
+                                    '${TimeFormatUtils.formatCountdown(state.resendCooldown)}',
+                          ),
+                        ),
+                      ],
+                    );
+                  },
+                ),
               ),
             ),
           ),

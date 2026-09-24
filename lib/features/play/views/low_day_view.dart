@@ -10,6 +10,7 @@ import 'package:sidekick/app/widgets/sk_text_button.dart';
 import 'package:sidekick/features/play/models/low_day_script.dart';
 import 'package:sidekick/app/widgets/guided_intro.dart';
 import 'package:sidekick/features/play/viewmodels/low_day_viewmodel.dart';
+import 'package:sidekick/app/widgets/sk_contrast.dart';
 
 // Somebody else, and you too -- the picker's Low face.
 //
@@ -325,8 +326,6 @@ class _LowDayViewState extends State<LowDayView>
             title: LowDayScript.title,
             lines: LowDayScript.intro,
             emphasis: LowDayScript.emphasis,
-            permission: LowDayScript.permission,
-            permissionNote: LowDayScript.permissionNote,
             onBegin: _begin,
             onLeave: _leave,
           );
@@ -334,9 +333,9 @@ class _LowDayViewState extends State<LowDayView>
 
         return Scaffold(
           body: SafeArea(
-        // **The horizontal padding is on the bands, not on the column.** The
-        // orb fills the box it is given, so the words and the buttons keep
-        // their gutters while the orb gets the widest box on the screen.
+            // **The horizontal padding is on the bands, not on the column.** The
+            // orb fills the box it is given, so the words and the buttons keep
+            // their gutters while the orb gets the widest box on the screen.
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: <Widget>[
@@ -351,6 +350,7 @@ class _LowDayViewState extends State<LowDayView>
                     children: <Widget>[
                       SkCircleIconButton(
                         icon: Icons.close,
+                        label: 'Close',
                         color: sk.ink,
                         onPressed: _leave,
                       ),
@@ -438,7 +438,7 @@ class _LowDayViewState extends State<LowDayView>
                       label: state.isLastLine
                           ? "I'm done"
                           : "That's enough for now",
-                      color: sk.muted,
+                      color: SkContrast.captionOn(sk.canvas),
                       onPressed: _leave,
                     ),
                   ),

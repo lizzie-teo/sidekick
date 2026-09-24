@@ -28,14 +28,13 @@ import 'dart:math';
 // one does not come up twice running. That is a fact about the screen, not
 // about the user, and it is gone when the app closes.
 abstract final class ActuallyOkayLines {
-  // The six, in no particular order -- the pick is random, so the order here
+  // The five, in no particular order -- the pick is random, so the order here
   // is only the order they were written in.
   static const List<String> lines = <String>[
     "I'm glad you're alright today.",
     "Oh good. That's nice to hear.",
-    'Okay counts, you know. It really does.',
     'Steady is a good kind of day.',
-    'Nothing on fire, then. Lovely.',
+    'A quiet day, then. Those are good.',
     "That's a nice place to be sitting.",
   ];
 

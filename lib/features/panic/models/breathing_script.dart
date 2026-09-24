@@ -121,17 +121,22 @@ abstract final class BreathingScript {
   static String introEmphasisFor(Sensation? sensation) =>
       sensation?.introEmphasis ?? introGeneralEmphasis;
 
-  // **The standing permission, and it is the last thing read before Begin.**
-  // Word for word `TightenScript.permission`, deliberately: a reader who meets
-  // it on the wound-up page and again here should meet the same sentence, or
-  // the second one reads as a different and smaller promise.
+  // **There is no permission line on this page, as of 24 September 2026.**
+  // It read "You can stop whenever you want. Nothing here has to be
+  // finished.", word for word the same sentence the two Play intros carried,
+  // and it was cut from all three on the same day at the user's request.
+  // `GuidedIntro` no longer has a slot for one.
   //
-  // It is phrased about the **session**, never about the reader. "If it gets
-  // too much for you, stop" predicts distress and plants what it meant to
-  // cushion.
-  static const String introPermission = 'You can stop whenever you want.';
-
-  static const String introPermissionNote = 'Nothing here has to be finished.';
+  // The argument against cutting it was made first and is kept in
+  // `guided_intro.dart`: it is the trauma-informed choice point the
+  // meditation-writer skill asks every inward-turning script to give early,
+  // while the reader is still surfaced.
+  //
+  // What makes it affordable is that the way out is not the sentence. Three
+  // doors stay on the screen behind this page -- the X from the first frame,
+  // "That's enough for now" from the end of the lead-in, and "I'm alright
+  // now" on the last line. Control was never in the words; it is in the
+  // buttons, and they did not move.
 
   // The opening for someone who skipped the body question, or let it go by.
   // It has to be true of all four sensations at once, so it names none.

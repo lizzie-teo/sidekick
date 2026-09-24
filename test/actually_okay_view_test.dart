@@ -7,6 +7,7 @@ import 'package:sidekick/app/core/app_constants.dart';
 import 'package:sidekick/features/panic/models/feeling.dart';
 import 'package:sidekick/features/play/models/actually_okay_lines.dart';
 
+import 'support/pick_feeling.dart';
 import 'support/pump_app.dart';
 
 // "Actually okay" -- the one path allowed to end in nothing.
@@ -21,8 +22,8 @@ void main() {
   setUp(ActuallyOkayLines.resetForTest);
 
   group('the lines', () {
-    test('there are six, and none of them is empty', () {
-      expect(ActuallyOkayLines.lines.length, 6);
+    test('there are five, and none of them is empty', () {
+      expect(ActuallyOkayLines.lines.length, 5);
 
       for (final String line in ActuallyOkayLines.lines) {
         expect(line.trim(), isNotEmpty);
@@ -115,10 +116,7 @@ void main() {
     testWidgets('the picker leads here', (WidgetTester tester) async {
       final router = await pumpApp(tester, location: Routes.panic);
 
-      await tester.ensureVisible(find.text(Feeling.actuallyOkay.label));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text(Feeling.actuallyOkay.label));
-      await tester.pumpAndSettle();
+      await pickFeeling(tester, Feeling.actuallyOkay);
 
       expect(router.state.uri.path, Routes.actuallyOkay);
     });

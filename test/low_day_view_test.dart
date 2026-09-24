@@ -67,17 +67,15 @@ void main() {
       expect(find.text(line), findsOneWidget, reason: line);
     }
 
-    // **The way out, last thing before the button, and it is a quiet line.**
-    // It was an `SkStatusBlock` in the `info` tone for an afternoon on 23
-    // September 2026: a tinted panel with an icon is the shape this app uses
-    // for something the reader has to deal with, and it made the last thing
-    // before Begin look like a condition attached to starting. This line
-    // exists to take a condition away.
+    // **No permission line on this page, as of 24 September 2026.** It read
+    // "You can stop whenever you want. Nothing here has to be finished." and
+    // was cut at the user's request, with the argument against kept beside
+    // the hole in `low_day_script.dart`. The tighten page still carries it,
+    // so this asserts absence rather than going away.
     expect(
-      find.text(
-        '${LowDayScript.permission} ${LowDayScript.permissionNote}',
-      ),
-      findsOneWidget,
+      find.text('You can stop whenever you want. '
+          'Nothing here has to be finished.'),
+      findsNothing,
     );
 
     // No status tone on this page. Nothing has happened yet for one to
@@ -98,7 +96,7 @@ void main() {
     // The whole reason the lines moved rather than being written twice. A
     // line on both pages is read, then read again ten seconds later on a
     // timer, which is worse than either on its own.
-    final Set<String> intro = <String>{...LowDayScript.intro, LowDayScript.permission};
+    final Set<String> intro = <String>{...LowDayScript.intro};
 
     for (final LowDayStep step in LowDayScript.steps) {
       expect(intro.contains(step.line), isFalse, reason: step.line);

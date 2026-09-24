@@ -14,6 +14,7 @@ import 'package:sidekick/app/views/error_view.dart';
 import 'package:sidekick/app/widgets/sk_palettes.dart';
 import 'package:sidekick/app/widgets/theme.dart';
 import 'package:sidekick/config.dart';
+import 'package:sidekick/app/widgets/sk_text.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -168,16 +169,21 @@ class MissingConfigApp extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
+                // **The app's own scale, even here.** This screen is shown
+                // to a developer with no `env.json`, which is exactly the
+                // kind of screen that grows its own sizes because nobody
+                // looks at it. `SkText` is plain constants, so it works
+                // before any theme exists.
                 Text(
                   'Missing Supabase configuration',
-                  style: TextStyle(fontSize: 24),
+                  style: SkText.sceneLine,
                   textAlign: TextAlign.center,
                 ),
                 SizedBox(height: 16),
                 Text(
                   'Copy env.example.json to env.json, fill it in, and run with '
                   '--dart-define-from-file=env.json',
-                  style: TextStyle(fontSize: 16, height: 1.5),
+                  style: SkText.caption,
                   textAlign: TextAlign.center,
                 ),
               ],

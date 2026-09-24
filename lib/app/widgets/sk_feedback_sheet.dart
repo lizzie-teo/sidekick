@@ -86,6 +86,28 @@ class SkFeedbackSheet extends StatelessWidget {
   // the indicator.
   final double bottomInset;
 
+  // The most of the screen the panel is allowed to take.
+  //
+  // **It exists because the panel used to push the forward button off the
+  // bottom of the screen.** On a 375x667 surface at 200% text the heading,
+  // the explanation and the pill together came to more than the room left
+  // under the fixed nav row, the drill's outer column overflowed by about 60
+  // points, and "Next sentence" was not in the tree -- so the lesson could
+  // not be finished at that text size at all.
+  //
+  // **The cap is on the panel, not on the step above it.** `Expanded` cannot
+  // go below zero, so by the time this happens the step has already been
+  // squeezed out of existence and there is nothing left to take. Shrinking it
+  // further buys nothing.
+  //
+  // **0.6 rather than a fixed number of points**, because the thing being
+  // protected is a share of the screen: the reader must still be able to see
+  // the cards the panel is about. On the shortest phone the app supports it
+  // leaves the panel 400 points, which holds the pill, its padding and the
+  // home indicator with room to spare -- the words are what scroll, and they
+  // are read top to bottom anyway.
+  static const double maxHeightFraction = 0.6;
+
   @override
   Widget build(BuildContext context) {
     final SkExerciseColors ex = context.exercise;
@@ -99,8 +121,28 @@ class SkFeedbackSheet extends StatelessWidget {
     // speck, and the 200% pass is where that shows.
     final double mark = MediaQuery.textScalerOf(context).scale(24);
 
+    // **The screen is measured from the view, never from
+    // `MediaQuery.sizeOf`.** A bare `MediaQueryData` reports a size of zero,
+    // which is exactly what the test harness supplies -- and a cap of zero
+    // collapses this panel to nothing and pushes the forward control off the
+    // bottom, which is the very bug the cap exists to fix.
+    // `affirmation_sheet.dart` fell into the same hole and left a note about
+    // it; this is the same trap one layer further out, because a panel in a
+    // column is handed unbounded height and so has no constraints to measure
+    // instead.
+    final double screenHeight = View.of(context).physicalSize.height /
+        View.of(context).devicePixelRatio;
+
     return Container(
       width: double.infinity,
+      // Bounded, so the panel can never grow taller than its share of the
+      // screen. Everything above the forward control scrolls inside it.
+      //
+      // A view that cannot say how tall it is leaves the panel uncapped: the
+      // old behaviour, which is right on every screen but the smallest.
+      constraints: screenHeight.isFinite && screenHeight > 0
+          ? BoxConstraints(maxHeight: screenHeight * maxHeightFraction)
+          : const BoxConstraints(),
       decoration: BoxDecoration(
         color: fill,
         // Rounded at the top only: it is fixed to the bottom edge of the
@@ -125,75 +167,100 @@ class SkFeedbackSheet extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
-          // **[leading] stands beside the whole block, not beside the
-          // heading.** She is saying the explanation, and a character level
-          // with one line of it while the rest runs on underneath reads as a
-          // picture that happens to be there.
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              if (leading != null) ...<Widget>[
-                leading!,
-                const SizedBox(width: SkLayout.md),
-              ],
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: <Widget>[
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: <Widget>[
-                        // **Said in shape as well as in colour.** A tick and
-                        // a cross, so the outcome is not carried by green
-                        // versus red alone.
-                        ExcludeSemantics(
-                          child: Icon(
-                            SkStatusStyle.iconOf(tone),
-                            size: mark,
-                            color: ink,
-                          ),
-                        ),
+          // **Everything the reader reads scrolls; the forward control does
+          // not.** At a large text size the words outgrow the panel's share
+          // of the screen, and the one thing that must never move is the way
+          // on -- a reader who cannot find the pill cannot finish the lesson.
+          // So the pill keeps its place at the bottom of the panel and the
+          // heading and explanation take whatever height is left.
+          //
+          // On every ordinary phone at an ordinary text size the panel is
+          // shorter than its cap, `Flexible` is loose, and this scroll view
+          // never scrolls. It is the 200% case it exists for.
+          Flexible(
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  // **[leading] stands beside the whole block, not beside the
+                  // heading.** She is saying the explanation, and a character level
+                  // with one line of it while the rest runs on underneath reads as a
+                  // picture that happens to be there.
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      if (leading != null) ...<Widget>[
+                        leading!,
                         const SizedBox(width: SkLayout.md),
-                        Expanded(
-                          child: Semantics(
-                            header: true,
-                            child: Text(
-                              head,
-                              style: SkText.cardTitle.copyWith(color: ink),
-                            ),
-                          ),
-                        ),
                       ],
-                    ),
-                    // **The explanation is `ink`, not the tone.** The guide
-                    // is explicit: a paragraph set in a status colour reads
-                    // as shouting. The tone is spent on the icon and the one
-                    // word beside it, which is where it is doing work.
-                    //
-                    // The gap goes with it: a heading-only sheet must not
-                    // carry the space a paragraph would have taken.
-                    if (body != null) ...<Widget>[
-                      const SizedBox(height: SkLayout.md),
-                      Text(
-                        body!,
-                        style: SkText.caption.copyWith(
-                          color: ex.ink,
-                          height: 1.55,
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: <Widget>[
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: <Widget>[
+                                // **Said in shape as well as in colour.** A tick and
+                                // a cross, so the outcome is not carried by green
+                                // versus red alone.
+                                ExcludeSemantics(
+                                  child: Icon(
+                                    SkStatusStyle.iconOf(tone),
+                                    size: mark,
+                                    color: ink,
+                                  ),
+                                ),
+                                const SizedBox(width: SkLayout.md),
+                                Expanded(
+                                  child: Semantics(
+                                    header: true,
+                                    child: Text(
+                                      head,
+                                      style:
+                                          SkText.cardTitle.copyWith(color: ink),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            // **The explanation is the sheet's own darkest tint,
+                            // not `ink` and not the tone.** Changed 24 September
+                            // 2026. It was `ink`, guarding against a paragraph set
+                            // in the tone itself -- a mid-tone red at 4.5:1, which
+                            // does read as shouting. `style.body` goes past that,
+                            // to the contrast `ink` was already carrying, so the
+                            // explanation is no louder and no fainter than it was
+                            // and belongs to the wash it is printed on.
+                            //
+                            // The gap goes with it: a heading-only sheet must not
+                            // carry the space a paragraph would have taken.
+                            if (body != null) ...<Widget>[
+                              const SizedBox(height: SkLayout.md),
+                              Text(
+                                body!,
+                                style: SkText.caption.copyWith(
+                                  color: style.body,
+                                  height: 1.55,
+                                ),
+                              ),
+                            ],
+                          ],
                         ),
                       ),
                     ],
+                  ),
+                  if (footnote != null) ...<Widget>[
+                    const SizedBox(height: SkLayout.md),
+                    Divider(height: 1, color: style.edge),
+                    const SizedBox(height: SkLayout.md),
+                    footnote!,
                   ],
-                ),
+                ],
               ),
-            ],
+            ),
           ),
-          if (footnote != null) ...<Widget>[
-            const SizedBox(height: SkLayout.md),
-            Divider(height: 1, color: style.edge),
-            const SizedBox(height: SkLayout.md),
-            footnote!,
-          ],
           const SizedBox(height: SkLayout.xl),
           action,
         ],

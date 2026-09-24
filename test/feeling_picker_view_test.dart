@@ -4,18 +4,25 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:sidekick/app/core/app_constants.dart';
 import 'package:sidekick/app/core/service_locator.dart';
 import 'package:sidekick/app/core/theme_service.dart';
-import 'package:sidekick/app/widgets/sk_colors.dart';
-import 'package:sidekick/app/widgets/sk_rive_face.dart';
+import 'package:sidekick/app/widgets/sk_mood_face.dart';
+import 'package:sidekick/app/widgets/theme.dart';
 import 'package:sidekick/features/panic/models/feeling.dart';
 import 'package:sidekick/features/panic/models/sensation.dart';
 import 'package:sidekick/features/panic/views/feeling_picker_view.dart';
+import 'package:sidekick/features/panic/widgets/body_sensation_sheet.dart';
 import 'package:sidekick/features/panic/widgets/feeling_button.dart';
+import 'package:sidekick/features/panic/widgets/feeling_confetti.dart';
+import 'package:sidekick/features/panic/widgets/feeling_dial.dart';
+import 'package:sidekick/features/play/models/low_day_script.dart';
+import 'package:sidekick/features/play/models/tighten_script.dart';
 
+import 'support/pick_feeling.dart';
 import 'support/pump_app.dart';
 
 // How are you feeling. The screen has no viewmodel, so everything worth
-// pinning is behaviour in the widget tree: the way in, the sidekick's reply,
-// and the way out.
+// pinning is behaviour in the widget tree: what it asks, what it does not
+// assume, where each of the five answers goes, and what happens at 200% text
+// where the dial cannot be drawn at all.
 void main() {
   testWidgets('the panic button skips the picker and starts breathing',
       (tester) async {
@@ -29,237 +36,428 @@ void main() {
 
     // The button is pressed by someone who could not wait. A question in
     // front of the pacer would be a gate, so it lands on the pacer itself --
-    // not on the picker, and not on the body screen.
+    // not on the picker, and not on a body question.
     expect(router.state.uri.path, Routes.breathe);
   });
 
-  // The four sensations are already on the screen, so this card is no longer
-  // a door to them -- it is the one for somebody who does not want to name
-  // anything, and that is the general script.
-  testWidgets("Can't cope breathes with the general script", (tester) async {
-    final router = await pumpApp(tester, location: Routes.panic,
-        isAuthenticated: true);
-
-    await tester.tap(find.text(Feeling.cantCope.label));
-    await tester.pumpAndSettle();
-
-    expect(router.state.uri.path, Routes.breathe);
-
-    // Nothing was named, so nothing rides along. The breathing reads a
-    // missing parameter as the general opening.
-    expect(router.state.uri.queryParameters[Routes.sensationQuery], isNull);
-
-    // Every door on the picker opens on the introduction page. Only the
-    // tab-bar panic button skips it.
-    expect(router.state.uri.queryParameters.containsKey(Routes.introQuery),
-        isTrue);
-  });
-
-  testWidgets('every sensation is on the screen from the first frame',
-      (tester) async {
+  testWidgets('the question is a heading', (tester) async {
     await pumpApp(tester, location: Routes.panic, isAuthenticated: true);
 
-    expect(find.text(FeelingPickerView.bodyHeading.toUpperCase()),
-        findsOneWidget);
-
-    for (final Sensation sensation in Sensation.values) {
-      expect(find.text(sensation.label), findsOneWidget);
-    }
+    final Finder title = find.text(FeelingPickerView.title);
+    expect(title, findsOneWidget);
+    expect(tester.getSemantics(title).flagsCollection.isHeader, isTrue);
   });
 
-  // The tapped sensation rides to the breathing as a query parameter -- not
-  // as `extra`, so it survives a restored route.
-  testWidgets('a sensation carries its own script to the breathing',
-      (tester) async {
-    final router = await pumpApp(tester, location: Routes.panic,
-        isAuthenticated: true);
-
-    await tester.ensureVisible(find.text(Sensation.cantBreathe.label));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text(Sensation.cantBreathe.label));
-    await tester.pumpAndSettle();
-
-    expect(router.state.uri.path, Routes.breathe);
-    expect(router.state.uri.queryParameters[Routes.sensationQuery],
-        Sensation.cantBreathe.name);
-    expect(router.state.uri.queryParameters.containsKey(Routes.introQuery),
-        isTrue);
-  });
-
-  testWidgets('every face is offered, panic first', (tester) async {
+  // The whole dial exists to be answered, so every answer has to be reachable
+  // without dragging: a drag along a curve is not a gesture anybody can make
+  // with a screen reader on.
+  testWidgets('every stop is a named button on the arc', (tester) async {
     await pumpApp(tester, location: Routes.panic, isAuthenticated: true);
 
     for (final Feeling feeling in Feeling.values) {
-      expect(find.text(feeling.label), findsOneWidget);
+      expect(find.bySemanticsLabel(feeling.label), findsOneWidget,
+          reason: 'no button for ${feeling.label}');
     }
 
-    // Reachable without reading: the panic face is the first thing in the
-    // list, not the first thing alphabetically or the first thing built.
+    // Six, in dial order, and panic at the left-hand end -- which is the end
+    // a thumb reaches without aiming.
+    //
+    // **The count is pinned because the resting knob depends on it.** The
+    // knob sits at the halfway point when nothing is picked. With an odd
+    // number of stops that point *is* a stop, and the screen opens parked on
+    // it -- which is how the dial opened on `low` until 24 September 2026. An
+    // even count puts the rest between two stops, on no answer at all.
+    expect(Feeling.values.length, 6);
+    expect(Feeling.values.length.isEven, isTrue,
+        reason: 'an odd number of stops parks the resting knob on one of them');
     expect(Feeling.values.first, Feeling.cantCope);
+    expect(Feeling.values.last, Feeling.reallyGood);
   });
 
-  testWidgets('every face is drawn on its own button', (tester) async {
+  // The picker opened looking as though it had already answered its own
+  // question once before, when the panic card wore a heavier ring than the
+  // other three. A dial parked on a stop would be the same mistake in a new
+  // shape, and a louder one -- the knob is the biggest thing on the screen.
+  testWidgets('nothing is picked when it opens', (tester) async {
     await pumpApp(tester, location: Routes.panic, isAuthenticated: true);
 
-    // The Rive runtime cannot load in a widget test, so what is pinned is the
-    // wiring: each button asks for its own feeling's artboard by name, and
-    // the name carries the character the user chose.
+    expect(find.text(FeelingPickerView.prompt), findsOneWidget);
+
     for (final Feeling feeling in Feeling.values) {
-      final Finder face = find.byWidgetPredicate(
-        (Widget widget) =>
-            widget is SkRiveFace &&
-            widget.artboard ==
-                feeling.artboardFor(SidekickCharacter.girl),
-      );
-      expect(face, findsOneWidget, reason: 'no face on ${feeling.label}');
+      expect(find.text(feeling.label), findsNothing,
+          reason: '${feeling.label} is named before it is chosen');
+      expect(find.text(feeling.ctaLabel), findsNothing);
+    }
+
+    // The head is idling rather than wearing one of the answers.
+    expect(_head(tester).mood, isNull);
+  });
+
+  testWidgets('moving the dial names the feeling and changes her face',
+      (tester) async {
+    final router =
+        await pumpApp(tester, location: Routes.panic, isAuthenticated: true);
+
+    await tester.tap(find.bySemanticsLabel(Feeling.low.label));
+    await tester.pumpAndSettle();
+
+    expect(find.text(Feeling.low.label), findsOneWidget);
+    expect(find.text(FeelingPickerView.prompt), findsNothing);
+    expect(_head(tester).mood, Feeling.low.index.toDouble());
+
+    // **And it goes nowhere.** Picking is answering the question, not
+    // committing to a screen; the button under the dial is what commits.
+    expect(router.state.uri.path, Routes.panic);
+    expect(find.text(Feeling.low.ctaLabel), findsOneWidget);
+  });
+
+  // The button says where it goes, and a reader on a hard evening should not
+  // have to press to find out.
+  testWidgets('each button names its own destination', (tester) async {
+    await pumpApp(tester, location: Routes.panic, isAuthenticated: true);
+
+    for (final Feeling feeling in Feeling.values) {
+      await tester.tap(find.bySemanticsLabel(feeling.label));
+      await tester.pumpAndSettle();
+
+      expect(find.text(feeling.ctaLabel), findsOneWidget,
+          reason: 'no forward button for ${feeling.label}');
+    }
+
+    // None of them congratulates, and none of them scores.
+    final Set<String> labels =
+        Feeling.values.map((Feeling f) => f.ctaLabel).toSet();
+    expect(labels.length, Feeling.values.length,
+        reason: 'two stops promising the same thing');
+  });
+
+  // **The button names the help, never the exercise's own title.** The first
+  // set said "Tighten, and stop" -- this repository's internal name for a
+  // muscle relax-and-release script, which to somebody reading it cold is an
+  // instruction to tighten something. A title is written for the people who
+  // built the thing; a button is read by somebody deciding whether to open it.
+  test('no button wears an exercise title', () {
+    for (final String title in <String>[
+      TightenScript.title,
+      LowDayScript.title,
+    ]) {
+      for (final Feeling feeling in Feeling.values) {
+        expect(feeling.ctaLabel, isNot(title),
+            reason: '${feeling.label} is offering a title, not a promise');
+      }
     }
   });
 
-  testWidgets('the faces follow the chosen character', (tester) async {
+  group('where each answer goes', () {
+    // "Can't cope" is the one stop that asks a second question. The four body
+    // sensations used to sit on this page and now sit behind it, so somebody
+    // calm never reads a list of panic symptoms.
+    testWidgets("Can't cope asks about the body first", (tester) async {
+      final router =
+          await pumpApp(tester, location: Routes.panic, isAuthenticated: true);
+
+      await pickFeeling(tester, Feeling.cantCope);
+
+      expect(find.text(BodySensationSheet.heading), findsOneWidget);
+      for (final Sensation sensation in Sensation.values) {
+        expect(find.text(sensation.label), findsOneWidget);
+      }
+
+      // Nothing has moved yet. The sheet is the question, not the answer.
+      expect(router.state.uri.path, Routes.panic);
+    });
+
+    testWidgets('a sensation carries its own script to the breathing',
+        (tester) async {
+      final router =
+          await pumpApp(tester, location: Routes.panic, isAuthenticated: true);
+
+      await pickFeeling(tester, Feeling.cantCope);
+      await tester.tap(find.text(Sensation.cantBreathe.label));
+      await tester.pumpAndSettle();
+
+      expect(router.state.uri.path, Routes.breathe);
+      expect(router.state.uri.queryParameters[Routes.sensationQuery],
+          Sensation.cantBreathe.name);
+
+      // Every door on the picker opens on the introduction page. Only the
+      // tab-bar panic button skips it.
+      expect(router.state.uri.queryParameters.containsKey(Routes.introQuery),
+          isTrue);
+    });
+
+    testWidgets('naming nothing still breathes, with the general script',
+        (tester) async {
+      final router =
+          await pumpApp(tester, location: Routes.panic, isAuthenticated: true);
+
+      await pickFeeling(tester, Feeling.cantCope);
+      await tester.tap(find.text(BodySensationSheet.skipLabel));
+      await tester.pumpAndSettle();
+
+      expect(router.state.uri.path, Routes.breathe);
+      expect(router.state.uri.queryParameters[Routes.sensationQuery], isNull);
+    });
+
+    // Swiping the sheet away is not the same as naming nothing. One is "I
+    // would rather not say", which is still a request for the breathing; the
+    // other is "I did not mean to open this".
+    testWidgets('swiping the question away goes nowhere', (tester) async {
+      final router =
+          await pumpApp(tester, location: Routes.panic, isAuthenticated: true);
+
+      await pickFeeling(tester, Feeling.cantCope);
+
+      await tester.tapAt(const Offset(10, 10));
+      await tester.pumpAndSettle();
+
+      expect(router.state.uri.path, Routes.panic);
+      expect(find.text(BodySensationSheet.heading), findsNothing);
+    });
+
+    testWidgets('the others go straight to their own screen',
+        (tester) async {
+      for (final Feeling feeling in Feeling.values) {
+        if (feeling == Feeling.cantCope) continue;
+
+        final router = await pumpApp(tester,
+            location: Routes.panic, isAuthenticated: true);
+
+        await pickFeeling(tester, feeling);
+
+        expect(router.state.uri.path, feeling.route,
+            reason: '${feeling.label} went somewhere else');
+      }
+    });
+  });
+
+  testWidgets('the head follows the chosen character', (tester) async {
     await pumpApp(tester, location: Routes.panic, isAuthenticated: true);
+
+    expect(_head(tester).skin, SidekickCharacter.girl.skin);
 
     await getIt<ThemeService>().setCharacter(SidekickCharacter.cat);
     await tester.pumpAndSettle();
 
-    // Every face swaps, not just the one on screen, and the girl's stays the
-    // fallback -- a character can reach this enum before its faces are drawn.
-    for (final Feeling feeling in Feeling.values) {
-      final Finder face = find.byWidgetPredicate(
-        (Widget widget) =>
-            widget is SkRiveFace &&
-            widget.artboard == feeling.artboardFor(SidekickCharacter.cat) &&
-            widget.fallbackArtboard ==
-                feeling.artboardFor(SidekickCharacter.girl),
-      );
-      expect(face, findsOneWidget, reason: 'no cat face on ${feeling.label}');
+    expect(_head(tester).skin, SidekickCharacter.cat.skin);
+  });
+
+  // The live artboard may not be in the Rive file yet, so the head is handed
+  // the still face for whatever is picked as its fallback. Without it the
+  // screen would be a dial with a hole in the middle.
+  testWidgets('the head carries a still face to fall back on', (tester) async {
+    await pumpApp(tester, location: Routes.panic, isAuthenticated: true);
+
+    await tester.tap(find.bySemanticsLabel(Feeling.woundUp.label));
+    await tester.pumpAndSettle();
+
+    final SkMoodFace head = _head(tester);
+    expect(head.stillArtboard,
+        Feeling.woundUp.artboardFor(SidekickCharacter.girl));
+    expect(head.stillFallbackArtboard,
+        Feeling.woundUp.artboardFor(SidekickCharacter.girl));
+  });
+
+  group('at 200% text', () {
+    // The style guide's one test is 200% text on an iPhone SE, so the surface
+    // is set to one before the app is pumped rather than left at the test
+    // default, which is roomy enough to hide every overflow this pass exists
+    // to catch.
+    const Size smallPhone = Size(375, 667);
+
+    Future<void> pumpSmall(WidgetTester tester) async {
+      await tester.binding.setSurfaceSize(smallPhone);
+      addTearDown(() => tester.binding.setSurfaceSize(null));
     }
+
+    // An arc is the one thing on this screen that cannot grow with the
+    // reader's font, so the screen changes shape rather than shrinking its
+    // words. The style guide's one test is this size on an iPhone SE.
+    testWidgets('the dial is put away and a card per stop takes its place',
+        (tester) async {
+      await pumpSmall(tester);
+      await pumpApp(
+        tester,
+        location: Routes.panic,
+        isAuthenticated: true,
+        textScaler: const TextScaler.linear(2),
+      );
+
+      expect(find.byType(FeelingDial), findsNothing);
+
+      for (final Feeling feeling in Feeling.values) {
+        final Finder card = find.widgetWithText(FeelingButton, feeling.label);
+        await tester.scrollUntilVisible(card, 120);
+        // Not just on screen -- all of it on screen. The last card sat with
+        // its middle under the bottom edge, which finds fine and taps at the
+        // wrong place.
+        await tester.ensureVisible(card);
+        await tester.pumpAndSettle();
+        expect(card, findsOneWidget, reason: 'no card for ${feeling.label}');
+      }
+    });
+
+    testWidgets('a card goes where the dial would have gone', (tester) async {
+      await pumpSmall(tester);
+      final router = await pumpApp(
+        tester,
+        location: Routes.panic,
+        isAuthenticated: true,
+        textScaler: const TextScaler.linear(2),
+      );
+
+      final Finder card =
+          find.widgetWithText(FeelingButton, Feeling.good.label);
+      await tester.scrollUntilVisible(card, 120);
+      await tester.ensureVisible(card);
+      await tester.pumpAndSettle();
+      await tester.tap(card);
+      await tester.pumpAndSettle();
+
+      expect(router.state.uri.path, Routes.goodThings);
+    });
   });
 
-  testWidgets('picking a face marks it and unmarks the last one',
-      (tester) async {
-    final router = await pumpApp(tester, location: Routes.panic,
-        isAuthenticated: true);
-
-    // Nothing is picked to begin with, so no button is filled.
-    expect(_filledButtons(tester), 0);
-
-    // **Every face leads somewhere now.** Actually okay was the last one that
-    // did not, and since 21 September 2026 it opens its own short screen, so
-    // both picks below have to navigate and come back. The picker stays
-    // mounted underneath the pushed route, so popping lands on the same
-    // screen with the same `_picked` -- which is the real journey a second
-    // pick takes. The list scrolls, so a lower button is brought on screen
-    // before each tap.
-    await tester.ensureVisible(find.text(Feeling.actuallyOkay.label));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text(Feeling.actuallyOkay.label));
-    await tester.pumpAndSettle();
-
-    router.pop();
-    await tester.pumpAndSettle();
-    expect(_filledButtons(tester), 1);
-
-    // Picking again moves the mark rather than adding a second one.
-    await tester.ensureVisible(find.text(Feeling.low.label));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text(Feeling.low.label));
-    await tester.pumpAndSettle();
-
-    router.pop();
-    await tester.pumpAndSettle();
-    expect(_filledButtons(tester), 1);
-  });
-
-  // Low is not a breathing screen and not a body scan. Low mood is kept going
-  // by rumination, and slow unstructured inward attention is rumination's
-  // favourite shape, so this face is kind words instead -- outward first, then
-  // including the reader. See _docs/briefs/low-kind-voice.md.
-  testWidgets('Low goes to the kindness script', (tester) async {
-    final router = await pumpApp(tester, location: Routes.panic,
-        isAuthenticated: true);
-
-    await tester.ensureVisible(find.text(Feeling.low.label));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text(Feeling.low.label));
-    await tester.pumpAndSettle();
-
-    expect(router.state.uri.path, Routes.lowDay);
-  });
-
-  // Not the scribble pad, which this face used to lead to. A hard, fast
-  // scribble raises arousal, and the anger evidence says that does not reduce
-  // anger and sometimes increases it. The pad is still in the app, reached
-  // from Home by somebody who is not angry.
-  testWidgets('Wound up goes to the muscle script', (tester) async {
-    final router = await pumpApp(tester, location: Routes.panic,
-        isAuthenticated: true);
-
-    await tester.ensureVisible(find.text(Feeling.woundUp.label));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text(Feeling.woundUp.label));
-    await tester.pumpAndSettle();
-
-    expect(router.state.uri.path, Routes.tighten);
-  });
-
-  // The style guide's one test: an iPhone SE at 200% text. The cards carry a
-  // face of a fixed size and a label that grows, so this is the pass that
-  // breaks them -- and at that size two columns are too narrow for a label to
-  // wrap in, which is why the grid falls to one.
-  testWidgets('the picker survives 200% text on a small phone',
+  // The question, and how close it sits to her head.
+  //
+  // **Both numbers here were measured on the running layout**, which is the
+  // only way to know how a heading wraps. They are pinned because the cost of
+  // getting them wrong is invisible in a test that only asks "is the text
+  // there": at the wrong width the question goes to three or four lines and
+  // pushes her head down the screen, and the screen still passes every other
+  // test in this file.
+  testWidgets('the question is two short lines with her head under it',
       (tester) async {
     await tester.binding.setSurfaceSize(const Size(375, 667));
     addTearDown(() => tester.binding.setSurfaceSize(null));
 
-    await pumpApp(tester,
+    await pumpApp(tester, location: Routes.panic, isAuthenticated: true);
+
+    final Rect title = tester.getRect(find.text(FeelingPickerView.title));
+    final Rect head = tester.getRect(find.byType(SkMoodFace));
+
+    // It never runs wider than the cap, however much room the phone has.
+    expect(title.width, lessThanOrEqualTo(FeelingPickerView.titleWidth + 1));
+
+    // Two lines. A third would be about half as tall again, so the window is
+    // wide enough to survive a font metric changing and narrow enough to fail
+    // a line being added.
+    expect(title.height, lessThan(110));
+
+    // And she starts just under it. The gap belongs to the question getting
+    // shorter, not to anything in `_dial` -- see the note there.
+    expect(head.top - title.bottom, lessThan(40));
+  });
+
+  // The confetti on the top stop. `test/feeling_confetti_test.dart` pins what
+  // it does; this pins where it is and which stop asks for it.
+  group('the confetti', () {
+    Object? triggerOf(WidgetTester tester) =>
+        tester.widget<FeelingConfetti>(find.byType(FeelingConfetti)).trigger;
+
+    testWidgets('only Really good asks for a fall', (tester) async {
+      await pumpApp(tester, location: Routes.panic, isAuthenticated: true);
+
+      final Object? atOpen = triggerOf(tester);
+
+      // Every other stop, including Good next door to it. A burst on Good
+      // would make the last two stops the same event with different words.
+      for (final Feeling feeling in Feeling.values) {
+        if (feeling == Feeling.reallyGood) continue;
+
+        await tester.tap(find.bySemanticsLabel(feeling.label));
+        await tester.pumpAndSettle();
+
+        expect(triggerOf(tester), atOpen,
+            reason: '${feeling.label} threw confetti');
+      }
+
+      await tester.tap(find.bySemanticsLabel(Feeling.reallyGood.label));
+      await tester.pumpAndSettle();
+
+      expect(triggerOf(tester), isNot(atOpen));
+    });
+
+    // Dragging away from the stop and back is a second arrival. A flag would
+    // already be true, which is why the picker counts rather than flags.
+    testWidgets('coming back to it asks again', (tester) async {
+      await pumpApp(tester, location: Routes.panic, isAuthenticated: true);
+
+      await tester.tap(find.bySemanticsLabel(Feeling.reallyGood.label));
+      await tester.pumpAndSettle();
+      final Object? first = triggerOf(tester);
+
+      await tester.tap(find.bySemanticsLabel(Feeling.good.label));
+      await tester.pumpAndSettle();
+      expect(triggerOf(tester), first);
+
+      await tester.tap(find.bySemanticsLabel(Feeling.reallyGood.label));
+      await tester.pumpAndSettle();
+      expect(triggerOf(tester), isNot(first));
+    });
+
+    // A card pick and its navigation happen in the same tap, so a fall there
+    // would play over a page already leaving.
+    testWidgets('it is not on the 200% card list', (tester) async {
+      await pumpApp(
+        tester,
         location: Routes.panic,
         isAuthenticated: true,
-        textScaler: const TextScaler.linear(2));
+        textScaler: const TextScaler.linear(2),
+      );
+
+      expect(find.byType(FeelingConfetti), findsNothing);
+    });
+  });
+
+  // The style guide's one test, the half a screenshot of Moss light cannot
+  // show. Every colour on the dial comes from `context.sk`, so the risk here is
+  // not the hue -- it is that a band on this screen is a fixed height and a
+  // dark palette is not what it was measured in.
+  testWidgets('the dial opens in a dark palette with nothing overflowing',
+      (tester) async {
+    await tester.binding.setSurfaceSize(const Size(375, 667));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    await pumpApp(
+      tester,
+      location: Routes.panic,
+      isAuthenticated: true,
+      theme: appDarkTheme(),
+    );
 
     expect(tester.takeException(), isNull);
+    expect(find.byType(FeelingDial), findsOneWidget);
 
-    // The way out is not inside the scroll view, so it has to still be there.
-    expect(find.text('Just looking'), findsOneWidget);
+    await tester.tap(find.bySemanticsLabel(Feeling.good.label));
+    await tester.pumpAndSettle();
 
-    for (final Feeling feeling in Feeling.values) {
-      expect(find.text(feeling.label), findsOneWidget);
-    }
+    expect(tester.takeException(), isNull);
+    expect(find.text(Feeling.good.ctaLabel), findsOneWidget);
+  });
 
-    // The sensations doubled what this screen has to hold, so they are part
-    // of the pass now rather than a thing below it.
+  // A mark beside each sensation, and the words kept beside it. The icon is
+  // decoration: it is excluded from the semantics tree, so the label is
+  // announced once rather than twice.
+  testWidgets('every sensation carries its own icon', (tester) async {
+    await pumpApp(tester, location: Routes.panic, isAuthenticated: true);
+    await pickFeeling(tester, Feeling.cantCope);
+
     for (final Sensation sensation in Sensation.values) {
-      expect(find.text(sensation.label), findsOneWidget);
+      expect(find.byIcon(sensation.icon), findsOneWidget,
+          reason: sensation.label);
+      expect(find.text(sensation.label), findsOneWidget,
+          reason: '${sensation.label} is said in words as well as in a mark');
     }
-  });
 
-  testWidgets('Just looking goes back with nothing asked', (tester) async {
-    final router = await pumpApp(tester, isAuthenticated: true);
-
-    router.go(Routes.goodThings);
-    await tester.pumpAndSettle();
-
-    router.push(Routes.panic);
-    await tester.pumpAndSettle();
-
-    await tester.tap(find.text('Just looking'));
-    await tester.pumpAndSettle();
-
-    // Back to the tab it opened over, not to Home.
-    expect(router.state.uri.path, Routes.goodThings);
+    // Four distinct marks. Two sensations wearing one icon is a picture that
+    // tells the reader nothing.
+    expect(
+      Sensation.values.map((Sensation s) => s.icon).toSet().length,
+      Sensation.values.length,
+    );
   });
 }
 
-// How many buttons are wearing the picked fill. The fill is the only thing on
-// screen that says which face was chosen, so counting it is what pins the rule
-// that exactly one can be. Read off the painted box rather than the widget's
-// own flag, so the test fails if the fill ever stops being applied.
-int _filledButtons(WidgetTester tester) {
-  return tester
-      .widgetList<AnimatedContainer>(find.descendant(
-        of: find.byType(FeelingButton),
-        matching: find.byType(AnimatedContainer),
-      ))
-      .where((AnimatedContainer box) =>
-          (box.decoration as BoxDecoration?)?.color == SkColors.light.actionSoft)
-      .length;
-}
+SkMoodFace _head(WidgetTester tester) =>
+    tester.widget<SkMoodFace>(find.byType(SkMoodFace));

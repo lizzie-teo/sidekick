@@ -232,8 +232,15 @@ class SkExerciseColors {
   //
   // It is a weaker mix of exactly the same colours, not a different pair, so
   // a green example and a green verdict are still the same green -- one said
-  // quietly and one said plainly. The words inside stay `ink`: a sentence the
-  // reader is being shown is content, and the tone around it is the label.
+  // quietly and one said plainly.
+  //
+  // **The words inside are `body`, not `ink`, since 24 September 2026.** They
+  // used to be `ink`, on the argument that a sentence the reader is being
+  // shown is content and the tone around it is the label. The rule that text
+  // on a coloured ground belongs to that ground now reaches this case too:
+  // `body` is the tone taken darker than the tone itself, to the contrast
+  // `ink` was already carrying, so the sentence is not being shouted and not
+  // being marked -- it is the same sentence, in the bubble's own colour.
   SkStatusStyle softStatusOf(SkTone tone) =>
       _softStatusCache[(brightness, tone)] ??= _build(tone, soft: true);
 
@@ -269,6 +276,10 @@ class SkExerciseColors {
       // Measured against the fill it sits on, never against the page behind
       // it -- the wash is what eats the contrast.
       text: SkContrast.readable(hue, fill),
+
+      // A paragraph on the wash. The set's own `ink` sets the target, so a
+      // lesson's coloured block is exactly as legible as its plain page is.
+      body: SkContrast.inkOn(hue, fill, ink),
       fill: fill,
       edge: wash.withValues(alpha: edgeAlpha),
     );

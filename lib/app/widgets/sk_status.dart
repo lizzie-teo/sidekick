@@ -43,6 +43,17 @@ class SkStatusStyle {
   // lightness where it is not.
   final Color text;
 
+  // A paragraph on the wash: the same tone taken past `text`, as far as the
+  // page's own ink was already carrying.
+  //
+  // **It is not `text`, and the difference is the whole point.** `text` is
+  // the tone at its own strength -- right for a headline and an icon, a
+  // raised voice for five lines somebody has to read through. `body` is the
+  // same colour family taken to the end of its range, so a paragraph reads as
+  // quietly as `ink` did while still belonging to the block around it. See
+  // `SkContrast.inkOn`.
+  final Color body;
+
   // The wash the block sits on: the tone at 12% over whatever is behind it.
   final Color fill;
 
@@ -51,6 +62,7 @@ class SkStatusStyle {
 
   const SkStatusStyle({
     required this.text,
+    required this.body,
     required this.fill,
     required this.edge,
   });
@@ -77,6 +89,7 @@ class SkStatusStyle {
       // and the wash is the thing that eats the contrast -- a colour checked
       // against the page behind it would pass on paper and fail on screen.
       text: SkContrast.readable(hue, fill),
+      body: SkContrast.inkOn(hue, fill, context.sk.ink),
       fill: fill,
       edge: hue.withValues(alpha: edgeAlpha),
     );
@@ -177,12 +190,18 @@ class SkStatusBlock extends StatelessWidget {
                   ),
                   if (body != null) ...<Widget>[
                     const SizedBox(height: SkLayout.xs),
-                    // The body is `ink`, not the tone. A whole paragraph in a
-                    // status colour reads as shouting, and the tone has
-                    // already been said by the icon and the headline above it.
+                    // **The body is the block's own darkest tint, not `ink`
+                    // and not the tone.** Changed 24 September 2026, with the
+                    // wider rule that text on a coloured ground belongs to
+                    // that ground. It used to be `ink`, guarding against a
+                    // paragraph set in the tone itself -- which does read as
+                    // shouting. `style.body` is the tone taken past that, to
+                    // the contrast `ink` was already carrying, so nothing is
+                    // louder and nothing is less legible. See
+                    // `SkContrast.inkOn`.
                     Text(
                       body!,
-                      style: SkText.rowLabel.copyWith(color: sk.ink),
+                      style: SkText.rowLabel.copyWith(color: style.body),
                     ),
                   ],
                 ],

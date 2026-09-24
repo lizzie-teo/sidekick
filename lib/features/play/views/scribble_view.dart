@@ -7,6 +7,7 @@ import 'package:sidekick/app/widgets/sk_colors.dart';
 import 'package:sidekick/app/widgets/sk_outline_button.dart';
 import 'package:sidekick/app/widgets/sk_text.dart';
 import 'package:sidekick/features/play/widgets/scribble_pad.dart';
+import 'package:sidekick/app/widgets/sk_contrast.dart';
 
 // A surface to draw on, reached from the Play button on Home.
 //
@@ -79,6 +80,7 @@ class ScribbleView extends StatelessWidget {
                   ),
                   SkCircleIconButton(
                     icon: Icons.close,
+                    label: 'Close',
                     onPressed: () => _leave(context),
                   ),
                 ],
@@ -97,7 +99,9 @@ class ScribbleView extends StatelessWidget {
               child: Text(
                 promise,
                 textAlign: TextAlign.center,
-                style: SkText.caption.copyWith(color: sk.muted),
+                style: SkText.caption.copyWith(
+                  color: SkContrast.captionOn(sk.canvas),
+                ),
               ),
             ),
 

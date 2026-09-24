@@ -53,8 +53,8 @@ void main() {
   });
 
   testWidgets('the X leaves the same way', (tester) async {
-    final router = await pumpApp(tester, location: Routes.scribble,
-        isAuthenticated: true);
+    final router =
+        await pumpApp(tester, location: Routes.scribble, isAuthenticated: true);
 
     await tester.tap(find.byIcon(Icons.close));
     await tester.pumpAndSettle();

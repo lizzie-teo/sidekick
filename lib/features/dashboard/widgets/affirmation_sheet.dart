@@ -190,78 +190,78 @@ class AffirmationSheet extends StatelessWidget {
                     ),
                     child: SkLayout.readable(
                       child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisSize: MainAxisSize.min,
-                          children: <Widget>[
-                            // The family this line belongs to, so the reader
-                            // can see what kind of thing they have opened
-                            // before they read it. Plain English, never the
-                            // name of the technique behind it.
-                            SkCategoryChip(
-                              label: explanation.category,
-                              icon: iconFor(explanation.category),
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: <Widget>[
+                          // The family this line belongs to, so the reader
+                          // can see what kind of thing they have opened
+                          // before they read it. Plain English, never the
+                          // name of the technique behind it.
+                          SkCategoryChip(
+                            label: explanation.category,
+                            icon: iconFor(explanation.category),
+                          ),
+
+                          const SizedBox(height: SkLayout.lg),
+
+                          // The line itself, because it is what the reader
+                          // tapped and it has to still be there when the
+                          // sheet opens.
+                          //
+                          // Marked as the sheet's heading, so a screen
+                          // reader's "next heading" lands on the line rather
+                          // than on the first of the three parts.
+                          Semantics(
+                            header: true,
+                            child: Text(
+                              line,
+                              style: SkText.cardTitle
+                                  .copyWith(color: sk.ink, height: 1.35),
                             ),
+                          ),
 
-                            const SizedBox(height: SkLayout.lg),
+                          const SizedBox(height: SkLayout.xxl),
 
-                            // The line itself, because it is what the reader
-                            // tapped and it has to still be there when the
-                            // sheet opens.
-                            //
-                            // Marked as the sheet's heading, so a screen
-                            // reader's "next heading" lands on the line rather
-                            // than on the first of the three parts.
-                            Semantics(
-                              header: true,
-                              child: Text(
-                                line,
-                                style: SkText.cardTitle
-                                    .copyWith(color: sk.ink, height: 1.35),
+                          // **Two blocks, not three, and the split is the
+                          // argument.** The belief and the reason it fails
+                          // belong together: one is the claim and the other
+                          // is what answers it, and three evenly spaced
+                          // headings made them read as three unrelated
+                          // notes. What the reader has to see is that two of
+                          // these are the old thing and one of them is the
+                          // new one.
+                          _Card(
+                            tone: _Tone.given,
+                            parts: <_Part>[
+                              _Part(
+                                // "The rule you were given", or "What it
+                                // sounds like" for a line that answers the
+                                // shape of a thought rather than a belief
+                                // about behaviour.
+                                heading: explanation.ruleHeading,
+                                body: explanation.rule,
                               ),
-                            ),
+                              _Part(
+                                heading: 'Why it does not hold',
+                                body: explanation.why,
+                                isLast: true,
+                              ),
+                            ],
+                          ),
 
-                            const SizedBox(height: SkLayout.xxl),
+                          const SizedBox(height: SkLayout.lg),
 
-                            // **Two blocks, not three, and the split is the
-                            // argument.** The belief and the reason it fails
-                            // belong together: one is the claim and the other
-                            // is what answers it, and three evenly spaced
-                            // headings made them read as three unrelated
-                            // notes. What the reader has to see is that two of
-                            // these are the old thing and one of them is the
-                            // new one.
-                            _Card(
-                              tone: _Tone.given,
-                              parts: <_Part>[
-                                _Part(
-                                  // "The rule you were given", or "What it
-                                  // sounds like" for a line that answers the
-                                  // shape of a thought rather than a belief
-                                  // about behaviour.
-                                  heading: explanation.ruleHeading,
-                                  body: explanation.rule,
-                                ),
-                                _Part(
-                                  heading: 'Why it does not hold',
-                                  body: explanation.why,
-                                  isLast: true,
-                                ),
-                              ],
-                            ),
-
-                            const SizedBox(height: SkLayout.lg),
-
-                            _Card(
-                              tone: _Tone.truth,
-                              parts: <_Part>[
-                                _Part(
-                                  heading: 'Closer to the truth',
-                                  body: explanation.truth,
-                                  isLast: true,
-                                ),
-                              ],
-                            ),
-                          ],
+                          _Card(
+                            tone: _Tone.truth,
+                            parts: <_Part>[
+                              _Part(
+                                heading: 'Closer to the truth',
+                                body: explanation.truth,
+                                isLast: true,
+                              ),
+                            ],
+                          ),
+                        ],
                       ),
                     ),
                   ),
@@ -380,7 +380,7 @@ class _Card extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
-          for (final _Part part in parts) part.on(ground),
+          for (final _Part part in parts) part.on(ground, hue),
         ],
       ),
     );
@@ -409,24 +409,33 @@ class _Part extends StatelessWidget {
   // out from it. Null until the card hands it over, which is what `on` does.
   final Color? ground;
 
+  // The colour the card was washed with, handed over the same way. The
+  // flattened ground alone is a tenth of it and has almost no hue left to
+  // read back, which is why the writing cannot be worked out from `ground`
+  // the way the heading is.
+  final Color? hue;
+
   const _Part({
     required this.heading,
     required this.body,
     this.isLast = false,
     this.ground,
+    this.hue,
   });
 
-  _Part on(Color ground) => _Part(
+  _Part on(Color ground, Color hue) => _Part(
         heading: heading,
         body: body,
         isLast: isLast,
         ground: ground,
+        hue: hue,
       );
 
   @override
   Widget build(BuildContext context) {
     final SkColors sk = context.sk;
     final Color on = ground ?? sk.canvas;
+    final Color family = hue ?? sk.ink;
 
     return Padding(
       // 20 between two parts sharing a card, 0 after the last one -- the card
@@ -448,9 +457,19 @@ class _Part extends StatelessWidget {
             ),
           ),
           const SizedBox(height: SkLayout.sm),
+          // **The writing is the card's own darkest tint, not `sk.ink`.**
+          // Changed 24 September 2026, with the rule that text on a coloured
+          // ground belongs to that ground -- the heading above it already
+          // worked this way. `inkOn` takes the hue the card was washed with
+          // and goes past the tone itself, to the contrast `ink` was already
+          // carrying on this fill, so the paragraph is no louder and no
+          // fainter than it was.
           Text(
             body,
-            style: SkText.rowLabel.copyWith(color: sk.ink, height: 1.55),
+            style: SkText.rowLabel.copyWith(
+              color: SkContrast.inkOn(family, on, sk.ink),
+              height: 1.55,
+            ),
           ),
         ],
       ),

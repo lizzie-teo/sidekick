@@ -227,6 +227,56 @@ void main() {
       }
     });
 
+    test('a paragraph on a tint is the tint\'s own darkest shade', () {
+      // The rule, from 24 September 2026: text on a coloured ground is that
+      // ground's own colour taken to the far end of its range. It replaced
+      // `ink` on every paragraph that sits on a wash -- the status block, the
+      // feedback sheet, the drill's note, the example bubble's sentence.
+      //
+      // Three things have to hold at once, and the middle one is what makes
+      // the change safe to have made at all.
+      for (final SkExerciseColors ex in both) {
+        for (final SkTone tone in <SkTone>[
+          SkTone.success,
+          SkTone.destructive,
+          SkTone.warning,
+          SkTone.info,
+        ]) {
+          for (final SkStatusStyle style in <SkStatusStyle>[
+            ex.statusOf(tone),
+            ex.softStatusOf(tone),
+          ]) {
+            // 1. It is legible. The floor every piece of text in the app
+            //    stands on.
+            expect(
+              SkContrast.ratio(style.body, style.fill),
+              greaterThanOrEqualTo(SkContrast.bodyText),
+              reason: '$tone ${named(ex)} body is under AA',
+            );
+
+            // 2. It is no fainter than the `ink` it replaced. A rule about
+            //    where a colour belongs must never cost somebody legibility,
+            //    and this is the assertion that says so.
+            expect(
+              SkContrast.ratio(style.body, style.fill),
+              greaterThanOrEqualTo(SkContrast.ratio(ex.ink, style.fill)),
+              reason: '$tone ${named(ex)} body is fainter than ink was',
+            );
+
+            // 3. It is not the tone itself. `text` is the tone at its own
+            //    strength -- right for a headline, a raised voice for five
+            //    lines somebody reads through. That is the half of the old
+            //    rule which survives.
+            expect(
+              SkContrast.ratio(style.body, style.fill),
+              greaterThanOrEqualTo(SkContrast.ratio(style.text, style.fill)),
+              reason: '$tone ${named(ex)} body is lighter than the tone',
+            );
+          }
+        }
+      }
+    });
+
     test('an answered card is readable on its own fill', () {
       // The words and the icon both take `text`, and both sit on `fill`.
       for (final SkExerciseColors ex in both) {
@@ -443,9 +493,8 @@ void main() {
           await tester.pumpWidget(
             MaterialApp(
               key: ValueKey<String>('${palette.id}-$isDark'),
-              theme: isDark
-                  ? appDarkTheme(palette.dark)
-                  : appTheme(palette.light),
+              theme:
+                  isDark ? appDarkTheme(palette.dark) : appTheme(palette.light),
               home: Builder(
                 builder: (BuildContext context) {
                   seen = context.exercise;

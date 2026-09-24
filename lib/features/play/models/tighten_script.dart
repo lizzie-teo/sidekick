@@ -159,27 +159,28 @@ class TightenScript {
   // which nobody notices.
   static const String emphasis = 'takes the tightness out';
 
-  // **The standing permission, and it is now the last thing read before
-  // Begin.** It was the fifth line of `opening`. A way out has to be given
-  // early, while the reader is still surfaced -- offered at the hard part it
-  // is two bad things at once: a decision, which is work, and a prediction
-  // that the hard part is coming.
+  // **There is no permission line on this page, as of 24 September 2026.**
+  // It read "You can stop whenever you want. Nothing here has to be
+  // finished." and was the fifth line of `opening` before it moved onto the
+  // introduction page on 23 September. It went from all three guided intros
+  // on the same day, at the user's request, and this was the last of the
+  // three -- the breathing and low-day pages lost it first, and one of three
+  // still saying it was the state that had to be closed.
   //
-  // This page is the earliest surfaced moment there is, and the reader
-  // carries the line in rather than remembering it from ten seconds ago. What
-  // backs it up is that the way out never leaves the screen afterwards:
-  // "That's enough for now" is on the script page from its first frame.
+  // **The argument against cutting it, kept because it has not stopped being
+  // true.** It is a trauma-informed choice point: the meditation-writer skill
+  // asks every inward-turning script for one line that hands control back,
+  // given early while the reader is still surfaced. This script asks somebody
+  // to squeeze and hold four muscle groups with their eyes closed.
   //
-  // It is phrased about the **session**, never about the reader. "If it gets
-  // too much for you, stop" predicts distress and plants what it meant to
-  // cushion.
-  static const String permission = 'You can stop whenever you want.';
-
-  // **The second half, which is the note under it.** They are two constants
-  // rather than one sentence because the page sets them as a heading and a
-  // line under it -- see `GuidedIntro`. Splitting them in the widget would
-  // mean the page searching for a full stop, which is a thing to get wrong.
-  static const String permissionNote = 'Nothing here has to be finished.';
+  // What makes it affordable is that the way out was never the sentence.
+  // "That's enough for now" is on the script page from its first frame and
+  // stays to the last line, and the X is there from before that. Control sits
+  // in two buttons the reader can see rather than in a line they have to
+  // remember.
+  //
+  // `GuidedIntro` no longer takes a permission at all, so putting it back is
+  // a change to the widget as well as to this file.
 
   //
   static const List<TightenStep> opening = <TightenStep>[

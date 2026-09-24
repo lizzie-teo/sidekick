@@ -89,3 +89,4 @@ _docs/skills/*.pdf
 # before anybody checked. What is tracked is the brief: our own sentences,
 # with a page reference where a thought came from theirs.
 _docs/references/
+.copydesk-build/

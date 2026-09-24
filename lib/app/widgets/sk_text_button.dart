@@ -3,6 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:sidekick/app/widgets/sk_colors.dart';
 import 'package:sidekick/app/widgets/sk_disabled.dart';
 import 'package:sidekick/app/widgets/sk_text.dart';
+import 'package:sidekick/app/widgets/sk_contrast.dart';
 
 // The quiet text-only action: "Skip", "Just looking", "Done for today".
 // Muted on purpose -- it is always the road away from the screen's point.
@@ -37,7 +38,18 @@ class SkTextButton extends StatelessWidget {
         onPressed: onPressed,
         child: Text(
           label,
-          style: SkText.buttonGhost.copyWith(color: color ?? sk.muted),
+          // **The default was `muted`, and this is the widest that mistake
+          // reached.** Every ghost button that does not pass a colour -- and
+          // most do not -- had its label under 3.3:1 on the canvas. They are
+          // the quietest controls in the app by design, and "quiet" was
+          // costing them legibility rather than weight.
+          //
+          // `captionOn(canvas)` is the ground taken down until it clears
+          // 4.5:1, so the button still sits back from a filled pill without
+          // being the thing on the screen nobody can read.
+          style: SkText.buttonGhost.copyWith(
+            color: color ?? SkContrast.captionOn(sk.canvas),
+          ),
         ),
       ),
     );

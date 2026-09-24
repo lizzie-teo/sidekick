@@ -55,6 +55,40 @@ abstract final class SkText {
     letterSpacing: 24 * -0.015,
   );
 
+  // The sentence under the sidekick on Home -- the day's noticing prompt, and
+  // an affirmation line when a tapped check-in brought one.
+  //
+  // **It borrowed `sceneLine` -- 24/600 -- until 24 September 2026, and came
+  // down twice the same day.** 600 is right for what that style is named
+  // after: a short line held off a busy scene gradient, where weight is what
+  // keeps it legible. This sits on the flat canvas and is a sentence to read,
+  // up to twelve words over two or three lines, so at 24/600 the largest thing
+  // on the page was also the boldest and it read as the app announcing
+  // something rather than pointing at a tree.
+  //
+  // **The size stayed at 24; only the weight came down.** 19 was tried on the
+  // way -- `button`'s own size, on the argument that Home's hero is the
+  // sidekick and the prompt is the caption under her picture -- and it was
+  // reverted the same afternoon. 400 had already taken the shouting out of it,
+  // and dropping the size as well left the one sentence the screen is actually
+  // saying smaller than it needs to be under a 280-point character. **Do not
+  // take this below 24 again without changing her height too.**
+  //
+  // So it is still the only thing on Home at 24, which by the scale's own rule
+  // -- size carries hierarchy, weight carries state -- keeps it rank one. 400
+  // is the scale's floor, not a step under it.
+  //
+  // Leading is 32/24 rather than `sceneLine`'s 30/24: a one-line headline can
+  // sit tight, a three-line sentence at 400 cannot. Tracking stays negative,
+  // because the file's rule is 24 and above, whatever the weight.
+  static const TextStyle homePrompt = TextStyle(
+    fontFamily: display,
+    fontWeight: FontWeight.w400,
+    fontSize: 24,
+    height: 32 / 24,
+    letterSpacing: 24 * -0.015,
+  );
+
   // Card titles. 18, not 20: at 20 the soft buttons and the invite card were
   // a point *larger* than the primary button beside them, so the loudest
   // thing on Home was whatever was not the main action. Size now falls the
@@ -153,6 +187,71 @@ abstract final class SkText {
     height: 1.4,
   );
 
+  // A beat marker on a lesson reading page -- "One evening", "What we say",
+  // "What happens next". The name of the part of the page under it.
+  //
+  // **20/400, sentence case, in `ink`, and every one of those four is the
+  // decision.** It was `sectionHeader` -- 13/600, uppercase, letter-spaced, in
+  // the caption colour -- until 24 September 2026, and it was reported as not
+  // working. That style is the iOS grouped-list header: a piece of app
+  // furniture over a list of controls. These pages are prose, read end to end
+  // on a bad evening, and a 13pt all-caps eyebrow over a paragraph is a
+  // dashboard label rather than the top of a section.
+  //
+  // **Size carries the rank and weight stays out of it**, which is this
+  // file's own rule and the reason it is 400. A lesson page was carrying four
+  // or five blocks at 600 against one at 400, so the body was the lightest
+  // and smallest thing on the page it was the point of. At 20/400 the beat
+  // sits a clear step over the 18pt body and a clear step under the 24/600
+  // title, and the title is the only bold thing left on the page. That is how
+  // a printed page is set, and it is what the reader is doing here.
+  //
+  // `homePrompt` made the same trade for the same reason: a style borrowed
+  // at 600 from somewhere the weight was earned, put back to 400 where it was
+  // not.
+  //
+  // Tracking is zero: this file pulls in at 24 and above, and 20 is below it.
+  static const TextStyle lessonBeat = TextStyle(
+    fontFamily: display,
+    fontWeight: FontWeight.w400,
+    fontSize: 20,
+    height: 26 / 20,
+  );
+
+  // A paragraph on a lesson reading page -- the drill's introduction pages,
+  // its closing step, the explanation inside a feedback panel.
+  //
+  // **17/400 at 1.5 leading, and both numbers came down to get here.** It went
+  // out at 18/1.7 on 24 September 2026 -- the e-reader reading of "make this
+  // feel like a book" -- and was reported the same day as too big to read and
+  // too loose. So it is the app's own 17, at a leading a step *under* the 1.6
+  // the drill's paragraphs were already using.
+  //
+  // **The style still exists, and the reason is the leading rather than the
+  // size.** `rowLabel` is 17/1.4, which is right for a row read at a glance
+  // and tight for five lines of prose. 1.5 is the difference between the two
+  // jobs, and naming it is what stops the next person setting a paragraph in
+  // a row style.
+  //
+  // **What actually made the pages read like a book was never the body.** It
+  // was the marker over them -- see `lessonBeat` -- and the air around the
+  // groups. Growing the body on top of that was one change too many, and it
+  // is the one that got noticed.
+  //
+  // The column is capped at `SkLayout.readable`, so a paragraph on a tablet
+  // still does not run 120 characters wide.
+  //
+  // **Do not put this back up without measuring on an iPhone SE.** At 18/1.7
+  // the swap drill's builder step was a few points from sliding its last word
+  // tile under the floating tab bar, and at 18/1.75 it went under --
+  // `test/swap_drill_view_test.dart` caught that one.
+  static const TextStyle lessonBody = TextStyle(
+    fontFamily: body,
+    fontWeight: FontWeight.w400,
+    fontSize: 17,
+    height: 1.5,
+  );
+
   // A sentence somebody said, quoted on a page that is explaining it -- the
   // two example lines on the drill's introduction pages.
   //
@@ -175,6 +274,12 @@ abstract final class SkText {
   // deleting that font entry does not break the build, it silently turns this
   // style back into `rowLabel` at 18. The line in `pubspec.yaml` says the
   // same thing next to the asset.
+  //
+  // **It went to 19 and back to 18 on 24 September 2026.** The rule this style
+  // runs on is that a quote sits one point *above* the paragraphs around it,
+  // so it followed `lessonBody` up to 19 for the afternoon that style was 18,
+  // and came back down with it. The number to keep in step with is
+  // `lessonBody`, not the 17 written above.
   static const TextStyle quote = TextStyle(
     fontFamily: body,
     fontWeight: FontWeight.w400,

@@ -288,7 +288,8 @@ void main() {
 
         expect(tighten, greaterThanOrEqualTo(0), reason: 'no squeeze');
         expect(hold, greaterThan(tighten), reason: 'the hold is not after it');
-        expect(stop, greaterThan(hold), reason: 'the stop is not after the hold');
+        expect(stop, greaterThan(hold),
+            reason: 'the stop is not after the hold');
 
         // One squeeze and one stop, and nothing tightened twice.
         expect(round.where((TightenStep step) => step.pose != null).length, 2,
@@ -444,7 +445,8 @@ void main() {
       // script would ask for work after saying there was nothing else to do.
       final int stretch =
           TightenScript.steps.indexOf(TightenScript.stretching.first);
-      final int leave = TightenScript.steps.indexOf(TightenScript.leaving.first);
+      final int leave =
+          TightenScript.steps.indexOf(TightenScript.leaving.first);
       expect(stretch, lessThan(leave));
     });
 
@@ -554,8 +556,6 @@ void main() {
       final Iterable<String> page = <String>[
         TightenScript.title,
         ...TightenScript.intro,
-        TightenScript.permission,
-        TightenScript.permissionNote,
       ];
 
       for (final String line in page) {

@@ -8,6 +8,11 @@ import 'package:sidekick/app/widgets/sk_text.dart';
 // The filled pill: Next, Save, Continue. Full width by default; compact hugs
 // its label for the scene CTA. Compact is a width, not a size -- the label is
 // `SkText.button` either way.
+//
+// **There is one fill, and the panic button shares it.** A `panic` tone was
+// added here for an hour on 24 September 2026 and removed the same day: the
+// decision that followed was that `SkColors.panic` *is* `action`, so a tone
+// switch would have been two names for one colour.
 class SkPrimaryButton extends StatelessWidget {
   final String label;
   final VoidCallback? onPressed;

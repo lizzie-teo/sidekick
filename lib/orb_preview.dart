@@ -6,6 +6,7 @@ import 'package:sidekick/app/widgets/sk_segmented.dart';
 import 'package:sidekick/app/widgets/sk_text.dart';
 import 'package:sidekick/app/widgets/theme.dart';
 import 'package:sidekick/features/design_system/views/orb_lab_view.dart';
+import 'package:sidekick/app/widgets/sk_contrast.dart';
 
 // The orb lab on its own, in a browser. Run with
 //   flutter run -d chrome -t lib/orb_preview.dart
@@ -80,7 +81,8 @@ class _OrbPreviewAppState extends State<OrbPreviewApp> {
         children: <Widget>[
           Text(
             'PALETTE',
-            style: SkText.sectionHeader.copyWith(color: sk.muted),
+            style: SkText.sectionHeader
+                .copyWith(color: SkContrast.captionOn(sk.canvas)),
           ),
           const SizedBox(height: 8),
           Wrap(
@@ -106,7 +108,9 @@ class _OrbPreviewAppState extends State<OrbPreviewApp> {
                     child: Text(
                       SkPalettes.all[i].name,
                       style: SkText.tabLabel.copyWith(
-                        color: i == _palette ? sk.ink : sk.muted,
+                        color: i == _palette
+                            ? sk.ink
+                            : SkContrast.captionOn(sk.canvas),
                       ),
                     ),
                   ),

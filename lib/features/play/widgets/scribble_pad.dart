@@ -100,8 +100,7 @@ class ScribblePadState extends State<ScribblePad>
     final Duration fading = _clock - endedAt - ScribblePad.hold;
     if (fading <= Duration.zero) return 1;
 
-    final double t =
-        fading.inMilliseconds / ScribblePad.fade.inMilliseconds;
+    final double t = fading.inMilliseconds / ScribblePad.fade.inMilliseconds;
     return (1 - t).clamp(0, 1).toDouble();
   }
 

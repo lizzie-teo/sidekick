@@ -65,9 +65,33 @@ wrong with it.
 
 ---
 
-## 2. A caption is a darker shade of its own ground
+## 2. Text on a coloured ground is that ground's darkest tint
 
 **This is the rule the app got wrong everywhere, so check it first.**
+
+Words on a coloured ground — a tinted block, a speech bubble, a status wash, a
+coloured card — are **the darkest tint of that same colour**. Same hue, taken
+down until it is legible, stopped there. Never a grey, never plain black.
+
+| The words are | Take |
+| --- | --- |
+| A caption or a header on a tint | `SkContrast.captionOn(ground)` — the **ground's** hue |
+| A heading or icon carrying the meaning | `SkContrast.readable(tone, ground)` — the tone at its own strength |
+| **A paragraph on a tint** | `style.body`, or `SkContrast.inkOn(tone, ground, ink)` — the tone taken past itself |
+
+**"Darkest" means furthest from the ground**, so it is a pale tint in the dark
+set. All three pick the direction from the headroom, never from the app's mode.
+
+**A paragraph on a wash used to be `ink`**, and that was reversed on 24
+September 2026. The old rule was guarding against a paragraph set in the tone
+*itself*, which does read as shouting. `body` goes past the tone, to the
+contrast `ink` already had on that fill — never louder, never fainter.
+
+It does **not** reach the page ground (`ink` on `canvas`) or a filled action
+pill (`onAction`). On an exercise page it is the same rule off a different set:
+`context.exercise.statusOf(tone).body`.
+
+### Captions are the commonest case
 
 Anything smaller or quieter than body text — a caption, a section header, a
 chip label:
@@ -287,21 +311,53 @@ as shouting.
 
 ## Known gaps — say so rather than pretending
 
-- Three hardcoded colours are still leaks: `sk_tab_bar.dart`,
-  `design_system_view.dart`, `breathing_view.dart`.
-- Eleven palette pairs across five palettes are under 4.5:1. They are pinned
-  as a baseline in `test/contrast_test.dart`, **not fixed** — fixing them means
-  repainting shipped themes, which is the user's call. Moss passes everything.
+- ~~Three hardcoded colours are still leaks~~ **Fixed 24 September 2026.** The
+  tab bar's shadow is `sk.ink` at 14% and its panic icon takes the palette's
+  own label colour; the design-system swatches take `captionOn`; the breathing
+  glow's warm white is now a named constant with the argument beside it.
+- ~~Eleven palette pairs under 4.5:1~~ **Fixed 24 September 2026.** Two light
+  accents were darkened (`#B06F2C`→`#A46729`, `#E8564A`→`#E22C1D`), and
+  `SkScenePanel` lays `SkContrast.sceneScrim` under the words on the five
+  palettes whose gradient no text colour could ever clear. `contrast_test.dart`
+  is a gate with an empty list now.
+- ~~`muted` was still the colour of 31 captions~~ **Fixed 24 September 2026.**
+  The machinery existed; the use sites had never been converted, including the
+  default label colour of every ghost button in the app.
+  `test/accessibility_source_test.dart` reads the source so it cannot return.
 - `SkLayout` is new. Only the explanation sheet uses it; every other screen
   still has its numbers inline. **Convert the screen you are already in, not
   the whole app.**
-- **`SkFeedbackSheet` fails the 200% test above, and takes the forward button
-  with it.** On a 375×667 surface at `TextScaler.linear(2)` the sheet is taller
-  than the room left under the fixed nav row, the column overflows by about 60
-  points, and the reader cannot get past the first marked answer. Found by
-  running the one test on the swap drill, 21 September 2026. Repro, cause and
-  the shape of the fix are in `CLAUDE.md` under "Known broken". It is a shared
-  widget, so it is its own job.
+- **`SkFeedbackSheet` passed the 200% test on 24 September 2026.** It used to
+  be taller than the room under the fixed nav row on a 375×667 surface at
+  `TextScaler.linear(2)`, overflow by about 60 points, and take the forward
+  pill with it -- so the lesson could not be finished at that text size. It now
+  caps itself at `SkFeedbackSheet.maxHeightFraction` (0.6 of the screen) and
+  scrolls the heading and explanation inside that, while the pill stays put.
+  **The cap reads `View.of(context)`, never `MediaQuery.sizeOf`**: a bare
+  `MediaQueryData` reports zero, which is what the test harness supplies, and a
+  cap of zero is the same bug from the other side.
+- **The practice lessons read too heavy. Fixed on the reading pages, 24
+  September 2026.** A lesson page held four or five blocks at 600 against one
+  at 400, so the body was the lightest and smallest thing on it. The reading
+  pages now run **24/600 title, 20/400 marker, 17/400 body at 1.5** -- two new
+  styles, `SkText.lessonBeat` and `SkText.lessonBody`, with the reasoning on
+  each. The title is the only bold thing left on the page, which is the ladder
+  a printed page runs on.
+
+  **The body went to 18/1.7 first and came straight back down.** "Reads like a
+  book" is a fair brief and growing the body is the wrong way to answer it: at
+  18/1.7 it was reported as too big to read and too loose. What did the work
+  was the marker over the paragraphs and the air around the groups. The body is
+  the app's own 17, at 1.5 rather than `rowLabel`'s 1.4 -- the one step prose
+  gets over a row.
+
+  The marker was `sectionHeader` -- 13/600 uppercase, letter-spaced, in the
+  caption colour. That style is the iOS grouped-list header: **app furniture
+  over a list of controls, and it does not belong over prose.** Reach for it
+  above a list of rows, never above a paragraph.
+
+  Still open: the quiz and builder steps, which are not reading pages and were
+  left alone. The long version is section 5 of the guide.
 - No focus-visible treatment anywhere.
 - No reduced-motion path. `MediaQuery.disableAnimations` is read nowhere.
 - The status tones have nowhere to appear yet. `SkStatusBlock` exists; the

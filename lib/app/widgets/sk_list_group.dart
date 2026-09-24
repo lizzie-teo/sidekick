@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:sidekick/app/widgets/sk_colors.dart';
 import 'package:sidekick/app/widgets/sk_pressable.dart';
 import 'package:sidekick/app/widgets/sk_text.dart';
+import 'package:sidekick/app/widgets/sk_contrast.dart';
 
 // A grouped settings list: rounded surface card that clips its rows, with
 // hairline dividers between rows and none after the last. Optional uppercase
@@ -39,7 +40,9 @@ class SkListGroup extends StatelessWidget {
             padding: const EdgeInsets.only(left: 4, bottom: 8),
             child: Text(
               header!.toUpperCase(),
-              style: SkText.sectionHeader.copyWith(color: sk.muted),
+              style: SkText.sectionHeader.copyWith(
+                color: SkContrast.captionOn(sk.canvas),
+              ),
             ),
           ),
         ClipRRect(
@@ -58,7 +61,10 @@ class SkListGroup extends StatelessWidget {
             padding: const EdgeInsets.only(left: 4, right: 4, top: 8),
             child: Text(
               footer!,
-              style: SkText.caption.copyWith(color: sk.muted, height: 1.45),
+              style: SkText.caption.copyWith(
+                color: SkContrast.captionOn(sk.canvas),
+                height: 1.45,
+              ),
             ),
           ),
       ],
@@ -117,7 +123,9 @@ class SkRow extends StatelessWidget {
                   const SizedBox(height: 4),
                   Text(
                     caption!,
-                    style: SkText.caption.copyWith(color: sk.muted),
+                    style: SkText.caption.copyWith(
+                      color: SkContrast.captionOn(sk.surface),
+                    ),
                   ),
                 ],
               ],
@@ -125,7 +133,12 @@ class SkRow extends StatelessWidget {
           ),
           if (value != null) ...[
             const SizedBox(width: 12),
-            Text(value!, style: SkText.rowLabel.copyWith(color: sk.muted)),
+            Text(
+              value!,
+              style: SkText.rowLabel.copyWith(
+                color: SkContrast.captionOn(sk.surface),
+              ),
+            ),
           ],
           if (trailing != null) ...[
             const SizedBox(width: 12),

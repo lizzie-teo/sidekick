@@ -80,7 +80,9 @@ class SkListCard extends StatelessWidget {
                   const SizedBox(height: 3),
                   Text(
                     caption!,
-                    style: SkText.caption.copyWith(color: sk.muted),
+                    style: SkText.caption.copyWith(
+                      color: SkContrast.captionOn(sk.surface),
+                    ),
                   ),
                 ],
               ],

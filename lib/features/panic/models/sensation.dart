@@ -1,3 +1,6 @@
+import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart' show Icons;
+
 // What's happening in your body -- the four sensations offered during the
 // breathing, each carrying the one thing worth knowing about it.
 //
@@ -17,6 +20,7 @@
 enum Sensation {
   heartRacing(
     label: 'Racing heart',
+    icon: Icons.favorite_border_rounded,
     introBodyLine: 'When you panic, your heart speeds up.',
     introBreathLine: 'Slow breathing is what brings a fast heart down.',
     introEmphasis: 'brings a fast heart down',
@@ -32,6 +36,7 @@ enum Sensation {
   ),
   cantBreathe(
     label: 'Hard to breathe',
+    icon: Icons.air_rounded,
     introBodyLine: 'When you panic, your chest goes tight.',
     introBreathLine: 'A long breath out is what loosens a tight chest.',
     introEmphasis: 'loosens a tight chest',
@@ -48,6 +53,7 @@ enum Sensation {
   ),
   faint(
     label: 'Dizzy',
+    icon: Icons.blur_on_rounded,
     introBodyLine: 'When you panic, your head can go light.',
     introBreathLine: 'Slower breathing is what clears a light head.',
     introEmphasis: 'clears a light head',
@@ -64,6 +70,7 @@ enum Sensation {
   ),
   tingling(
     label: 'Tingling hands',
+    icon: Icons.back_hand_outlined,
     introBodyLine: 'When you panic, your hands can tingle.',
     introBreathLine: 'Slower breathing is what settles your hands.',
     introEmphasis: 'settles your hands',
@@ -93,6 +100,23 @@ enum Sensation {
   // one the reader would say, and it is also the catastrophic reading the
   // script then spends two lines taking back. A tile may name the feeling
   // and may not agree with the fear.
+  // The small mark beside the label on the picker.
+  //
+  // **It names the body part, never the fear.** A heart that is beating fast
+  // is a heart, so it is an outline heart -- not a warning triangle, not a
+  // jagged line off a monitor, and not a face. The label already refuses to
+  // agree with the catastrophic reading, and a picture is read before the
+  // words are, so it has to refuse first.
+  //
+  // Dizzy is a soft blur rather than a spiral. A spiral is the clearer
+  // drawing of the two and it is the sensation acted out at somebody already
+  // having it, which is the one thing a picture beside these words must not
+  // do.
+  //
+  // Decoration, not meaning. Every pill says what it is in words as well, so
+  // nothing on this screen is carried by the icon alone.
+  final IconData icon;
+
   final String label;
 
   // This sensation's two lines on the introduction page, and the phrase inside
@@ -164,6 +188,7 @@ enum Sensation {
 
   const Sensation({
     required this.label,
+    required this.icon,
     required this.introBodyLine,
     required this.introBreathLine,
     required this.introEmphasis,

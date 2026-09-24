@@ -87,16 +87,20 @@ abstract class AffirmationExplanations {
     ),
     'Getting things wrong is part of being a person.': AffirmationExplanation(
       category: 'Things you\'re allowed',
-      rule: 'Making mistakes is shameful. You should have the right answer ready '
+      rule:
+          'Making mistakes is shameful. You should have the right answer ready '
           'every time.',
-      why: 'Nobody has the right answer every time. The ones who look like they '
+      why:
+          'Nobody has the right answer every time. The ones who look like they '
           'do have had more practice.',
-      truth: 'You are allowed to get it wrong. Getting it wrong is how you find '
+      truth:
+          'You are allowed to get it wrong. Getting it wrong is how you find '
           'out how to do it.',
     ),
     'You know how you feel better than anyone does.': AffirmationExplanation(
       category: 'Things you\'re allowed',
-      rule: 'If people do not agree your feelings make sense, then your feelings '
+      rule:
+          'If people do not agree your feelings make sense, then your feelings '
           'must be wrong.',
       why: 'A feeling is not a claim that needs proof. Other people did not '
           'live your life. They are missing most of it.',
@@ -117,9 +121,11 @@ abstract class AffirmationExplanations {
           'Sticking to a bad call to look steady costs more.',
       truth: 'You can change your mind. Knowing more is a good reason.',
     ),
-    'If something felt unfair, you are allowed to say so.': AffirmationExplanation(
+    'If something felt unfair, you are allowed to say so.':
+        AffirmationExplanation(
       category: 'Things you\'re allowed',
-      rule: 'Be flexible and adjust. Other people have their reasons, and it is '
+      rule:
+          'Be flexible and adjust. Other people have their reasons, and it is '
           'rude to question them.',
       why: 'Sometimes they do have good reasons. Sometimes they do not. There '
           'is no way to tell without asking.',
@@ -162,7 +168,8 @@ abstract class AffirmationExplanations {
           'like it.',
       truth: 'You can listen, say thank you, and not do it.',
     ),
-    'Wanting your work noticed is a fair thing to want.': AffirmationExplanation(
+    'Wanting your work noticed is a fair thing to want.':
+        AffirmationExplanation(
       category: 'Things you\'re allowed',
       rule: 'Knowing you did well should be enough. Nobody likes a show-off.',
       why: 'Doing well and being noticed are two different things. Wanting the '
@@ -180,7 +187,8 @@ abstract class AffirmationExplanations {
     ),
     'It is alright to want the evening to yourself.': AffirmationExplanation(
       category: 'Things you\'re allowed',
-      rule: 'Do not be antisocial. Say you would rather be alone and people will '
+      rule:
+          'Do not be antisocial. Say you would rather be alone and people will '
           'think you do not like them.',
       why: 'Wanting time alone is about you, not about them. Most people want '
           'it too.',
@@ -197,14 +205,16 @@ abstract class AffirmationExplanations {
     'Not every problem near you is yours to solve.': AffirmationExplanation(
       category: 'Things you\'re allowed',
       rule: 'When somebody is in trouble, you should help them.',
-      why: 'You can care about somebody without taking their problem on. Taking '
+      why:
+          'You can care about somebody without taking their problem on. Taking '
           'it on can stop them solving it.',
       truth: 'You can be there without carrying it.',
     ),
     'You are not expected to guess what people need.': AffirmationExplanation(
       category: 'Things you\'re allowed',
       rule: 'Be sensitive to what people want, even when they do not tell you.',
-      why: 'Nobody can read minds. Guessing goes wrong, and guessing all day is '
+      why:
+          'Nobody can read minds. Guessing goes wrong, and guessing all day is '
           'tiring. People can say what they want.',
       truth: 'You do not have to work it out in advance.',
     ),
@@ -214,13 +224,15 @@ abstract class AffirmationExplanations {
       why: 'You cannot. It would mean agreeing with everyone, and they do not '
           'agree with each other. People do not have to agree to like each '
           'other.',
-      truth: 'Some days people are annoyed and you never find out why. Often it '
+      truth:
+          'Some days people are annoyed and you never find out why. Often it '
           'has nothing to do with you.',
     ),
     'Not every message needs an answer tonight.': AffirmationExplanation(
       category: 'Things you\'re allowed',
       rule: 'It is not nice to leave people waiting. If you are asked, answer.',
-      why: 'Most messages are not urgent. And a tired reply is the worse reply.',
+      why:
+          'Most messages are not urgent. And a tired reply is the worse reply.',
       truth: 'You can reply tomorrow.',
     ),
     'Hard is allowed to be hard.': AffirmationExplanation(
@@ -248,7 +260,8 @@ abstract class AffirmationExplanations {
     'You are allowed to feel exactly this much.': AffirmationExplanation(
       category: 'Your own pace',
       rule: 'Your feelings should match the size of the thing.',
-      why: 'Feelings do not arrive measured. And "you\'re overreacting" is what '
+      why:
+          'Feelings do not arrive measured. And "you\'re overreacting" is what '
           'people say when they want the feeling to stop.',
       truth: 'You feel what you feel. There is no correct amount.',
     ),
@@ -341,7 +354,8 @@ abstract class AffirmationExplanations {
     'The chair is holding you. Let it do the work.': AffirmationExplanation(
       category: 'Your body',
       rule: 'You have to hold yourself up.',
-      why: 'The chair is already doing it. Most people hold their shoulders and '
+      why:
+          'The chair is already doing it. Most people hold their shoulders and '
           'back tight all day and never notice. They are holding up something '
           'already held.',
       truth: 'You can stop holding. It has you.',
@@ -361,7 +375,8 @@ abstract class AffirmationExplanations {
       rule: '"It was a complete waste of time." "Nobody likes me."',
       why: 'Almost nothing is all of anything. Most of it sits in the middle, '
           'and the middle is harder to see when you are tired.',
-      truth: 'Most things are a mix. Some of it went badly. Some of it did not.',
+      truth:
+          'Most things are a mix. Some of it went badly. Some of it did not.',
     ),
     'A guess about tomorrow is still a guess.': AffirmationExplanation(
       category: 'When a thought won\'t go',
@@ -376,7 +391,8 @@ abstract class AffirmationExplanations {
       category: 'When a thought won\'t go',
       ruleHeading: 'What it sounds like',
       rule: '"But what if it goes wrong? What if I cannot cope?"',
-      why: 'Answer one and another one turns up. No answer settles it. What the '
+      why:
+          'Answer one and another one turns up. No answer settles it. What the '
           'question wants is to be certain, and certain is not something '
           'anybody gets.',
       truth: 'You can leave the question sitting there.',
@@ -404,7 +420,8 @@ abstract class AffirmationExplanations {
       why: 'A whole person does not fit in one word. And that word only shows '
           'up after something goes wrong. It never shows up after something '
           'goes well.',
-      truth: 'Something went badly. That is the size of it. (That is the size of '
+      truth:
+          'Something went badly. That is the size of it. (That is the size of '
           'it doesn\'t feel like it says anything)',
     ),
     'It still counts, even if it was easy.': AffirmationExplanation(

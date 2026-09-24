@@ -3,8 +3,10 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:sidekick/app/widgets/sk_colors.dart';
 import 'package:sidekick/app/widgets/sk_contrast.dart';
+import 'package:sidekick/app/widgets/sk_invite_card.dart';
 import 'package:sidekick/app/widgets/sk_layout.dart';
 import 'package:sidekick/app/widgets/sk_palettes.dart';
+import 'package:sidekick/app/widgets/sk_glass_button.dart';
 import 'package:sidekick/app/widgets/sk_status.dart';
 
 // **Contrast is measured in every palette, in both modes, by arithmetic.**
@@ -92,6 +94,25 @@ void main() {
               reason: '$name: ${tone.name} text on its own wash over $slot',
             );
 
+            // A paragraph on that wash is the wash's own darkest shade,
+            // from 24 September 2026. It must be at least as legible as the
+            // `ink` it replaced, and at least as dark as the tone -- see
+            // `SkContrast.inkOn`, and the same three assertions over the
+            // exercise sets in `exercise_contrast_test.dart`.
+            final Color paragraph = SkContrast.inkOn(hue, fill, sk.ink);
+
+            expect(
+              SkContrast.ratio(paragraph, fill),
+              greaterThanOrEqualTo(SkContrast.ratio(sk.ink, fill)),
+              reason: '$name: ${tone.name} body is fainter than ink on $slot',
+            );
+            expect(
+              SkContrast.ratio(paragraph, fill),
+              greaterThanOrEqualTo(SkContrast.ratio(text, fill)),
+              reason: '$name: ${tone.name} body is lighter than the tone '
+                  'on $slot',
+            );
+
             // The block has to read as a block. Below about 1.1:1 the wash is
             // invisible and the words are floating on the page.
             expect(
@@ -141,15 +162,16 @@ void main() {
       darkSets.add(_statusKey(palette.dark));
     }
 
-    expect(lightSets.length, 1, reason: 'a light palette has its own status colours');
-    expect(darkSets.length, 1, reason: 'a dark palette has its own status colours');
+    expect(lightSets.length, 1,
+        reason: 'a light palette has its own status colours');
+    expect(darkSets.length, 1,
+        reason: 'a dark palette has its own status colours');
   });
 
   // **Every tone has an icon, because colour is never the only cue.** Roughly
   // one man in twelve cannot separate the red from the green.
   test('every tone carries its own icon', () {
-    final Set<IconData> icons =
-        SkTone.values.map(SkStatusStyle.iconOf).toSet();
+    final Set<IconData> icons = SkTone.values.map(SkStatusStyle.iconOf).toSet();
 
     expect(icons.length, SkTone.values.length);
   });
@@ -174,63 +196,110 @@ void main() {
     }
   });
 
-  // **The audit, and it is deliberately not a gate.**
+  // **The audit became a gate on 24 September 2026.**
   //
-  // Eleven foreground/background pairs across five palettes measure under
-  // 4.5:1 today, and four of them are under 3.0:1 -- short even for large
-  // text. They are listed rather than fixed because fixing them means
-  // choosing new colours for shipped themes, which is a design decision and
-  // not a test's to make. Measured 21 September 2026.
+  // Eleven foreground/background pairs across five palettes used to measure
+  // under 4.5:1, four of them under 3.0:1 -- short even for large text. They
+  // were listed here rather than fixed, because fixing them meant choosing
+  // new colours for shipped themes and that is a design decision rather than
+  // a test's to make. The project then decided to hold itself above the
+  // floor, so they were fixed and the list is empty.
   //
-  // The list is exact in both directions. A new pair failing is a regression;
-  // a listed pair that now passes means somebody fixed it and the list is
-  // stale. Either way the test says which.
+  // Two different fixes, because they were two different problems:
   //
-  // | Where | Why it is here rather than fixed |
+  // | Pair | What moved |
   // | --- | --- |
-  // | `onAction` on `action` | A button label. 19/600 reads as large text under WCAG, so 3.0 is arguably the right bar and both entries clear it |
-  // | `onScene` on a gradient stop | The stop named is one of three, and the words may not sit over that end of it. Worth looking at on the device before repainting a theme |
-  group('palette contrast audit', () {
-    // palette -> the pairs known to be under 4.5:1, and their ratios rounded
-    // to two places.
-    const Map<String, Map<String, double>> known = <String, Map<String, double>>{
-      'Harvest moon light': <String, double>{'onAction/action': 4.07},
-      'Harvest moon dark': <String, double>{
-        'onScene/scene0': 2.78,
-        'onScene/scene1': 4.42,
-      },
-      'Moonlit valley light': <String, double>{'onScene/scene2': 4.00},
-      'Moonlit valley dark': <String, double>{'onScene/scene1': 3.88},
-      'Night forest light': <String, double>{'onScene/scene0': 2.41},
-      'Night forest dark': <String, double>{'onScene/scene0': 4.16},
-      'Coral diorama light': <String, double>{'onAction/action': 3.58},
-      'Coral diorama dark': <String, double>{'onScene/scene0': 2.79},
-      'Dusk terrarium light': <String, double>{'onScene/scene2': 2.60},
-      'Dusk terrarium dark': <String, double>{'onScene/scene0': 3.98},
-    };
-
+  // | `onAction` on `action`, twice | The **fill**. A white label cannot get lighter, so Harvest moon and Coral diorama light took the smallest darkening that reaches 4.5:1 |
+  // | `onScene` on a gradient stop, nine times | The **ground**. Five of the nine could not reach 4.5:1 at any lightness, so `SkScenePanel` lays `SkContrast.sceneScrim` under the words -- nothing at all on the three palettes that already cleared it |
+  //
+  // **The scene is measured through the scrim, because that is the pixel the
+  // reader sees.** Measuring the bare stop would fail a screen that is
+  // legible; measuring only the stop the words happen to sit over today would
+  // pass a screen that breaks the moment a line moves.
+  group('palette contrast', () {
     for (final (String name, SkColors sk) in schemes) {
       test(name, () {
-        final Map<String, double> measured = <String, double>{};
+        final Map<String, double> failing = <String, double>{};
 
         void check(String pair, Color foreground, Color background) {
           final double r = SkContrast.ratio(foreground, background);
           if (r < SkContrast.bodyText) {
-            measured[pair] = double.parse(r.toStringAsFixed(2));
+            failing[pair] = double.parse(r.toStringAsFixed(2));
           }
         }
 
         check('onAction/action', sk.onAction, sk.action);
+
+        // **The soft button's own label, added 24 September 2026.** The gate
+        // held `ink` and a caption against `actionSoft` and never the action
+        // colour on it, which is the pair `SkSoftButton` actually paints.
+        // Three light palettes measured between 3.43:1 and 3.63:1 -- under
+        // the 4.5:1 a 17/600 label owes, since WCAG's large-text step starts
+        // at 14pt at weight 700. The widget runs the label through
+        // `SkContrast.readable`, so this checks the colour it really uses.
+        check(
+          'action/actionSoft',
+          SkContrast.readable(sk.action, sk.actionSoft),
+          sk.actionSoft,
+        );
+
+        final Color? scrim = SkContrast.sceneScrim(sk.onScene, sk.scene);
         for (int i = 0; i < sk.scene.length; i++) {
-          check('onScene/scene$i', sk.onScene, sk.scene[i]);
+          final Color ground = scrim == null
+              ? sk.scene[i]
+              : SkContrast.over(scrim, sk.scene[i], scrim.a);
+          check('onScene/scene$i', sk.onScene, ground);
+
+          // **The invitation's dashed outline, added 24 September 2026.** It
+          // is the edge of a control rather than text, so it owes the 3:1 of
+          // WCAG 1.4.11 and not 4.5:1 -- checked here rather than in the map
+          // above, which is the body-text gate. On Home the card sits inside
+          // the scene panel with no fill of its own, so the dash is the only
+          // thing saying where it starts and stops. At the 55% it shipped
+          // with for an hour it ran 2.22:1 to 2.64:1 in all twelve schemes.
+          expect(
+            SkContrast.ratio(
+              SkContrast.over(sk.onScene, ground, SkInviteCard.sceneDashAlpha),
+              ground,
+            ),
+            greaterThanOrEqualTo(SkContrast.nonText),
+            reason: '$name: the invitation dash on scene stop $i',
+          );
+
+          // **The glass pill's label, added 24 September 2026.** Home's two
+          // secondaries are `SkGlassButton`s on the gradient. The pill's fill
+          // is a wash of the backdrop over the scene, so the label does not
+          // sit on the stop measured above -- it sits on the stop plus the
+          // fill, and that is the pixel to check.
+          //
+          // **The direction is the whole test.** Washing with the ink instead
+          // -- which is what `SkCircleIconButton` does, correctly, for icons
+          // at the 3:1 floor -- puts this at 3.62:1. The line above clears
+          // 4.5:1 by hundredths in most palettes, so there is no headroom for
+          // a wash that costs any.
+          //
+          // The rim and the shadow are not checked: neither carries meaning,
+          // and the label is what identifies the control.
+          expect(
+            SkContrast.ratio(
+              sk.onScene,
+              SkContrast.over(
+                SkContrast.backdropFor(sk.onScene),
+                ground,
+                SkGlassButton.fillAlpha,
+              ),
+            ),
+            greaterThanOrEqualTo(SkContrast.bodyText),
+            reason: '\$name: the glass pill label on scene stop \$i',
+          );
         }
 
         expect(
-          measured,
-          known[name] ?? <String, double>{},
-          reason: 'the contrast audit for $name has changed. A new entry is a '
-              'regression; a missing one means it was fixed and this list '
-              'needs the entry removed.',
+          failing,
+          <String, double>{},
+          reason: 'a foreground/background pair in $name is under 4.5:1. '
+              'Every palette has cleared this since 24 September 2026, so '
+              'this is a regression rather than a known gap.',
         );
       });
     }

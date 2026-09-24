@@ -5,6 +5,7 @@ import 'package:sidekick/app/widgets/sk_colors.dart';
 import 'package:sidekick/app/widgets/sk_text.dart';
 import 'package:sidekick/data/models/entities/good_thing_model.dart';
 import 'package:sidekick/features/good_things/models/good_things_day.dart';
+import 'package:sidekick/app/widgets/sk_contrast.dart';
 
 // One day of history: the day's name, then a card with a line per entry.
 //
@@ -34,7 +35,9 @@ class GoodThingsDayGroup extends StatelessWidget {
           padding: const EdgeInsets.only(left: 4, bottom: 8),
           child: Text(
             DateFormatUtils.dayLabel(group.day, now: now),
-            style: SkText.sectionHeader.copyWith(color: sk.muted),
+            style: SkText.sectionHeader.copyWith(
+              color: SkContrast.captionOn(sk.canvas),
+            ),
           ),
         ),
         Container(

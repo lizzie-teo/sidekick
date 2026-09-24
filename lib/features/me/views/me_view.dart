@@ -21,6 +21,7 @@ import 'package:sidekick/app/widgets/sk_text.dart';
 import 'package:sidekick/app/widgets/sk_toggle.dart';
 import 'package:sidekick/features/me/services/data_export_service.dart';
 import 'package:sidekick/features/me/viewmodels/me_viewmodel.dart';
+import 'package:sidekick/app/widgets/sk_contrast.dart';
 
 // The Me tab: profile card, grouped settings, account actions. Most rows are
 // placeholders until their settings exist to persist; sign-out is real.
@@ -88,7 +89,8 @@ class _MeViewState extends State<MeView> {
     // every other platform ignores it, and a row that somehow has no box
     // leaves it null, which the sheet answers by centring itself rather than
     // by failing.
-    final RenderObject? object = _exportRowKey.currentContext?.findRenderObject();
+    final RenderObject? object =
+        _exportRowKey.currentContext?.findRenderObject();
     final Rect? origin = object is RenderBox && object.hasSize
         ? object.localToGlobal(Offset.zero) & object.size
         : null;
@@ -105,7 +107,8 @@ class _MeViewState extends State<MeView> {
 
   // The platform's own time picker. Dismissing it changes nothing, which is
   // what a settings row should do when the user backs out of it.
-  Future<void> _pickTime(int minutes, Future<void> Function(int) onPicked) async {
+  Future<void> _pickTime(
+      int minutes, Future<void> Function(int) onPicked) async {
     final TimeOfDay? picked = await showTimePicker(
       context: context,
       initialTime: TimeOfDay(hour: minutes ~/ 60, minute: minutes % 60),
@@ -139,8 +142,16 @@ class _MeViewState extends State<MeView> {
                       children: [
                         //
 
-                        Text('Me',
-                            style: SkText.largeTitle.copyWith(color: sk.ink)),
+                        // The page's own name, marked as a heading so
+                        // "next heading" lands on it. A screen reader skims
+                        // by heading; a title that is only the largest text
+                        // on the page is a title to the eye and nothing at
+                        // all to the ear.
+                        Semantics(
+                          header: true,
+                          child: Text('Me',
+                              style: SkText.largeTitle.copyWith(color: sk.ink)),
+                        ),
 
                         const SizedBox(height: 22),
 
@@ -400,7 +411,9 @@ class _MeViewState extends State<MeView> {
                         Text(
                           'Sidekick 1.0',
                           textAlign: TextAlign.center,
-                          style: SkText.caption.copyWith(color: sk.muted),
+                          style: SkText.caption.copyWith(
+                            color: SkContrast.captionOn(sk.canvas),
+                          ),
                         ),
                       ],
                     );

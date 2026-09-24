@@ -36,9 +36,8 @@ void main() {
     test('every character can teach, so none of them is the teacher', () {
       // A single fixed teacher would be one character the reader can never
       // have as their own, and the picker offers all three.
-      final Set<SidekickCharacter> teachers = SidekickCharacter.values
-          .map(Teacher.forReader)
-          .toSet();
+      final Set<SidekickCharacter> teachers =
+          SidekickCharacter.values.map(Teacher.forReader).toSet();
 
       expect(teachers, hasLength(SidekickCharacter.values.length));
     });

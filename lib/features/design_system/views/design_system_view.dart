@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:sidekick/app/core/app_constants.dart';
 import 'package:sidekick/app/widgets/sk_circle_icon_button.dart';
 import 'package:sidekick/app/widgets/sk_colors.dart';
+import 'package:sidekick/app/widgets/sk_contrast.dart';
 import 'package:sidekick/app/widgets/sk_invite_card.dart';
 import 'package:sidekick/app/widgets/sk_list_card.dart';
 import 'package:sidekick/app/widgets/sk_list_group.dart';
@@ -52,7 +53,8 @@ class DesignSystemView extends StatelessWidget {
               Text(
                 'Moss & cream, rendered by the live theme. Flip the device '
                 'to dark mode and this page follows.',
-                style: SkText.caption.copyWith(color: sk.muted),
+                style: SkText.caption
+                    .copyWith(color: SkContrast.captionOn(sk.canvas)),
               ),
 
               const SizedBox(height: 32),
@@ -84,14 +86,21 @@ class DesignSystemView extends StatelessWidget {
                           label: 'actionSoft',
                           colour: sk.actionSoft,
                           onColour: sk.action),
+                      // **Not `Colors.white`.** `visual-style.md` listed
+                      // these two as leaks, and on the one screen whose job
+                      // is to show the palettes a label that is white
+                      // whatever it sits on is the page failing its own
+                      // demonstration. `captionOn` takes each swatch's own
+                      // hue to a legible shade of itself, which is the rule
+                      // the rest of the app follows.
                       ColourSwatch(
                           label: 'panic',
                           colour: sk.panic,
-                          onColour: Colors.white),
+                          onColour: SkContrast.captionOn(sk.panic)),
                       ColourSwatch(
                           label: 'destructive',
                           colour: sk.destructive,
-                          onColour: Colors.white),
+                          onColour: SkContrast.captionOn(sk.destructive)),
                       ColourSwatch(
                           label: 'ink', colour: sk.ink, onColour: sk.canvas),
                       ColourSwatch(
@@ -119,8 +128,7 @@ class DesignSystemView extends StatelessWidget {
                   // purpose: 19 / 18 / 17 is the whole of the middle of the
                   // scale, and it is the part that is judged on a phone
                   // rather than argued about in a table.
-                  Text('Tap me',
-                      style: SkText.button.copyWith(color: sk.ink)),
+                  Text('Tap me', style: SkText.button.copyWith(color: sk.ink)),
                   const SizedBox(height: 8),
                   Text('Meditate',
                       style: SkText.buttonSmall.copyWith(color: sk.ink)),
@@ -129,10 +137,12 @@ class DesignSystemView extends StatelessWidget {
                       style: SkText.rowLabel.copyWith(color: sk.ink)),
                   const SizedBox(height: 8),
                   Text('WHEN YOU PANIC',
-                      style: SkText.sectionHeader.copyWith(color: sk.muted)),
+                      style: SkText.sectionHeader
+                          .copyWith(color: SkContrast.captionOn(sk.canvas))),
                   const SizedBox(height: 8),
                   Text('8 min · you stopped at 2:10',
-                      style: SkText.caption.copyWith(color: sk.muted)),
+                      style: SkText.caption
+                          .copyWith(color: SkContrast.captionOn(sk.canvas))),
                 ],
               ),
 
@@ -309,11 +319,13 @@ class SkScenePanelDemo extends StatelessWidget {
             children: [
               SkCircleIconButton(
                 icon: CupertinoIcons.xmark,
+                label: 'Close',
                 color: sk.onScene,
                 onPressed: () {},
               ),
               SkCircleIconButton(
                 icon: CupertinoIcons.speaker_slash,
+                label: 'Turn the voice on',
                 color: sk.onScene,
                 onPressed: () {},
               ),

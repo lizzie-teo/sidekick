@@ -93,8 +93,28 @@ class SkColors extends ThemeExtension<SkColors> {
   final Color warning;
   final Color info;
 
-  // The panic button, and only that. Never changes in any theme or mode.
-  final Color panic;
+  // **The panic button, and it is `action`.** It was its own slot holding one
+  // fixed orange, `#C2542A`, in all six palettes and both modes -- "the one
+  // control that looks the same everywhere", so it would be recognised before
+  // it was read. That ended on 24 September 2026, at the user's request.
+  //
+  // The decision it lost to is that a theme should reach the biggest control
+  // on the screen. A picker that repaints the room and leaves the button it
+  // is standing next to is a picker that reads as skin-deep, and the panic
+  // door is on Home twice -- the tab bar's button and the CTA above it.
+  //
+  // **A getter rather than twelve copies of `action`.** Setting the slot to
+  // match in each palette would be the same fact written thirteen times, free
+  // to drift the first time somebody retunes an action colour and does not
+  // think about the panic button. There is one colour now, and the rule that
+  // they are the same is the code rather than a comment asking to be kept.
+  //
+  // The cost is real and was raised: the button is a different colour in
+  // every theme, so somebody who has learnt it in one palette and switches
+  // has to find it again. It is still the only round button in the bar, in
+  // the centre, and it is still `action` -- the colour the app already uses
+  // for "press this".
+  Color get panic => action;
 
   // The scene gradient: 3 stops at 0.0 / 0.55 / 1.0, 170deg.
   final List<Color> scene;
@@ -117,7 +137,6 @@ class SkColors extends ThemeExtension<SkColors> {
     required this.destructive,
     required this.warning,
     required this.info,
-    required this.panic,
     required this.scene,
     required this.onScene,
   });
@@ -139,7 +158,6 @@ class SkColors extends ThemeExtension<SkColors> {
     destructive: Color(0xFFB3311F),
     warning: Color(0xFF7C5A1F),
     info: Color(0xFF336399),
-    panic: Color(0xFFC2542A),
     scene: [Color(0xFFE6E6C8), Color(0xFFCFD9AE), Color(0xFFB6C795)],
     onScene: Color(0xFF33421F),
   );
@@ -164,7 +182,6 @@ class SkColors extends ThemeExtension<SkColors> {
     destructive: Color(0xFFE8897B),
     warning: Color(0xFFD3A863),
     info: Color(0xFF8FB4DD),
-    panic: Color(0xFFC2542A),
     scene: [Color(0xFF54704A), Color(0xFF47603F), Color(0xFF3A5035)],
     onScene: Color(0xFFEEF3D9),
   );
@@ -196,7 +213,6 @@ class SkColors extends ThemeExtension<SkColors> {
     Color? destructive,
     Color? warning,
     Color? info,
-    Color? panic,
     List<Color>? scene,
     Color? onScene,
   }) {
@@ -217,7 +233,6 @@ class SkColors extends ThemeExtension<SkColors> {
       destructive: destructive ?? this.destructive,
       warning: warning ?? this.warning,
       info: info ?? this.info,
-      panic: panic ?? this.panic,
       scene: scene ?? this.scene,
       onScene: onScene ?? this.onScene,
     );
@@ -243,7 +258,6 @@ class SkColors extends ThemeExtension<SkColors> {
       destructive: Color.lerp(destructive, other.destructive, t)!,
       warning: Color.lerp(warning, other.warning, t)!,
       info: Color.lerp(info, other.info, t)!,
-      panic: Color.lerp(panic, other.panic, t)!,
       scene: [
         for (int i = 0; i < scene.length; i++)
           Color.lerp(scene[i], other.scene[i], t)!,

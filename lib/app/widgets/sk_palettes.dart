@@ -20,6 +20,15 @@ class SkPalette {
   });
 }
 
+// **Two light-mode action colours were darkened on 24 September 2026, and
+// that is the one place a shipped palette changed.** A white label on
+// Harvest moon's #B06F2C measured 4.07:1 and on Coral diorama's #E8564A
+// 3.58:1 -- both clear the 3.0:1 WCAG asks of a 19/600 label, which is why
+// they were listed in `test/contrast_test.dart` rather than fixed, and
+// neither clears the 4.5:1 the project decided to hold itself to. The label
+// could not move: it is already white. So the fill did, by the smallest step
+// that reaches the ratio, keeping its hue and saturation.
+//
 // Every palette the user can pick from. The themed ones are lifted from
 // the design project's "Settings - Six Themes" (the eight slots each screen
 // exercises) and "Six Themes home" (the scene gradient, the line over it,
@@ -37,8 +46,10 @@ class SkPalette {
 //   bright tints, so they want dark text, which is the pairing the home
 //   design's own CTA uses.
 //
-// panic is 0xFFC2542A in every palette and both modes, by design: the panic
-// button is the one control that looks the same everywhere.
+// **`panic` is no longer a slot.** It was 0xFFC2542A in every palette and
+// both modes; since 24 September 2026 it is a getter on `SkColors` returning
+// `action`, so the panic button wears the theme like every other control.
+// Nothing to set here, and nothing that can drift out of step.
 //
 // Adding a palette means one SkPalette entry here and nothing else -- the
 // Me tab's picker, ThemeService and the theme builders all iterate `all`.
@@ -64,7 +75,8 @@ abstract class SkPalettes {
       ink: Color(0xFF3A2F4A),
       muted: Color(0xFF9A8BA8),
       chevron: Color(0xFFC1B3CD),
-      action: Color(0xFFB06F2C),
+      // Darkened from #B06F2C: white on it measured 4.07:1.
+      action: Color(0xFFA46729),
       onAction: Color(0xFFFFFFFF),
       actionSoft: Color(0xFFE4DFF4),
       toggleOff: Color(0xFFE6DBD2),
@@ -72,7 +84,6 @@ abstract class SkPalettes {
       destructive: Color(0xFFB3311F),
       warning: Color(0xFF7C5A1F),
       info: Color(0xFF336399),
-      panic: Color(0xFFC2542A),
       scene: [Color(0xFFF4B49A), Color(0xFFE79F96), Color(0xFFA887B8)],
       onScene: Color(0xFF3A2247),
     ),
@@ -93,7 +104,6 @@ abstract class SkPalettes {
       destructive: Color(0xFFE8897B),
       warning: Color(0xFFD3A863),
       info: Color(0xFF8FB4DD),
-      panic: Color(0xFFC2542A),
       scene: [Color(0xFFA887B8), Color(0xFF6F6AA6), Color(0xFF3F4478)],
       onScene: Color(0xFFFDF1EA),
     ),
@@ -121,7 +131,6 @@ abstract class SkPalettes {
       destructive: Color(0xFFB3311F),
       warning: Color(0xFF7C5A1F),
       info: Color(0xFF336399),
-      panic: Color(0xFFC2542A),
       scene: [Color(0xFF9FB6E8), Color(0xFF8F8FBE), Color(0xFF5F7AA8)],
       onScene: Color(0xFF141833),
     ),
@@ -142,7 +151,6 @@ abstract class SkPalettes {
       destructive: Color(0xFFE8897B),
       warning: Color(0xFFD3A863),
       info: Color(0xFF8FB4DD),
-      panic: Color(0xFFC2542A),
       scene: [Color(0xFF26406E), Color(0xFF5F7AA8), Color(0xFF3B3F6B)],
       onScene: Color(0xFFEEF2FF),
     ),
@@ -168,7 +176,6 @@ abstract class SkPalettes {
       destructive: Color(0xFFB3311F),
       warning: Color(0xFF7C5A1F),
       info: Color(0xFF336399),
-      panic: Color(0xFFC2542A),
       scene: [Color(0xFF8FA383), Color(0xFF5C7361), Color(0xFF2C3B2E)],
       onScene: Color(0xFFF4F1E9),
     ),
@@ -189,7 +196,6 @@ abstract class SkPalettes {
       destructive: Color(0xFFE8897B),
       warning: Color(0xFFD3A863),
       info: Color(0xFF8FB4DD),
-      panic: Color(0xFFC2542A),
       scene: [Color(0xFF5A7561), Color(0xFF42583F), Color(0xFF2C3B2E)],
       onScene: Color(0xFFF1E7E2),
     ),
@@ -209,7 +215,8 @@ abstract class SkPalettes {
       ink: Color(0xFF38302C),
       muted: Color(0xFF9B8E88),
       chevron: Color(0xFFC3B8B2),
-      action: Color(0xFFE8564A),
+      // Darkened from #E8564A: white on it measured 3.58:1.
+      action: Color(0xFFE22C1D),
       onAction: Color(0xFFFFFFFF),
       actionSoft: Color(0xFFECDCDC),
       toggleOff: Color(0xFFDCD6D2),
@@ -217,7 +224,6 @@ abstract class SkPalettes {
       destructive: Color(0xFFB3311F),
       warning: Color(0xFF7C5A1F),
       info: Color(0xFF336399),
-      panic: Color(0xFFC2542A),
       scene: [Color(0xFFF4776A), Color(0xFFEF8A72), Color(0xFFF2A58C)],
       onScene: Color(0xFF5C1F18),
     ),
@@ -238,7 +244,6 @@ abstract class SkPalettes {
       destructive: Color(0xFFE8897B),
       warning: Color(0xFFD3A863),
       info: Color(0xFF8FB4DD),
-      panic: Color(0xFFC2542A),
       scene: [Color(0xFFE0705F), Color(0xFFB8493F), Color(0xFF7D2F31)],
       onScene: Color(0xFFFDEEE9),
     ),
@@ -264,7 +269,6 @@ abstract class SkPalettes {
       destructive: Color(0xFFB3311F),
       warning: Color(0xFF7C5A1F),
       info: Color(0xFF336399),
-      panic: Color(0xFFC2542A),
       scene: [Color(0xFF7FC4B0), Color(0xFF4E9C93), Color(0xFF2F6F72)],
       onScene: Color(0xFF0D2B2C),
     ),
@@ -285,7 +289,6 @@ abstract class SkPalettes {
       destructive: Color(0xFFE8897B),
       warning: Color(0xFFD3A863),
       info: Color(0xFF8FB4DD),
-      panic: Color(0xFFC2542A),
       scene: [Color(0xFF3F7F7C), Color(0xFF2F6F72), Color(0xFF1D4A4C)],
       onScene: Color(0xFFE6F0EC),
     ),

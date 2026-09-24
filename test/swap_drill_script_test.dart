@@ -35,6 +35,82 @@ void main() {
       expect(titles.toSet().length, 4, reason: 'two pages share a heading');
     });
 
+    // The holds. `SwapIntroHold` carries the reasoning for every one of
+    // these; what is pinned here is the shape they have to keep.
+    test('arrives in at most two beats a page, and page one in one', () {
+      // **Two is a ceiling with a reason behind it, not a habit.** The view
+      // marks the beat that has just arrived with a `GlobalKey` so it can
+      // scroll to it, and with a third beat that key moves -- which takes the
+      // previous beat's element with it and animates the wrong one. A page
+      // that needs three beats needs that marker moved first.
+      for (final SwapIntroPage page in SwapDrillScript.introduction) {
+        expect(page.beats.length, lessThanOrEqualTo(2), reason: page.title);
+        expect(page.beats.length, greaterThan(0), reason: page.title);
+
+        for (final List<SwapIntroBlock> beat in page.beats) {
+          expect(beat, isNotEmpty, reason: page.title);
+          expect(
+            beat.whereType<SwapIntroHold>(),
+            isEmpty,
+            reason: '${page.title} kept a hold in a beat',
+          );
+        }
+      }
+
+      // Page one is three short blocks. A page with nothing to gain from
+      // waiting does not wait, or the tap teaches that Continue does nothing.
+      expect(SwapDrillScript.introduction.first.beats.length, 1);
+    });
+
+    test('never opens a page with nobody on it', () {
+      // **Her head is in the first beat of every page that has one.** That is
+      // the whole reason the holds are authored rather than put in front of
+      // every beat label: splitting at the labels puts the scene on screen
+      // alone and brings her in one tap later, which is "one of her on every
+      // step" broken in a new place.
+      for (final SwapIntroPage page in SwapDrillScript.introduction) {
+        final bool speaks = page.blocks.any((SwapIntroBlock block) =>
+            block is SwapIntroExample || block is SwapIntroSaid);
+        if (!speaks) continue;
+
+        expect(
+          page.beats.first.any((SwapIntroBlock block) =>
+              block is SwapIntroExample || block is SwapIntroSaid),
+          isTrue,
+          reason: '${page.title} opens with nobody on it',
+        );
+      }
+    });
+
+    test('holds in front of the consequence, never after it', () {
+      // Pages 2 and 3 are one pair with one thing changed between them, so
+      // they break in the same place: after the sentence, before what it
+      // does. A pair that broke differently would stop reading as a pair.
+      for (final int index in <int>[1, 2]) {
+        final SwapIntroPage page = SwapDrillScript.introduction[index];
+
+        expect(page.beats.length, 2, reason: page.title);
+        expect(
+          page.beats.last.first,
+          isA<SwapIntroBeat>(),
+          reason: '${page.title} does not open its second beat on a label',
+        );
+        expect(
+          (page.beats.last.first as SwapIntroBeat).label,
+          'What happens next',
+          reason: page.title,
+        );
+      }
+
+      // Page four breaks between the two bubbles, so the swap is made rather
+      // than laid out flat -- and both halves are still on screen together
+      // once it is.
+      final SwapIntroPage swap = SwapDrillScript.introduction.last;
+
+      expect(swap.beats.first.whereType<SwapIntroExample>(), hasLength(1));
+      expect(swap.beats.last.whereType<SwapIntroExample>(), hasLength(1));
+    });
+
     test('names the subject on the first page, not three pages in', () {
       final SwapIntroPage first = SwapDrillScript.introduction.first;
 
@@ -126,10 +202,11 @@ void main() {
       // **This is what makes them a pair.** Same situation, same kind of
       // consequence, one thing changed between them. A different label on each
       // would make them two unrelated pages about one evening.
-      List<String> beats(int index) => SwapDrillScript.introduction[index].blocks
-          .whereType<SwapIntroBeat>()
-          .map((SwapIntroBeat b) => b.label)
-          .toList();
+      List<String> beats(int index) =>
+          SwapDrillScript.introduction[index].blocks
+              .whereType<SwapIntroBeat>()
+              .map((SwapIntroBeat b) => b.label)
+              .toList();
 
       expect(beats(1).last, beats(2).last);
 
@@ -544,9 +621,13 @@ void main() {
         kinds.where((SwapStepKind k) => k == SwapStepKind.situation).length,
         1,
       );
+      // **One builder step, not one per part.** The three parts are filled
+      // in on one word-bank screen since 24 September 2026 -- a part on its
+      // own is not a subject, and the teaching is that the three read down as
+      // one sentence. `SwapDrillScript.slots` holds the argument.
       expect(
         kinds.where((SwapStepKind k) => k == SwapStepKind.slot).length,
-        SwapDrillScript.slots.length,
+        1,
       );
     });
 
@@ -592,9 +673,8 @@ void main() {
         SwapDrillScript.steps.length,
         SwapDrillScript.introduction.length +
             SwapDrillScript.cards.length +
-            // fix, score, situation, shape
-            4 +
-            SwapDrillScript.slots.length +
+            // fix, score, situation, shape, the one builder step
+            5 +
             // finish, closing
             2,
       );

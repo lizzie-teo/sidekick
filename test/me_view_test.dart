@@ -131,8 +131,8 @@ void main() {
       await tester.tap(find.text('Send me a copy of everything'));
       await tester.pumpAndSettle();
 
-      expect(find.textContaining('Could not get your copy ready'),
-          findsOneWidget);
+      expect(
+          find.textContaining('Could not get your copy ready'), findsOneWidget);
     });
 
     // The footer used to say "Everything you write stays on this phone",

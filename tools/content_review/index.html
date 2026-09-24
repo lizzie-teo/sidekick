@@ -1,0 +1,1222 @@
+<title>Sidekick Copy Desk</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Poppins:wght@400;500;600&display=swap">
+
+<style>
+  /* ---- tokens: light is the base set, both themes redefine only these ---- */
+  :root {
+    --ground:   #F1EFE8;
+    --page:     #FBFAF6;
+    --raise:    #F5F3EC;
+    --ink:      #22221E;
+    --caption:  #67665B;
+    --rule:     #DFDCD1;
+    --rule-soft:#E9E6DC;
+    --accent:   #5D4B7C;
+    --accent-ink:#FFFFFF;
+    --accent-wash: rgba(93, 75, 124, 0.10);
+    --keep:     #3F6E49;
+    --change:   #9A6A20;
+    --cut:      #9C3F36;
+    --keep-wash:   rgba(63, 110, 73, 0.12);
+    --change-wash: rgba(154, 106, 32, 0.13);
+    --cut-wash:    rgba(156, 63, 54, 0.12);
+    --shadow:   0 1px 2px rgba(34, 34, 30, 0.05), 0 8px 24px rgba(34, 34, 30, 0.06);
+    --focus:    #5D4B7C;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground:   #141412;
+      --page:     #1E1E1B;
+      --raise:    #262622;
+      --ink:      #EDECE5;
+      --caption:  #A9A89B;
+      --rule:     #33332D;
+      --rule-soft:#2A2A25;
+      --accent:   #B7A3DC;
+      --accent-ink:#1B1622;
+      --accent-wash: rgba(183, 163, 220, 0.14);
+      --keep:     #8FBF97;
+      --change:   #E0A458;
+      --cut:      #E2877B;
+      --keep-wash:   rgba(143, 191, 151, 0.14);
+      --change-wash: rgba(224, 164, 88, 0.14);
+      --cut-wash:    rgba(226, 135, 123, 0.14);
+      --shadow:   0 1px 2px rgba(0, 0, 0, 0.4), 0 8px 24px rgba(0, 0, 0, 0.3);
+      --focus:    #B7A3DC;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --ground:   #141412;
+    --page:     #1E1E1B;
+    --raise:    #262622;
+    --ink:      #EDECE5;
+    --caption:  #A9A89B;
+    --rule:     #33332D;
+    --rule-soft:#2A2A25;
+    --accent:   #B7A3DC;
+    --accent-ink:#1B1622;
+    --accent-wash: rgba(183, 163, 220, 0.14);
+    --keep:     #8FBF97;
+    --change:   #E0A458;
+    --cut:      #E2877B;
+    --keep-wash:   rgba(143, 191, 151, 0.14);
+    --change-wash: rgba(224, 164, 88, 0.14);
+    --cut-wash:    rgba(226, 135, 123, 0.14);
+    --shadow:   0 1px 2px rgba(0, 0, 0, 0.4), 0 8px 24px rgba(0, 0, 0, 0.3);
+    --focus:    #B7A3DC;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--ground);
+    color: var(--ink);
+    font-family: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+    font-size: 15px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+    border-radius: 3px;
+  }
+
+  /* ---- shell ---- */
+  .shell {
+    display: grid;
+    grid-template-columns: 264px minmax(0, 1fr);
+    min-height: 100vh;
+  }
+
+  /* ---- rail ---- */
+  .rail {
+    border-right: 1px solid var(--rule);
+    background: var(--ground);
+    padding: 22px 0 60px;
+    position: sticky;
+    top: 0;
+    align-self: start;
+    max-height: 100vh;
+    overflow-y: auto;
+  }
+
+  .brand {
+    padding: 0 20px 18px;
+  }
+
+  .brand h1 {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+
+  .brand p {
+    margin: 4px 0 0;
+    font-size: 12.5px;
+    color: var(--caption);
+  }
+
+  .rail-group {
+    padding: 14px 20px 4px;
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: 10.5px;
+    font-weight: 500;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--caption);
+  }
+
+  .rail-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    padding: 7px 20px;
+    border: 0;
+    background: none;
+    color: var(--ink);
+    font: inherit;
+    font-size: 14px;
+    text-align: left;
+    cursor: pointer;
+    border-left: 2px solid transparent;
+  }
+
+  .rail-item:hover { background: var(--rule-soft); }
+
+  .rail-item[aria-current="true"] {
+    background: var(--accent-wash);
+    border-left-color: var(--accent);
+    font-weight: 600;
+  }
+
+  .rail-item .label {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .tally {
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: 11px;
+    font-variant-numeric: tabular-nums;
+    color: var(--accent);
+    background: var(--accent-wash);
+    border-radius: 9px;
+    padding: 1px 7px;
+    flex: none;
+  }
+
+  .tally[hidden] { display: none; }
+
+  /* ---- main ---- */
+  .main { min-width: 0; }
+
+  .topbar {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    padding: 14px 32px;
+    background: color-mix(in srgb, var(--ground) 90%, transparent);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .search {
+    flex: 1;
+    min-width: 180px;
+    max-width: 320px;
+    padding: 7px 11px;
+    font: inherit;
+    font-size: 14px;
+    color: var(--ink);
+    background: var(--page);
+    border: 1px solid var(--rule);
+    border-radius: 7px;
+  }
+
+  .search::placeholder { color: var(--caption); }
+
+  .segmented {
+    display: flex;
+    border: 1px solid var(--rule);
+    border-radius: 7px;
+    overflow: hidden;
+    background: var(--page);
+  }
+
+  .segmented button {
+    padding: 7px 12px;
+    border: 0;
+    border-right: 1px solid var(--rule);
+    background: none;
+    font: inherit;
+    font-size: 13px;
+    color: var(--caption);
+    cursor: pointer;
+  }
+
+  .segmented button:last-child { border-right: 0; }
+  .segmented button[aria-pressed="true"] {
+    background: var(--accent-wash);
+    color: var(--accent);
+    font-weight: 600;
+  }
+
+  .btn {
+    padding: 7px 13px;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--ink);
+    background: var(--page);
+    border: 1px solid var(--rule);
+    border-radius: 7px;
+    cursor: pointer;
+  }
+
+  .btn:hover { background: var(--raise); }
+
+  .status {
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: 11.5px;
+    color: var(--caption);
+    margin-left: auto;
+  }
+
+  .status.warn { color: var(--change); }
+
+  /* ---- reading column ---- */
+  .column {
+    max-width: 880px;
+    margin: 0 auto;
+    padding: 32px 32px 140px;
+  }
+
+  .doc-head { margin-bottom: 28px; }
+
+  .doc-head .eyebrow {
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--caption);
+  }
+
+  .doc-head h2 {
+    margin: 6px 0 4px;
+    font-size: 27px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    text-wrap: balance;
+  }
+
+  .doc-head .path {
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: 12px;
+    color: var(--caption);
+    word-break: break-all;
+  }
+
+  .section-head {
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: 10.5px;
+    font-weight: 500;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--caption);
+    padding: 26px 0 8px;
+    border-bottom: 1px solid var(--rule-soft);
+    margin-bottom: 8px;
+  }
+
+  /* ---- a line ---- */
+  .row {
+    background: var(--page);
+    border: 1px solid var(--rule);
+    border-radius: 10px;
+    margin-bottom: 8px;
+    overflow: hidden;
+    transition: border-color 120ms ease;
+  }
+
+  .row:hover { border-color: color-mix(in srgb, var(--accent) 40%, var(--rule)); }
+
+  .row[data-verdict="keep"]   { border-left: 3px solid var(--keep); }
+  .row[data-verdict="change"] { border-left: 3px solid var(--change); }
+  .row[data-verdict="cut"]    { border-left: 3px solid var(--cut); }
+
+  .row-head {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    width: 100%;
+    padding: 13px 16px;
+    border: 0;
+    background: none;
+    color: inherit;
+    text-align: left;
+    font: inherit;
+    cursor: pointer;
+  }
+
+  .row-text {
+    flex: 1;
+    min-width: 0;
+    font-family: Poppins, ui-sans-serif, system-ui, sans-serif;
+    font-size: 16px;
+    line-height: 1.55;
+    white-space: pre-wrap;
+  }
+
+  .row-meta {
+    flex: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding-top: 3px;
+  }
+
+  .ref {
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: 11px;
+    font-variant-numeric: tabular-nums;
+    color: var(--caption);
+  }
+
+  .dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--rule);
+    flex: none;
+  }
+
+  .row[data-verdict="keep"]   .dot { background: var(--keep); }
+  .row[data-verdict="change"] .dot { background: var(--change); }
+  .row[data-verdict="cut"]    .dot { background: var(--cut); }
+  .row[data-noted="true"]:not([data-verdict])   .dot { background: var(--accent); }
+
+  /* ---- the note editor ---- */
+  .note {
+    border-top: 1px solid var(--rule-soft);
+    background: var(--raise);
+    padding: 14px 16px 16px;
+    display: grid;
+    gap: 12px;
+  }
+
+  .note[hidden] { display: none; }
+
+  .verdicts { display: flex; gap: 7px; flex-wrap: wrap; }
+
+  .verdict {
+    padding: 5px 12px;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--caption);
+    background: var(--page);
+    border: 1px solid var(--rule);
+    border-radius: 999px;
+    cursor: pointer;
+  }
+
+  .verdict[aria-pressed="true"] { font-weight: 600; }
+  .verdict[data-v="keep"][aria-pressed="true"]   { color: var(--keep);   background: var(--keep-wash);   border-color: var(--keep); }
+  .verdict[data-v="change"][aria-pressed="true"] { color: var(--change); background: var(--change-wash); border-color: var(--change); }
+  .verdict[data-v="cut"][aria-pressed="true"]    { color: var(--cut);    background: var(--cut-wash);    border-color: var(--cut); }
+
+  .field { display: grid; gap: 5px; }
+
+  .field label {
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: 10.5px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--caption);
+  }
+
+  .field textarea {
+    width: 100%;
+    min-height: 62px;
+    padding: 9px 11px;
+    font: inherit;
+    font-size: 14.5px;
+    line-height: 1.5;
+    color: var(--ink);
+    background: var(--page);
+    border: 1px solid var(--rule);
+    border-radius: 7px;
+    resize: vertical;
+  }
+
+  .field textarea.as-copy {
+    font-family: Poppins, ui-sans-serif, system-ui, sans-serif;
+    font-size: 15.5px;
+  }
+
+  .field textarea::placeholder { color: var(--caption); }
+
+  .note-foot {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 12.5px;
+    color: var(--caption);
+  }
+
+  .note-foot .saved {
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: 11px;
+  }
+
+  .link-btn {
+    border: 0;
+    background: none;
+    padding: 0;
+    font: inherit;
+    font-size: 12.5px;
+    color: var(--accent);
+    cursor: pointer;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
+  /* ---- markdown blocks in a brief ---- */
+  .md { font-size: 15.5px; line-height: 1.62; }
+  .md h1, .md h2, .md h3 { margin: 0; font-weight: 600; letter-spacing: -0.01em; text-wrap: balance; }
+  .md h1 { font-size: 22px; }
+  .md h2 { font-size: 19px; }
+  .md h3 { font-size: 16.5px; }
+  .md p  { margin: 0; }
+  .md ul, .md ol { margin: 0; padding-left: 20px; }
+  .md li { margin-bottom: 3px; }
+  .md code {
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: 0.87em;
+    background: var(--raise);
+    padding: 1px 4px;
+    border-radius: 4px;
+  }
+  .md pre {
+    margin: 0;
+    padding: 11px 13px;
+    background: var(--raise);
+    border-radius: 7px;
+    overflow-x: auto;
+  }
+  .md pre code { background: none; padding: 0; }
+  .md blockquote {
+    margin: 0;
+    padding-left: 13px;
+    border-left: 3px solid var(--rule);
+    color: var(--caption);
+  }
+  .md table { border-collapse: collapse; font-size: 14px; }
+  .md th, .md td { border: 1px solid var(--rule); padding: 5px 9px; text-align: left; }
+  .md-scroll { overflow-x: auto; }
+
+  .empty {
+    padding: 60px 0;
+    text-align: center;
+    color: var(--caption);
+  }
+
+  /* ---- the digest view ---- */
+  .digest-item {
+    background: var(--page);
+    border: 1px solid var(--rule);
+    border-radius: 10px;
+    padding: 14px 16px;
+    margin-bottom: 8px;
+  }
+
+  .digest-item .ref { display: block; margin-bottom: 6px; }
+  .digest-item .was {
+    font-family: Poppins, ui-sans-serif, system-ui, sans-serif;
+    font-size: 15px;
+    margin-bottom: 8px;
+  }
+  .digest-item dl { margin: 0; display: grid; grid-template-columns: max-content 1fr; gap: 4px 12px; font-size: 14px; }
+  .digest-item dt {
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: 10.5px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--caption);
+    padding-top: 3px;
+  }
+  .digest-item dd { margin: 0; }
+
+  .pill {
+    display: inline-block;
+    padding: 1px 9px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .pill[data-v="keep"]   { color: var(--keep);   background: var(--keep-wash); }
+  .pill[data-v="change"] { color: var(--change); background: var(--change-wash); }
+  .pill[data-v="cut"]    { color: var(--cut);    background: var(--cut-wash); }
+
+  @media (max-width: 860px) {
+    .shell { grid-template-columns: 1fr; }
+    .rail { position: static; max-height: none; border-right: 0; border-bottom: 1px solid var(--rule); }
+    .column { padding: 24px 18px 120px; }
+    .topbar { padding: 12px 18px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; animation: none !important; }
+  }
+</style>
+
+<div class="shell">
+  <nav class="rail" aria-label="Content">
+    <div class="brand">
+      <h1>Copy Desk</h1>
+      <p>Every word Sidekick says</p>
+    </div>
+    <div id="rail-list"></div>
+  </nav>
+
+  <main class="main">
+    <div class="topbar">
+      <input id="search" class="search" type="search" placeholder="Search the words" aria-label="Search the words">
+      <div class="segmented" role="group" aria-label="Filter">
+        <button type="button" data-filter="all" aria-pressed="true">All</button>
+        <button type="button" data-filter="noted" aria-pressed="false">Noted</button>
+        <button type="button" data-filter="clean" aria-pressed="false">Not yet</button>
+      </div>
+      <button type="button" class="btn" id="copy-notes">Copy notes</button>
+      <span class="status" id="status">Loading…</span>
+    </div>
+    <div class="column" id="column"></div>
+  </main>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  var DATA = null;
+  var notes = new Map();      // id -> note object
+  var db = null;              // the artifact store, or null
+  var storeName = "local";
+  var current = null;         // the item on screen
+  var openId = null;          // the row whose editor is open
+  var filter = "all";
+  var query = "";
+  var pending = new Map();    // id -> timeout handle
+
+  var railList = document.getElementById("rail-list");
+  var column = document.getElementById("column");
+  var statusEl = document.getElementById("status");
+  var searchEl = document.getElementById("search");
+
+  // ---------- ids ----------
+
+  // A note's document id. Path segments allow letters, digits and
+  // _ - . ~ : @ + only, so the slashes in a file path become tildes.
+  function slug(id) {
+    return id.replace(/\//g, "~").replace(/[^A-Za-z0-9_\-.~:@+]/g, "_");
+  }
+
+  // ---------- storage ----------
+
+  function localKey(id) { return "copydesk:" + id; }
+
+  function loadLocal() {
+    notes.clear();
+    try {
+      for (var i = 0; i < localStorage.length; i++) {
+        var key = localStorage.key(i);
+        if (key && key.indexOf("copydesk:") === 0) {
+          var value = JSON.parse(localStorage.getItem(key));
+          if (value && value.id) notes.set(value.id, value);
+        }
+      }
+    } catch (err) { /* private window, blocked storage: start empty */ }
+  }
+
+  function saveNote(note) {
+    notes.set(note.id, note);
+    if (db) {
+      db.collection("notes").doc(slug(note.id)).set(note).catch(function (err) {
+        setStatus("Could not save: " + (err && err.code ? err.code : "unknown"), true);
+      });
+    } else {
+      try { localStorage.setItem(localKey(note.id), JSON.stringify(note)); }
+      catch (err) { setStatus("This browser is not keeping notes", true); }
+    }
+  }
+
+  function removeNote(id) {
+    notes.delete(id);
+    if (db) {
+      db.collection("notes").doc(slug(id)).delete().catch(function () {});
+    } else {
+      try { localStorage.removeItem(localKey(id)); } catch (err) {}
+    }
+  }
+
+  function isEmptyNote(note) {
+    return !note.verdict && !trim(note.rewrite) && !trim(note.comment);
+  }
+
+  function trim(value) { return (value || "").trim(); }
+
+  function setStatus(text, warn) {
+    statusEl.textContent = text;
+    statusEl.classList.toggle("warn", !!warn);
+  }
+
+  // ---------- the content ----------
+
+  function items() {
+    if (!DATA) return [];
+    return DATA.scripts.concat(DATA.docs);
+  }
+
+  function itemKey(item) { return item.file; }
+
+  // Every reviewable row of an item, script or brief alike.
+  function rowsOf(item) {
+    if (item._rows) return item._rows;
+    var rows;
+    if (item.kind === "script") {
+      rows = item.entries.map(function (entry) {
+        return {
+          id: entry.id,
+          section: entry.section,
+          line: entry.line,
+          endLine: entry.endLine,
+          text: entry.text,
+          html: null
+        };
+      });
+    } else {
+      rows = splitMarkdown(item.body).map(function (block, index) {
+        return {
+          id: item.file + ":b" + index,
+          section: block.section,
+          line: block.line,
+          endLine: block.line,
+          text: block.raw,
+          html: block.html
+        };
+      });
+    }
+    item._rows = rows;
+    return rows;
+  }
+
+  // ---------- a small markdown renderer ----------
+
+  function escapeHtml(text) {
+    return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  }
+
+  function inline(text) {
+    var out = escapeHtml(text);
+    out = out.replace(/`([^`]+)`/g, "<code>$1</code>");
+    out = out.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
+    out = out.replace(/(^|[^*])\*([^*]+)\*/g, "$1<em>$2</em>");
+    return out;
+  }
+
+  // Splits a brief into blocks a reviewer can mark one at a time:
+  // a heading, a paragraph, a list, a table, a fenced block.
+  function splitMarkdown(body) {
+    var lines = body.split("\n");
+    var blocks = [];
+    var buffer = [];
+    var bufferLine = 1;
+    var section = "";
+    var inFence = false;
+
+    function flush() {
+      if (!buffer.length) return;
+      var raw = buffer.join("\n");
+      if (trim(raw)) blocks.push(renderBlock(raw, bufferLine, section));
+      buffer = [];
+    }
+
+    for (var i = 0; i < lines.length; i++) {
+      var line = lines[i];
+
+      if (/^```/.test(line)) {
+        if (!inFence) { flush(); bufferLine = i + 1; }
+        buffer.push(line);
+        inFence = !inFence;
+        if (!inFence) flush();
+        continue;
+      }
+
+      if (inFence) { buffer.push(line); continue; }
+
+      if (/^#{1,6}\s/.test(line)) {
+        flush();
+        section = line.replace(/^#{1,6}\s*/, "");
+        bufferLine = i + 1;
+        buffer.push(line);
+        flush();
+        continue;
+      }
+
+      if (!trim(line)) { flush(); continue; }
+
+      if (!buffer.length) bufferLine = i + 1;
+      buffer.push(line);
+    }
+    flush();
+    return blocks;
+  }
+
+  function renderBlock(raw, line, section) {
+    var html;
+    var lines = raw.split("\n");
+
+    if (/^```/.test(raw)) {
+      var last = lines.length - 1;
+      var closed = last > 0 && /^```/.test(lines[last]);
+      var inner = lines.slice(1, closed ? last : lines.length);
+      html = "<pre><code>" + escapeHtml(inner.join("\n")) + "</code></pre>";
+    } else if (/^#{1,6}\s/.test(raw)) {
+      var level = Math.min(raw.match(/^#+/)[0].length, 3);
+      html = "<h" + level + ">" + inline(raw.replace(/^#{1,6}\s*/, "")) + "</h" + level + ">";
+    } else if (/^\s*\|/.test(raw)) {
+      html = '<div class="md-scroll">' + renderTable(lines) + "</div>";
+    } else if (/^\s*[-*+]\s/.test(lines[0])) {
+      html = "<ul>" + listItems(lines) + "</ul>";
+    } else if (/^\s*\d+\.\s/.test(lines[0])) {
+      html = "<ol>" + listItems(lines) + "</ol>";
+    } else if (/^\s*>/.test(lines[0])) {
+      html = "<blockquote>" + inline(raw.replace(/^\s*>\s?/gm, "")) + "</blockquote>";
+    } else {
+      html = "<p>" + inline(raw) + "</p>";
+    }
+
+    return { raw: raw, html: html, line: line, section: section };
+  }
+
+  function listItems(lines) {
+    var out = [];
+    for (var i = 0; i < lines.length; i++) {
+      var stripped = lines[i].replace(/^\s*(?:[-*+]|\d+\.)\s+/, "");
+      if (stripped === lines[i] && out.length) {
+        out[out.length - 1] += " " + inline(trim(lines[i]));
+      } else {
+        out.push(inline(stripped));
+      }
+    }
+    return out.map(function (item) { return "<li>" + item + "</li>"; }).join("");
+  }
+
+  function renderTable(lines) {
+    var rows = lines.filter(function (line) { return /\|/.test(line); });
+    var out = "<table>";
+    for (var i = 0; i < rows.length; i++) {
+      var cells = rows[i].replace(/^\s*\|/, "").replace(/\|\s*$/, "").split("|");
+      if (/^[\s|:-]+$/.test(rows[i])) continue;
+      var tag = i === 0 ? "th" : "td";
+      out += "<tr>";
+      for (var c = 0; c < cells.length; c++) {
+        out += "<" + tag + ">" + inline(trim(cells[c])) + "</" + tag + ">";
+      }
+      out += "</tr>";
+    }
+    return out + "</table>";
+  }
+
+  // ---------- the rail ----------
+
+  function tallyFor(item) {
+    var count = 0;
+    notes.forEach(function (note) {
+      if (note.file === item.file) count++;
+    });
+    return count;
+  }
+
+  function renderRail() {
+    var groups = [];
+    var byGroup = new Map();
+    items().forEach(function (item) {
+      if (!byGroup.has(item.group)) { byGroup.set(item.group, []); groups.push(item.group); }
+      byGroup.get(item.group).push(item);
+    });
+
+    var html = "";
+    groups.forEach(function (group) {
+      html += '<div class="rail-group">' + escapeHtml(group) + "</div>";
+      byGroup.get(group).forEach(function (item) {
+        var count = tallyFor(item);
+        html += '<button type="button" class="rail-item" data-file="' + escapeHtml(item.file) + '"' +
+          ' aria-current="' + (current && current.file === item.file ? "true" : "false") + '">' +
+          '<span class="label">' + escapeHtml(item.title) + "</span>" +
+          '<span class="tally"' + (count ? "" : " hidden") + ">" + count + "</span>" +
+          "</button>";
+      });
+    });
+
+    html += '<div class="rail-group">Handover</div>' +
+      '<button type="button" class="rail-item" data-file="__digest__"' +
+      ' aria-current="' + (current === "__digest__" ? "true" : "false") + '">' +
+      '<span class="label">All my notes</span>' +
+      '<span class="tally"' + (notes.size ? "" : " hidden") + ">" + notes.size + "</span></button>";
+
+    railList.innerHTML = html;
+  }
+
+  // ---------- the reading column ----------
+
+  function matches(row) {
+    if (query && row.text.toLowerCase().indexOf(query) === -1) return false;
+    var noted = notes.has(row.id);
+    if (filter === "noted") return noted;
+    if (filter === "clean") return !noted;
+    return true;
+  }
+
+  function renderColumn() {
+    if (current === "__digest__") return renderDigest();
+    if (!current) { column.innerHTML = ""; return; }
+
+    var rows = rowsOf(current).filter(matches);
+
+    var html = '<header class="doc-head">' +
+      '<div class="eyebrow">' + escapeHtml(current.group) + "</div>" +
+      "<h2>" + escapeHtml(current.title) + "</h2>" +
+      '<div class="path">' + escapeHtml(current.file) + "</div></header>";
+
+    if (!rows.length) {
+      html += '<p class="empty">Nothing here matches that.</p>';
+      column.innerHTML = html;
+      return;
+    }
+
+    var lastSection = null;
+    rows.forEach(function (row) {
+      if (row.section && row.section !== lastSection && current.kind === "script") {
+        html += '<div class="section-head">' + escapeHtml(row.section) + "</div>";
+        lastSection = row.section;
+      }
+      html += rowHtml(row);
+    });
+
+    column.innerHTML = html;
+    if (openId) {
+      var open = column.querySelector('[data-row="' + cssEscape(openId) + '"]');
+      if (open) openEditor(open, false);
+    }
+  }
+
+  function cssEscape(value) {
+    return value.replace(/["\\]/g, "\\$&");
+  }
+
+  function rowHtml(row) {
+    var note = notes.get(row.id);
+    var verdict = note && note.verdict ? note.verdict : "";
+    var body = row.html
+      ? '<div class="row-text md">' + row.html + "</div>"
+      : '<div class="row-text">' + escapeHtml(row.text) + "</div>";
+
+    return '<article class="row" data-row="' + escapeHtml(row.id) + '"' +
+      (verdict ? ' data-verdict="' + verdict + '"' : "") +
+      (note ? ' data-noted="true"' : "") + ">" +
+      '<button type="button" class="row-head">' + body +
+      '<span class="row-meta"><span class="ref">' + row.line + "</span>" +
+      '<span class="dot"></span></span></button>' +
+      '<div class="note" hidden></div></article>';
+  }
+
+  function renderDigest() {
+    var all = [];
+    notes.forEach(function (note) { all.push(note); });
+    all.sort(function (a, b) {
+      if (a.file !== b.file) return a.file < b.file ? -1 : 1;
+      return a.line - b.line;
+    });
+
+    var html = '<header class="doc-head">' +
+      '<div class="eyebrow">Handover</div><h2>All my notes</h2>' +
+      '<div class="path">' + all.length + " note" + (all.length === 1 ? "" : "s") +
+      " · Claude reads these straight from the page</div></header>";
+
+    if (!all.length) {
+      html += '<p class="empty">No notes yet. Tap any line to leave one.</p>';
+      column.innerHTML = html;
+      return;
+    }
+
+    all.forEach(function (note) {
+      html += '<div class="digest-item">' +
+        '<span class="ref">' + escapeHtml(note.file) + ":" + note.line + "</span>" +
+        (note.verdict ? '<span class="pill" data-v="' + note.verdict + '">' +
+          note.verdict.charAt(0).toUpperCase() + note.verdict.slice(1) + "</span>" : "") +
+        '<div class="was">' + escapeHtml(note.text) + "</div><dl>";
+      if (trim(note.rewrite)) {
+        html += "<dt>Instead</dt><dd>" + escapeHtml(note.rewrite) + "</dd>";
+      }
+      if (trim(note.comment)) {
+        html += "<dt>Note</dt><dd>" + escapeHtml(note.comment) + "</dd>";
+      }
+      html += "</dl></div>";
+    });
+
+    column.innerHTML = html;
+  }
+
+  // ---------- the note editor ----------
+
+  function findRow(id) {
+    var found = null;
+    var search = current && current !== "__digest__"
+      ? [current].concat(items().filter(function (item) { return item !== current; }))
+      : items();
+    search.some(function (item) {
+      return rowsOf(item).some(function (row) {
+        if (row.id === id) { found = { item: item, row: row }; return true; }
+        return false;
+      });
+    });
+    return found;
+  }
+
+  function openEditor(article, focus) {
+    var id = article.getAttribute("data-row");
+    var found = findRow(id);
+    if (!found) return;
+    var note = notes.get(id) || blankNote(found);
+    var panel = article.querySelector(".note");
+
+    panel.innerHTML =
+      '<div class="verdicts" role="group" aria-label="What should happen to this line">' +
+        verdictBtn("keep", "Keep", note.verdict) +
+        verdictBtn("change", "Change", note.verdict) +
+        verdictBtn("cut", "Cut", note.verdict) +
+      "</div>" +
+      '<div class="field"><label for="rw-' + escapeHtml(id) + '">Say it this way instead</label>' +
+        '<textarea class="as-copy" id="rw-' + escapeHtml(id) + '" data-field="rewrite"' +
+        ' placeholder="Leave blank if the words are fine"></textarea></div>' +
+      '<div class="field"><label for="cm-' + escapeHtml(id) + '">Note for Claude</label>' +
+        '<textarea id="cm-' + escapeHtml(id) + '" data-field="comment"' +
+        ' placeholder="What is wrong with it, or what you want instead"></textarea></div>' +
+      '<div class="note-foot"><span class="saved"></span>' +
+        '<button type="button" class="link-btn" data-action="clear">Clear this note</button></div>';
+
+    panel.querySelector('[data-field="rewrite"]').value = note.rewrite || "";
+    panel.querySelector('[data-field="comment"]').value = note.comment || "";
+    panel.hidden = false;
+    openId = id;
+    if (focus) panel.querySelector('[data-field="comment"]').focus();
+  }
+
+  function verdictBtn(value, label, chosen) {
+    return '<button type="button" class="verdict" data-v="' + value + '"' +
+      ' aria-pressed="' + (chosen === value ? "true" : "false") + '">' + label + "</button>";
+  }
+
+  function blankNote(found) {
+    return {
+      id: found.row.id,
+      file: found.item.file,
+      title: found.item.title,
+      group: found.item.group,
+      section: found.row.section || "",
+      line: found.row.line,
+      endLine: found.row.endLine,
+      text: found.row.text,
+      verdict: "",
+      rewrite: "",
+      comment: "",
+      updatedAt: ""
+    };
+  }
+
+  function commit(id, changes, immediate) {
+    var found = findRow(id);
+    if (!found) return;
+    var note = Object.assign({}, notes.get(id) || blankNote(found), changes);
+    note.updatedAt = new Date().toISOString();
+
+    if (isEmptyNote(note)) {
+      removeNote(id);
+      markRow(id);
+      renderRail();
+      return;
+    }
+
+    notes.set(id, note);
+    markRow(id);
+    renderRail();
+
+    clearTimeout(pending.get(id));
+    if (immediate) {
+      saveNote(note);
+    } else {
+      pending.set(id, setTimeout(function () { saveNote(notes.get(id)); }, 500));
+    }
+  }
+
+  function markRow(id) {
+    var article = column.querySelector('[data-row="' + cssEscape(id) + '"]');
+    if (!article) return;
+    var note = notes.get(id);
+    if (note) {
+      article.setAttribute("data-noted", "true");
+      if (note.verdict) article.setAttribute("data-verdict", note.verdict);
+      else article.removeAttribute("data-verdict");
+    } else {
+      article.removeAttribute("data-noted");
+      article.removeAttribute("data-verdict");
+    }
+    var saved = article.querySelector(".saved");
+    if (saved) saved.textContent = note ? "Saved" : "";
+  }
+
+  // ---------- events ----------
+
+  column.addEventListener("click", function (event) {
+    var head = event.target.closest(".row-head");
+    if (head) {
+      var article = head.closest(".row");
+      var id = article.getAttribute("data-row");
+      var panel = article.querySelector(".note");
+      if (!panel.hidden && openId === id) {
+        panel.hidden = true;
+        openId = null;
+      } else {
+        if (openId) {
+          var previous = column.querySelector('[data-row="' + cssEscape(openId) + '"] .note');
+          if (previous) previous.hidden = true;
+        }
+        openEditor(article, true);
+      }
+      return;
+    }
+
+    var verdict = event.target.closest(".verdict");
+    if (verdict) {
+      var row = verdict.closest(".row").getAttribute("data-row");
+      var chosen = verdict.getAttribute("aria-pressed") === "true" ? "" : verdict.getAttribute("data-v");
+      verdict.parentNode.querySelectorAll(".verdict").forEach(function (button) {
+        button.setAttribute("aria-pressed", button.getAttribute("data-v") === chosen ? "true" : "false");
+      });
+      commit(row, { verdict: chosen }, true);
+      return;
+    }
+
+    var clear = event.target.closest('[data-action="clear"]');
+    if (clear) {
+      var clearId = clear.closest(".row").getAttribute("data-row");
+      clearTimeout(pending.get(clearId));
+      removeNote(clearId);
+      markRow(clearId);
+      renderRail();
+      var panelToReset = clear.closest(".note");
+      panelToReset.querySelectorAll("textarea").forEach(function (box) { box.value = ""; });
+      panelToReset.querySelectorAll(".verdict").forEach(function (button) {
+        button.setAttribute("aria-pressed", "false");
+      });
+    }
+  });
+
+  column.addEventListener("input", function (event) {
+    var box = event.target;
+    if (box.tagName !== "TEXTAREA") return;
+    var id = box.closest(".row").getAttribute("data-row");
+    var changes = {};
+    changes[box.getAttribute("data-field")] = box.value;
+    commit(id, changes, false);
+  });
+
+  column.addEventListener("keydown", function (event) {
+    if (event.key === "Escape" && openId) {
+      var panel = column.querySelector('[data-row="' + cssEscape(openId) + '"] .note');
+      if (panel) panel.hidden = true;
+      openId = null;
+    }
+  });
+
+  railList.addEventListener("click", function (event) {
+    var item = event.target.closest(".rail-item");
+    if (!item) return;
+    var file = item.getAttribute("data-file");
+    current = file === "__digest__" ? "__digest__" :
+      items().filter(function (entry) { return entry.file === file; })[0];
+    openId = null;
+    renderRail();
+    renderColumn();
+    window.scrollTo({ top: 0, behavior: "auto" });
+  });
+
+  searchEl.addEventListener("input", function () {
+    query = searchEl.value.trim().toLowerCase();
+    renderColumn();
+  });
+
+  document.querySelectorAll("[data-filter]").forEach(function (button) {
+    button.addEventListener("click", function () {
+      filter = button.getAttribute("data-filter");
+      document.querySelectorAll("[data-filter]").forEach(function (other) {
+        other.setAttribute("aria-pressed", other === button ? "true" : "false");
+      });
+      renderColumn();
+    });
+  });
+
+  document.getElementById("copy-notes").addEventListener("click", function () {
+    var all = [];
+    notes.forEach(function (note) { all.push(note); });
+    all.sort(function (a, b) {
+      if (a.file !== b.file) return a.file < b.file ? -1 : 1;
+      return a.line - b.line;
+    });
+    if (!all.length) { setStatus("No notes to copy yet"); return; }
+
+    var out = "# Copy desk notes\n";
+    var lastFile = null;
+    all.forEach(function (note) {
+      if (note.file !== lastFile) {
+        out += "\n## " + note.title + "  \n`" + note.file + "`\n";
+        lastFile = note.file;
+      }
+      out += "\n- **" + note.file + ":" + note.line + "** — " +
+        (note.verdict ? note.verdict.toUpperCase() : "NOTE") + "\n";
+      out += "  - Now: " + JSON.stringify(note.text) + "\n";
+      if (trim(note.rewrite)) out += "  - Instead: " + JSON.stringify(note.rewrite) + "\n";
+      if (trim(note.comment)) out += "  - Note: " + note.comment + "\n";
+    });
+
+    navigator.clipboard.writeText(out).then(function () {
+      setStatus("Copied " + all.length + " note" + (all.length === 1 ? "" : "s"));
+    }, function () {
+      setStatus("Could not reach the clipboard", true);
+    });
+  });
+
+  // ---------- start ----------
+
+  function describeStore() {
+    setStatus(storeName === "shared"
+      ? "Notes saved · Claude can read them"
+      : "Notes saved in this browser only");
+  }
+
+  fetch("content.json")
+    .then(function (response) { return response.json(); })
+    .then(function (data) {
+      DATA = data;
+      current = DATA.scripts[0] || DATA.docs[0] || null;
+      loadLocal();
+      renderRail();
+      renderColumn();
+      describeStore();
+      return window.claude && window.claude.use ? window.claude.use("db") : null;
+    })
+    .then(function (store) {
+      if (!store) return;
+      db = store;
+      storeName = "shared";
+      db.collection("notes").onSnapshot(function (snapshot) {
+        notes.clear();
+        snapshot.docs.forEach(function (doc) {
+          var value = doc.data();
+          if (value && value.id) notes.set(value.id, value);
+        });
+        renderRail();
+        // Leave an open editor alone so a snapshot never eats what is
+        // being typed; everything else re-reads from the store.
+        var typing = document.activeElement && document.activeElement.tagName === "TEXTAREA";
+        if (!typing) renderColumn();
+        else notes.forEach(function (note) { markRow(note.id); });
+        describeStore();
+      }, function (error) {
+        setStatus("Store error: " + error.code, true);
+      });
+      describeStore();
+    })
+    .catch(function (error) {
+      setStatus("Could not load the content: " + error.message, true);
+    });
+})();
+</script>

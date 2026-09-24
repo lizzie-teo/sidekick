@@ -90,8 +90,7 @@ class _ThemeSheetViewState extends State<ThemeSheetView> {
                 ? 'Both'
                 : '${SidekickCharacter.girl.label} only',
             value: _bothCharacters,
-            onChanged: (bool value) =>
-                setState(() => _bothCharacters = value),
+            onChanged: (bool value) => setState(() => _bothCharacters = value),
           ),
         ],
       ),

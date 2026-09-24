@@ -149,16 +149,16 @@ void main() {
       //
       // The second half is the rule the wishes were rewritten on three times:
       // a wish about conditions is one today is free to contradict while the
-      // reader is still hearing it. "May today be easy" fails. "May I have
-      // some peace, whatever today brings" does not -- it wishes for the
-      // person inside the day rather than for the day.
+      // reader is still hearing it. "May today be easy" fails. "May I be at
+      // ease" does not -- it wishes for the person inside the day rather
+      // than for the day.
       for (final String wish in <String>[...outward, ...inward]) {
         expect(wish.contains('for you'), isFalse, reason: wish);
 
-        expect(
-            RegExp(r'^May (today|it|things|everything)\b').hasMatch(wish),
+        expect(RegExp(r'^May (today|it|things|everything)\b').hasMatch(wish),
             isFalse,
-            reason: 'a wish about the day, which the day can contradict: $wish');
+            reason:
+                'a wish about the day, which the day can contradict: $wish');
       }
     });
 
@@ -180,7 +180,9 @@ void main() {
 
       // Once. A second ask would be the script checking up on them.
       expect(
-          lines.where((String line) => line.toLowerCase().contains('say them')).length,
+          lines
+              .where((String line) => line.toLowerCase().contains('say them'))
+              .length,
           1);
     });
 
@@ -228,8 +230,8 @@ void main() {
 
         // Anything demanding a mental picture fails for the people who make
         // none, on line one, which is a failure the script cannot see.
-        expect(RegExp(r'\b(imagine|picture|visualise)\b').hasMatch(line),
-            isFalse,
+        expect(
+            RegExp(r'\b(imagine|picture|visualise)\b').hasMatch(line), isFalse,
             reason: step.line);
       }
     });
@@ -254,31 +256,28 @@ void main() {
       }
     });
 
-    test('the permission is standing, and it is read before Begin', () {
-      // A choice point that costs a choice is not a kindness, and one offered
-      // just before a hard part predicts the hard part. So it is a permission
-      // about the session, given early while a sentence is still cheap.
+    test('the permission is gone from the words, and stays gone', () {
+      // **The permission line was cut on 24 September 2026** at the user's
+      // request. It read "You can stop whenever you want." on the
+      // introduction page, having moved there from the opening on 23
+      // September.
       //
-      // **It moved out of the script on 23 September 2026 and onto the
-      // introduction page.** It was the last line of the opening, which was
-      // already early. The introduction is earlier still: it is read before
-      // the clock starts, at the reader's own speed, and it is the last thing
-      // on the page above the Begin button.
-      //
-      // Pinned to the fact, not to an index or a section. What matters is
-      // that a way out is offered before anything is asked for.
-      expect(LowDayScript.permission.startsWith('You can stop whenever'), isTrue,
-          reason: 'the way out is gone');
-
-      // And it is said once. Repeating it inside the script would be the
-      // duplication this move existed to remove.
+      // The argument against cutting it is written out in
+      // `low_day_script.dart` and is not repeated here. What this test does
+      // is stop it coming back **into the timed script**, which is where it
+      // lived before and is the one place it must never be: a way out offered
+      // four minutes deep is a decision, and a decision is work.
       expect(
           LowDayScript.steps
               .where((LowDayStep step) =>
                   step.line.startsWith('You can stop whenever'))
               .isEmpty,
           isTrue,
-          reason: 'the permission is said twice');
+          reason: 'the permission is back inside the script');
+
+      // The way out the reader actually has is a button, not a sentence.
+      // "That's enough for now" is on the script page from its first frame,
+      // and `low_day_view_test.dart` is what holds it there.
     });
 
     test('the script says it is over, and then stops', () {
@@ -320,11 +319,12 @@ void main() {
 
       final int closed =
           lines.indexWhere((String line) => line.contains('Close your eyes'));
-      final int opened = lines
-          .indexWhere((String line) => line.contains('let your eyes come back'));
+      final int opened = lines.indexWhere(
+          (String line) => line.contains('let your eyes come back'));
 
       expect(closed, greaterThan(-1), reason: 'the eyes are never closed');
-      expect(opened, greaterThan(closed), reason: 'the eyes are never given back');
+      expect(opened, greaterThan(closed),
+          reason: 'the eyes are never given back');
     });
 
     test('every line fits one glance', () {
@@ -401,7 +401,8 @@ void main() {
           reason: 'the out-breath has drifted out of the settling');
     });
 
-    test('the in-breath is permitted once, in the leaving, and never instructed',
+    test(
+        'the in-breath is permitted once, in the leaving, and never instructed',
         () {
       final List<LowDayStep> back = LowDayScript.steps
           .where((LowDayStep step) => step.breath == LowDayBreath.back)
@@ -506,8 +507,6 @@ void main() {
       final Iterable<String> page = <String>[
         LowDayScript.title,
         ...LowDayScript.intro,
-        LowDayScript.permission,
-        LowDayScript.permissionNote,
       ];
 
       for (final String line in page) {

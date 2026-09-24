@@ -1,0 +1,184 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-09-24T00:00:00Z",
+  "title": "Design System: Sidekick",
+  "extensions": {
+    "colorMeta": {
+      "canvas": { "role": "neutral", "displayName": "Warm Parchment", "canonical": "#F6F1E2", "tonalRamp": ["#26251C", "#3B3A2C", "#57553F", "#787555", "#9B9874", "#C0BC9C", "#E0DCC5", "#F6F1E2"] },
+      "surface": { "role": "neutral", "displayName": "Lifted White", "canonical": "#FFFFFF", "tonalRamp": ["#262626", "#3D3D3D", "#595959", "#7A7A7A", "#9E9E9E", "#C4C4C4", "#E8E8E8", "#FFFFFF"] },
+      "ink": { "role": "neutral", "displayName": "Deep Forest Ink", "canonical": "#2C3324", "tonalRamp": ["#14180F", "#1F2418", "#2C3324", "#414B34", "#5A6949", "#7E8D68", "#AAB596", "#D7DDC9"] },
+      "muted": { "role": "neutral", "displayName": "Sage Grey", "canonical": "#8B8A72", "tonalRamp": ["#232318", "#383726", "#4E4D36", "#676549", "#8B8A72", "#ACAB96", "#CBCABB", "#E9E9E0"] },
+      "border": { "role": "neutral", "displayName": "Dry Stone", "canonical": "#E0DBC6", "tonalRamp": ["#26241B", "#3B3829", "#55513B", "#736E50", "#948E6B", "#B6B192", "#D0CBB4", "#E0DBC6"] },
+      "action": { "role": "primary", "displayName": "Moss Green", "canonical": "#3D5232", "tonalRamp": ["#151C11", "#22301B", "#3D5232", "#4F6A41", "#688A56", "#8AA97A", "#B2C7A6", "#D9E4D2"], "note": "Dark mode swaps this one slot to gold #D9A640; moss disappears on a dark ground." },
+      "action-soft": { "role": "primary", "displayName": "Pale Moss Tint", "canonical": "#E2E8D6", "tonalRamp": ["#22261B", "#363C2B", "#4D553D", "#697454", "#8B976F", "#B0BA96", "#CDD5BA", "#E2E8D6"] },
+      "panic": { "role": "tertiary", "displayName": "Ember Orange", "canonical": "#C2542A", "tonalRamp": ["#2B1209", "#451D0F", "#612915", "#84391D", "#A84726", "#C2542A", "#DA8460", "#F0BBA4"], "note": "Identical in all six palettes and both modes. Never themed." },
+      "success": { "role": "secondary", "displayName": "Verified Green", "canonical": "#246D43", "tonalRamp": ["#0B2115", "#123520", "#1A4E2F", "#246D43", "#2F8D57", "#4FB57A", "#8BD4AA", "#C7EAD6"], "note": "Fixed across every palette. Dark-mode pair is #6FC094." },
+      "destructive": { "role": "secondary", "displayName": "Clay Red", "canonical": "#B3311F", "tonalRamp": ["#2B0C07", "#45140B", "#631C10", "#8A2717", "#B3311F", "#D25441", "#E79281", "#F5C9C0"], "note": "Fixed across every palette. Dark-mode pair is #E8897B." },
+      "warning": { "role": "secondary", "displayName": "Brown Gold", "canonical": "#7C5A1F", "tonalRamp": ["#1D1507", "#30230C", "#473312", "#5F4518", "#7C5A1F", "#A57B2E", "#CDA862", "#E7D2A8"], "note": "Amber must go dark to be legible on a pale ground, and dark amber is brown. Dark-mode pair is #D3A863." },
+      "info": { "role": "secondary", "displayName": "Slate Blue", "canonical": "#336399", "tonalRamp": ["#0C1825", "#14263A", "#1D3853", "#274B70", "#336399", "#4E82BC", "#87ACD6", "#C2D5EB"], "note": "Fixed across every palette. Dark-mode pair is #8FB4DD." },
+      "on-scene": { "role": "neutral", "displayName": "Deep Meadow Ink", "canonical": "#33421F", "tonalRamp": ["#141A0C", "#212B13", "#33421F", "#455A2A", "#5C7738", "#7E9C55", "#A9C185", "#D4E0BF"], "note": "The only text colour permitted over the scene gradient." },
+      "exercise-ground": { "role": "neutral", "displayName": "Lesson Off-White", "canonical": "#F4F3EF", "tonalRamp": ["#1A1A17", "#2A2A28", "#3E3E3A", "#5E5E58", "#87867E", "#B0AFA6", "#D5D4CD", "#F4F3EF"], "note": "Palette-proof. Dark pair is #1A1A17. Turns over with light/dark only." }
+    },
+    "typographyMeta": {
+      "large-title": { "displayName": "Large Title", "purpose": "A screen title alone on its row. The only 700 weight in the system." },
+      "breath-cue": { "displayName": "Breath Cue", "purpose": "The single breathing instruction, mid-panic. Nothing else shares its band." },
+      "scene-line": { "displayName": "Scene Line", "purpose": "The encouragement line over the scene gradient." },
+      "button": { "displayName": "Button", "purpose": "The primary pill's label. 600, not 700 — the fill already says it is a button." },
+      "card-title": { "displayName": "Card Title", "purpose": "A list or option card's heading. 18, so it sits below the 19 of a primary button." },
+      "quote": { "displayName": "Quote", "purpose": "Somebody's sentence, quoted on a page explaining it. The only italic in the app; needs Poppins-Italic.ttf or it silently renders upright." },
+      "row-label": { "displayName": "Row Label", "purpose": "All long reading text, list rows, text fields. The iOS body size and weight." },
+      "button-small": { "displayName": "Button Small", "purpose": "Soft secondary buttons, one step below the primary." },
+      "button-ghost": { "displayName": "Button Ghost", "purpose": "The quietest control tier. 'That's enough for now', 'See all'." },
+      "sheet-heading": { "displayName": "Sheet Heading", "purpose": "A heading inside an explanation sheet, told apart by weight rather than colour." },
+      "caption": { "displayName": "Caption", "purpose": "Subtitles and metadata. Coloured by SkContrast.captionOn(ground), never muted." },
+      "chip-label": { "displayName": "Chip Label", "purpose": "The label inside a category chip." },
+      "section-header": { "displayName": "Section Header", "purpose": "Uppercase header above a grouped list. 13 with +6% tracking, because capitals need the space back." }
+    },
+    "shadows": [
+      { "name": "glass-bar", "value": "0 -2px 12px rgba(0,0,0,0.14)", "purpose": "The floating main tab bar, the only real drop shadow in the app. Currently a hex literal in sk_tab_bar.dart and logged as a leak." },
+      { "name": "none-by-default", "value": "none", "purpose": "Everything else. Depth is a surface lifted off the canvas with a 1px border, never a shadow." }
+    ],
+    "motion": [
+      { "name": "step-crossfade", "value": "240ms cubic-bezier(0, 0, 0.58, 1) in / cubic-bezier(0.42, 0, 1, 1) out", "purpose": "Between steps of a guided script. Crossfade only — the reader moves both ways, so a slide direction would be a lie half the time." },
+      { "name": "page-transition", "value": "CupertinoPageTransitionsBuilder, all platforms", "purpose": "Screens slide in from the right on iOS and Android alike." },
+      { "name": "breath", "value": "10.0s per cycle (3.875s in, 6.125s out) — 480 frames at 48fps", "purpose": "Six breaths a minute. Driven by two Rive events on the character's Breathe timeline, not by any timer in Dart." },
+      { "name": "no-ripple", "value": "NoSplash.splashFactory", "purpose": "A tap reads as a brief press wash, never an Android ink ripple." }
+    ],
+    "breakpoints": [
+      { "name": "compact", "value": "0px", "purpose": "Under 380 — iPhone SE, or any phone in split view. Gutter 16." },
+      { "name": "medium", "value": "380px", "purpose": "Every ordinary phone. Gutter 24." },
+      { "name": "expanded", "value": "600px", "purpose": "A small tablet, or a phone in landscape. Gutter 32, display type x1.08." },
+      { "name": "wide", "value": "900px", "purpose": "A tablet in landscape, a desktop window. Gutter 40, display type x1.15." }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The one main action on a screen. Full width, capsule, filled in the theme's accent.",
+      "html": "<button class=\"ds-btn-primary\">Save</button>",
+      "css": ".ds-btn-primary { display:flex; align-items:center; justify-content:center; width:100%; min-height:56px; padding:0 24px; background:#3D5232; color:#F6F1E2; font-family:Poppins,system-ui,sans-serif; font-size:19px; font-weight:600; line-height:1.2; border:none; border-radius:999px; cursor:pointer; transition:filter .15s; } .ds-btn-primary:hover { filter:brightness(1.08); } .ds-btn-primary:active { filter:brightness(0.9); } .ds-btn-primary:focus-visible { outline:2px solid #2C3324; outline-offset:3px; }"
+    },
+    {
+      "name": "Soft Button",
+      "kind": "button",
+      "refersTo": "button-soft",
+      "description": "The secondary tier. Sits in a row under the primary button and is deliberately one step smaller.",
+      "html": "<button class=\"ds-btn-soft\">Scribble</button>",
+      "css": ".ds-btn-soft { display:flex; align-items:center; justify-content:center; min-height:50px; padding:8px 12px; background:#E2E8D6; color:#3D5232; font-family:Poppins,system-ui,sans-serif; font-size:17px; font-weight:600; line-height:1.2; border:none; border-radius:14px; cursor:pointer; transition:filter .15s; } .ds-btn-soft:hover { filter:brightness(0.96); } .ds-btn-soft:focus-visible { outline:2px solid #3D5232; outline-offset:3px; }"
+    },
+    {
+      "name": "Outline Button",
+      "kind": "button",
+      "refersTo": "button-outline",
+      "description": "A real choice that is not the main one. 1.5px border so it holds its own beside a filled pill of the same height.",
+      "html": "<button class=\"ds-btn-outline\">I'm alright now</button>",
+      "css": ".ds-btn-outline { display:flex; align-items:center; justify-content:center; width:100%; min-height:56px; padding:0 24px; background:transparent; color:#2C3324; font-family:Poppins,system-ui,sans-serif; font-size:19px; font-weight:600; line-height:1.2; border:1.5px solid #2C3324; border-radius:999px; cursor:pointer; } .ds-btn-outline:hover { background:rgba(44,51,36,0.06); } .ds-btn-outline:focus-visible { outline:2px solid #2C3324; outline-offset:3px; }"
+    },
+    {
+      "name": "Ghost Button",
+      "kind": "button",
+      "refersTo": "button-ghost",
+      "description": "The quietest tier, and the only one allowed under a real button without competing with it.",
+      "html": "<button class=\"ds-btn-ghost\">That's enough for now</button>",
+      "css": ".ds-btn-ghost { display:flex; align-items:center; justify-content:center; min-height:48px; padding:0 16px; background:transparent; color:#2C3324; font-family:Poppins,system-ui,sans-serif; font-size:15px; font-weight:600; line-height:1.2; border:none; border-radius:999px; cursor:pointer; } .ds-btn-ghost:hover { opacity:.75; } .ds-btn-ghost:focus-visible { outline:2px solid #2C3324; outline-offset:3px; }"
+    },
+    {
+      "name": "List Card",
+      "kind": "card",
+      "refersTo": "card-list",
+      "description": "A tappable row of content: optional uppercase eyebrow, title, caption, chevron.",
+      "html": "<a class=\"ds-card-list\" href=\"#\"><span class=\"ds-card-body\"><span class=\"ds-card-eyebrow\">MEDITATE</span><span class=\"ds-card-title\">Mountain</span><span class=\"ds-card-caption\">Twelve minutes, sitting</span></span><svg class=\"ds-card-chevron\" width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><polyline points=\"9 18 15 12 9 6\"/></svg></a>",
+      "css": ".ds-card-list { display:flex; align-items:center; gap:12px; min-height:60px; padding:13px 16px; background:#FFFFFF; border:1px solid #E0DBC6; border-radius:20px; text-decoration:none; font-family:Poppins,system-ui,sans-serif; } .ds-card-list:hover { background:#FBF9F2; } .ds-card-list:focus-visible { outline:2px solid #3D5232; outline-offset:3px; } .ds-card-body { display:flex; flex-direction:column; flex:1; } .ds-card-eyebrow { font-size:13px; font-weight:600; line-height:1.2; letter-spacing:.78px; text-transform:uppercase; color:#6B6A55; margin-bottom:4px; } .ds-card-title { font-size:18px; font-weight:600; line-height:1.222; color:#2C3324; } .ds-card-caption { font-size:16px; font-weight:400; line-height:1.4; color:#6B6A55; margin-top:3px; } .ds-card-chevron { color:#ADAE94; flex:none; }"
+    },
+    {
+      "name": "Text Field",
+      "kind": "input",
+      "refersTo": "input-text",
+      "description": "A thing you put something into: softened corners, 1px border, the accent as the cursor.",
+      "html": "<input class=\"ds-input-text\" type=\"text\" placeholder=\"Something good that happened\" />",
+      "css": ".ds-input-text { width:100%; padding:14px 16px; background:#FFFFFF; color:#2C3324; caret-color:#3D5232; font-family:Poppins,system-ui,sans-serif; font-size:17px; font-weight:400; line-height:1.4; border:1px solid #E0DBC6; border-radius:14px; } .ds-input-text::placeholder { color:#8B8A72; } .ds-input-text:focus { outline:none; border-color:#3D5232; } .ds-input-text[aria-invalid=\"true\"] { border-color:#B3311F; }"
+    },
+    {
+      "name": "Category Chip",
+      "kind": "chip",
+      "refersTo": "chip-category",
+      "description": "A category read once, at a glance, by somebody who has just opened a screen.",
+      "html": "<span class=\"ds-chip-category\">Assertiveness</span>",
+      "css": ".ds-chip-category { display:inline-flex; align-items:center; min-height:32px; padding:6px 12px; background:#E2E8D6; color:#2C3324; font-family:Poppins,system-ui,sans-serif; font-size:14px; font-weight:600; line-height:1.3; border-radius:999px; }"
+    },
+    {
+      "name": "Status Block",
+      "kind": "custom",
+      "refersTo": null,
+      "description": "A fact reported back: a tinted wash, a hairline, an icon and words. Never a filled pill, because a filled pill is a button.",
+      "html": "<div class=\"ds-status-success\"><svg width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><polyline points=\"20 6 9 17 4 12\"/></svg><span>Correct</span></div>",
+      "css": ".ds-status-success { display:flex; align-items:center; gap:8px; padding:12px 16px; background:rgba(36,109,67,0.12); color:#246D43; border:1px solid rgba(36,109,67,0.32); border-radius:14px; font-family:Poppins,system-ui,sans-serif; font-size:16px; font-weight:600; line-height:1.3; }"
+    },
+    {
+      "name": "Panic Button",
+      "kind": "button",
+      "refersTo": "button-panic",
+      "description": "The centre slot of the tab bar. Identical in every theme and both modes, and it opens the pacer with no question in front of it.",
+      "html": "<button class=\"ds-btn-panic\" aria-label=\"Panic\"><svg width=\"28\" height=\"28\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M12 21s-7-4.5-7-9.5A4.5 4.5 0 0 1 12 8a4.5 4.5 0 0 1 7 3.5C19 16.5 12 21 12 21z\"/></svg></button>",
+      "css": ".ds-btn-panic { display:flex; align-items:center; justify-content:center; width:64px; height:64px; background:#C2542A; color:#FFFFFF; border:none; border-radius:999px; cursor:pointer; } .ds-btn-panic:active { filter:brightness(0.92); } .ds-btn-panic:focus-visible { outline:3px solid #2C3324; outline-offset:3px; }"
+    },
+    {
+      "name": "Progress Bar",
+      "kind": "custom",
+      "refersTo": null,
+      "description": "One bar filling once. No segments, no percentage, no number. The one place a lesson takes the reader's own accent.",
+      "html": "<div class=\"ds-progress\" role=\"progressbar\" aria-valuenow=\"40\" aria-valuemin=\"0\" aria-valuemax=\"100\"><div class=\"ds-progress-fill\"></div></div>",
+      "css": ".ds-progress { width:100%; height:6px; background:#E4E3DD; border-radius:999px; overflow:hidden; } .ds-progress-fill { width:40%; height:100%; background:#3D5232; border-radius:999px; transition:width .24s cubic-bezier(0,0,0.58,1); }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Quiet Companion",
+    "overview": "Sidekick looks like somebody sitting next to you rather than an instrument measuring you. Every ground is warm and slightly off-white; nothing is pure white and nothing is pure black. The loudest object on a screen is usually a character who is breathing, and she is drawn, not rendered in UI. The interface itself is made of soft pills, rounded cards and hairlines, and it gets out of the way of whatever is being said.\n\nThe system is unusually strict about where colour comes from and what it is allowed to mean. Six palettes times two modes is twelve schemes, so every colour on screen is read from context.sk and never from a hex literal. Four status colours are the one family that does not change with the palette, because a status colour is a word rather than a decoration.\n\nDensity is low and deliberate. One thing is said at a time, in one place. The reading column is capped at 560 points. Bands around the character are fixed height so a long line cannot move her while somebody is breathing with her. The habitual wellbeing-app look of streak rings, progress charts, confetti and badge grids is rejected outright, not toned down.",
+    "keyCharacteristics": [
+      "Warm off-white grounds; no pure white, no pure black, anywhere",
+      "Pills for actions, 20px cards for content, hairlines instead of shadows",
+      "Poppins at every size, 400 to 700, nothing lighter than 400 or smaller than 13",
+      "Four-point spacing grid with named steps only",
+      "Four fixed status colours that survive every theme",
+      "A drawn character carries the emotion; the UI carries none of it"
+    ],
+    "rules": [
+      { "name": "The Twelve Schemes Rule", "body": "Every colour comes from context.sk. A hex literal is correct in at most one of the twelve light/dark palette combinations, so it is a screen that is broken in eleven of them and nobody notices. An exception must carry a comment beside it saying what the alternative was and why it lost.", "section": "colors" },
+      { "name": "The `muted` Is Not A Text Colour Rule", "body": "muted measures between 2.79:1 and 3.23:1 against the canvas in every light palette, under the 4.5:1 WCAG 1.4.3 requires of small text. A caption is a darker shade of its own ground, via SkContrast.captionOn(ground).", "section": "colors" },
+      { "name": "The Status-Is-A-Word Rule", "body": "Green, red, gold and blue never follow the palette. A green that drifted to olive in one theme and mint in another would teach a different signal on every screen, and a status colour's whole value is being recognised before it is read.", "section": "colors" },
+      { "name": "The Panic-Never-Moves Rule", "body": "The panic colour is #C2542A in every theme and both modes. The one control pressed mid-attack must look the same everywhere.", "section": "colors" },
+      { "name": "The Size-Carries-Hierarchy Rule", "body": "Weight carries state; size carries rank. A heading is bigger, not merely bolder, so the order survives somebody turning text size up.", "section": "typography" },
+      { "name": "The Two Floors Rule", "body": "Nothing is lighter than 400 and nothing is smaller than 13. Poppins ships in nine weights here, and Thin through Light exist for the Rive files and future decoration, never for reading.", "section": "typography" },
+      { "name": "The Tracking Flip Rule", "body": "Tracking is -1.5% at 24px and above and zero below it. Wide circular letters read loose at headline sizes; pulling body text in the same way would close the counters that make Poppins legible at 16. Uppercase section-header is the one exception and takes +6% back.", "section": "typography" },
+      { "name": "The One Bold Phrase Rule", "body": "An introduction page carries exactly one emphasised phrase, held as its own string rather than as markup, and it is never a whole line. Bold is worth what it is rationed to.", "section": "typography" },
+      { "name": "The Only-Display-Scales Rule", "body": "Display styles grow on wide screens and never shrink. Body text is left alone: 17 is 17 because that is comfortable at arm's length, and a tablet is not read from further away.", "section": "layout" },
+      { "name": "The Fixed-Band Rule", "body": "On the breathing screen every band except the character's is a fixed height, so her box is identical at every moment. A long line scrolls inside its band rather than growing it.", "section": "layout" },
+      { "name": "The No-Pool Rule", "body": "Do not put a glow, pool or shadow behind the character to fix her contrast. It was measured, built and removed; the characters span nearly the whole range from white to black, and the measured ceiling for one pool colour serving both was 1.9:1. Separation has to travel with her silhouette.", "section": "elevation" },
+      { "name": "The Wash-And-Hairline Rule", "body": "A status block is a tinted wash with a hairline, never a filled pill. A filled pill is a button, and a status is not something to press.", "section": "shapes" },
+      { "name": "The Icon-With-Every-Tone Rule", "body": "Every status tone carries an icon. Nothing is ever said in colour alone.", "section": "shapes" }
+    ],
+    "dos": [
+      "Do read every colour from context.sk, and on an exercise screen from context.exercise.",
+      "Do build captions with SkContrast.captionOn(theGroundItSitsOn).",
+      "Do use a named SkLayout step for every gap, and SkLayout.gutter(context) for the page margin.",
+      "Do wrap reading text in SkLayout.readable so it caps at 560.",
+      "Do keep every tap target at 48 or more, at every text size.",
+      "Do crossfade between steps of a script at 240ms, easeOut in and easeIn out.",
+      "Do check a new screen in Moss and one dark palette, and at 200% text.",
+      "Do pair every status colour with an icon and words."
+    ],
+    "donts": [
+      "Don't write a hex literal or Colors.* in a view. If one is genuinely required, put a comment beside it naming the alternative and why it lost.",
+      "Don't use muted for anything that is read.",
+      "Don't slide between the steps of a script. The reader moves both ways, so a direction is a lie half the time.",
+      "Don't run two clocks on one screen. An orb driven by the same data as the line being read is one instruction said twice, and that is the only exception.",
+      "Don't let anything move under somebody who is reading, and never let the character shift.",
+      "Don't put a glow, pool or shadow behind the character.",
+      "Don't add a streak, a progress chart with gaps, a total over time, or a comparison against last month.",
+      "Don't put SkStatusStyle.of on an exercise page; use SkExerciseColors.statusOf, or a dark-mode green lands on an off-white ground at about 1.5:1.",
+      "Don't make the forward pill the theme's accent on a page that marks answers in green and red."
+    ]
+  }
+}

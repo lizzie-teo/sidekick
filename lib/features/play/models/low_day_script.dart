@@ -71,12 +71,27 @@
 // | May you be safe | kept | Plain, and nothing about today contradicts it |
 // | May you be happy | **cut** | It names the exact thing the reader has not got. On a low day it is the line most likely to sting |
 // | May you be healthy | **cut** | Outside what this script is about, and plainly wrong for somebody ill |
-// | May you live with ease | reshaped | "May you have some peace, whatever today brings." |
+// | May you live with ease | kept, shortened | "May you be at ease." |
 //
 // The two additions are "May you be well." -- the broad one, and the one a
 // reader is most likely to already say to themselves -- and "May you be gentle
 // with yourself.", which is the Self-Compassion Break's own core phrase said
 // in plain words.
+//
+// **"May you be healthy." was put in first for part of 24 September 2026 and
+// taken out again the same day.** It went in at the user's request, with the
+// row above quoted back; it came out when the user raised the same objection
+// themselves -- that some readers are physically ill.
+//
+// Two things the round trip settled, worth keeping:
+//
+// - **"Well" is the one that covers somebody ill, and "healthy" is not.** In
+//   ordinary English "well" reaches *alright*, *doing okay*, and a person with
+//   a long-term illness can have a well day. "Healthy" is a state they either
+//   have or do not, said out loud to somebody who does not.
+// - **Dropping any one of the four leaves three, and three is not a
+//   blessing.** The set is four parallel lines on purpose, so a swap has to
+//   be a swap. That is what sent the peace line back to the fourth slot.
 //
 // **The rule every one of them passes: a wish about how somebody is met,
 // never about how the day goes.** They were "I hope today is easy." and "I
@@ -89,8 +104,16 @@
 // A wish about conditions can be falsified. A wish about how somebody is met
 // cannot. That is the distinction the compassion literature is built on:
 // compassion is defined as a stance towards suffering, never as a guarantee
-// the suffering stops. "whatever today brings" says it out loud -- the day may
-// be bad, and the wish is for the person inside it rather than instead of it.
+// the suffering stops. Every one of the four names the person, never the day.
+//
+// **The fourth was "May you have some peace, whatever today brings." until
+// 24 September 2026.** The trailing clause was there to say the falsifiable
+// part out loud -- the day may be bad, and the wish is for the person inside
+// it rather than instead of it. The user read it back and heard the opposite:
+// a clause naming a bad day, on the one screen already read on one. The rule
+// it was serving is kept by the four words that are left. "May you be at
+// ease." wishes for the person and says nothing about the day at all, so the
+// clause was doing its job twice and only the second reading survived.
 //
 // **The silence goes after each set, not between the wishes.** Three seconds
 // between them and ten or twelve after the last. A blessing is said as one
@@ -237,8 +260,8 @@ class LowDayScript {
 
   static const List<String> intro = <String>[
     'When you are low, being kind to yourself gets hard.',
-    'It is easier to be kind to a friend, so this exercise starts there.',
-    'Then the same kind words come back to you.',
+    'It is easier to be kind to a friend, so you practise on somebody you '
+        'care about, and then on yourself.',
     'People call this loving kindness.',
   ];
 
@@ -253,32 +276,35 @@ class LowDayScript {
   // somebody deciding is actually being offered.
   //
   // **It says where the words go, and nothing about how the reader will
-  // feel.** "Then they come back to you" is a fact about the exercise. A
-  // promise about warmth would be the one thing this script may never make --
-  // warmth cannot be produced on command, so promising it hands the reader a
-  // way to fail before they have started.
-  static const String emphasis = 'come back to you';
-
-  // **The standing permission, and it is now the last thing read before
-  // Begin.** It was the fourth line of `opening`. A way out has to be given
-  // early, while the reader is still surfaced -- offered at the hard part it
-  // is two bad things at once: a decision, which is work, and a prediction
-  // that the hard part is coming.
+  // feel.** "And then on yourself" is a fact about the exercise. A promise
+  // about warmth would be the one thing this script may never make -- warmth
+  // cannot be produced on command, so promising it hands the reader a way to
+  // fail before they have started.
   //
-  // This page is the earliest surfaced moment there is, and the reader
-  // carries the line in rather than remembering it from ten seconds ago. What
-  // backs it up is that the way out never leaves the screen afterwards:
-  // "That's enough for now" is on the script page from its first frame.
-  //
-  // Word for word the tighten page's line, on purpose -- two faces saying the
-  // same thing differently would read as two rules.
-  static const String permission = 'You can stop whenever you want.';
+  // **It was "come back to you" until 24 September 2026**, in a second intro
+  // line that was cut the same day. The phrase moved rather than being
+  // rewritten: it is the same turn, in the same position, in the sentence
+  // that absorbed it.
+  static const String emphasis = 'and then on yourself';
 
-  // **The second half, which is the note under it.** They are two constants
-  // rather than one sentence because the page sets them as a heading and a
-  // line under it -- see `GuidedIntro`. Splitting them in the widget would
-  // mean the page searching for a full stop, which is a thing to get wrong.
-  static const String permissionNote = 'Nothing here has to be finished.';
+  // **There is no permission line on this page, as of 24 September 2026.**
+  // It read "You can stop whenever you want. Nothing here has to be
+  // finished.", word for word the tighten page's line, and it was cut at the
+  // user's request.
+  //
+  // The argument against cutting it was made first and is worth keeping: it
+  // is the trauma-informed choice point, and the meditation-writer skill asks
+  // every inward-turning script for one, given early while the reader is
+  // still surfaced. This script turns attention inward for six minutes.
+  //
+  // What makes it affordable is that the way out is not the sentence.
+  // "That's enough for now" is on the script page from its first frame and
+  // stays to the last line, so control sits in a button the reader can see
+  // rather than in a line they have to remember.
+  //
+  // **Reopening it means reopening the breathing page too, and the tighten
+  // page is the one that still has it.** One of three saying it is the state
+  // this change left behind.
 
   //
   static const List<LowDayStep> opening = <LowDayStep>[
@@ -391,9 +417,23 @@ class LowDayScript {
       'It is a low day.',
       Duration(milliseconds: 2500),
     ),
+    // **"You do not have to explain it to anyone." until 24 September 2026.**
+    // The old line removed an audience. This one removes the demand that the
+    // day add up, which is the same permission one step further in.
+    //
+    // **It was asked for as "Sometimes there's no reason. Sometimes there
+    // is."** and that version was not built. "Reason" is banned in this
+    // script and the ban is not about the word: rumination is the mechanism
+    // this face is designed around, and "sometimes there is" tells somebody
+    // on a low day that a cause may be findable. That is the hunt the whole
+    // screen exists to interrupt. "Does not have to make sense" says the same
+    // thing and closes the question instead of reopening it.
+    //
+    // Shorter than the line it replaced, so the read time comes down with it.
+    // The silence after is the clinical part and does not move.
     LowDayStep(
-      'You do not have to explain it to anyone.',
-      Duration(milliseconds: 3500),
+      'It does not have to make sense.',
+      Duration(milliseconds: 3200),
       pause: Duration(seconds: 10),
     ),
   ];
@@ -526,8 +566,8 @@ class LowDayScript {
     // K4, first of two plays. The long silence belongs after the last one,
     // not between them -- see the note on the set at the top of this file.
     LowDayStep(
-      'May you have some peace, whatever today brings.',
-      Duration(milliseconds: 3500),
+      'May you be at ease.',
+      Duration(milliseconds: 2200),
       pause: Duration(seconds: 10),
     ),
   ];
@@ -673,8 +713,8 @@ class LowDayScript {
     // The longest silence in the script, and it is here on purpose: this is
     // the moment the reader has been walked towards for five minutes.
     LowDayStep(
-      'May I have some peace, whatever today brings.',
-      Duration(milliseconds: 3500),
+      'May I be at ease.',
+      Duration(milliseconds: 2200),
       pause: Duration(seconds: 12),
     ),
     // **"You are allowed to feel exactly this much." until 20 September

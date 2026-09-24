@@ -567,6 +567,9 @@ explicit call in the second phase of `setupServiceLocator()`.
 | `lib/app/core/theme_service.dart` | The three appearance choices: light/dark, palette, character |
 | `lib/data/services/good_things_service.dart` | Reads and writes the `good_things` table |
 | `lib/features/good_things/models/good_things_arguments.dart` | How another screen pre-fills the first line |
+| `lib/app/widgets/sk_mood_face.dart` | One live head: a skin number and a mood number, falling back to the still faces |
+| `lib/features/panic/widgets/feeling_dial.dart` | The semicircle dial the sidekick stands in |
+| `lib/features/panic/widgets/body_sensation_sheet.dart` | The four body sensations, behind "Can't cope" |
 | `lib/app/utilities/date_format_utils.dart` | "Today", "Yesterday", "5 September 2025" |
 | `lib/app/widgets/sk_main_tab_bar.dart` | The five slots and where each one goes |
 | `lib/app/widgets/sk_exercise_colors.dart` | The off-white ground every exercise sits on, in every theme |
@@ -864,32 +867,181 @@ screen that changes whenever you look at it asks you to look.
 full wash of colour is a strong emotional statement, and a low day is not
 something to make a statement about.
 
-**The body question is on the picker now, and `BodyView` is deleted.** Until
-23 September 2026 "What's happening in your body?" had a screen of its own,
-reached from "Can't cope right now". The four tiles sit under the four faces
-instead, so the feeling and the sensation are answered in the same tap.
+**The picker is a dial with the sidekick standing in it**, from 24 September
+2026, at the user's request. It was four tall cards in a grid with four
+body-sensation pills under them, and before that four full-width rows. Both of
+those asked the reader to compare a page of options; the dial asks them to move
+one thing and watch her answer.
 
 ```
-Picker -> Can't cope      -> Routes.breathe?intro=1
-       -> a sensation     -> Routes.breathe?intro=1&sensation=<name>
+Picker -> Can't cope      -> the body sheet -> a sensation -> Routes.breathe?intro=1&sensation=<name>
+                                            -> "I'd rather not say" -> Routes.breathe?intro=1
        -> Wound up / Low / Actually okay -> their own Play screens
+       -> Good / Really good -> Routes.goodThings
 
 Tab bar panic button      -> Routes.breathe          (no intro, no question)
 ```
 
-**The cost was argued and taken.** Four sensations under the faces are read by
-everybody who opens the picker, including somebody calm, and a list of panic
-symptoms is an invitation to check whether you have them. What makes it
-affordable is that they are the quieter half of the page -- slim outlines with
-two words, under four tall cards with drawings in them -- so the faces are
-still what the screen asks first. `FeelingPickerView.bodyHeading` is "In your
-body", not "Body sensations": the second is the clinical name rather than
-anything a reader would say.
+**There are six stops now, and the fifth and sixth are Good and Really good.**
+Without a good end the arc stopped at "Actually okay" -- *nothing is wrong* --
+so the whole dial ran from bad to neutral and a reader having a good day had
+nothing to say. A dial with no good end teaches that this app is only for bad
+days. Both open the Good things page with a blank line, which they may leave
+blank; "Actually okay" keeps its own short sidekick screen, so the three are
+told apart by how much they assume rather than by where they end up.
 
-**"Can't cope" is no longer a door to the tiles.** They are already on the
-screen, so it is the card for somebody who does not want to name anything, and
-it opens the breathing with the general script. There is no "Skip this" under
-the tiles for the same reason -- that card is the skip.
+**The sixth stop is about the middle, not the end, and the count must stay
+even.** With five stops the arc was three hard ones against two fine ones, and
+the knob rests at the halfway point -- which with five stops *is* the Low mark.
+The screen therefore opened parked on Low, and a reader who nudged the knob
+without aiming landed there. Six makes it three against three, and halfway now
+falls between Low and Actually okay, on no stop at all -- which is what
+"nothing is picked" should look like. `test/feeling_picker_view_test.dart`
+pins both the count and its evenness, with the reason written out.
+
+**Evening it up on the left was the other option and it is the wrong one.**
+The left-hand end is the panic door, and another shade of "badly" in front of
+it makes the reader who needs it most read one more option before they get
+there.
+
+**"Ecstatic" was the word proposed and "Really good" is the word used.** A top
+stop most people never reach is dead space, which is the exact fault Good was
+added to fix at the other end.
+
+**Really good keeps Good's crescent eyes, and eight gold sparkles are what
+make it a different stop.** `feeling-good-<skin>` already closes the eyes into
+happy crescents over an open smile, so "smile harder" had nowhere to go. The
+face is Good turned up a little -- crescents wider and higher, the mouth a
+touch bigger, blush larger, head tipped a few degrees -- and the sparkles ringed
+around the head carry the rest. Because they do, the mouth could stay small: a
+gaping laugh was tried and read as shouting.
+
+**Opening the eyes was tried first and is the wrong answer here.** The argument
+for it is real -- in a real face contentment closes the eyes and delight opens
+them -- and it lost to the drawing. This character has no excited-eye shape,
+only a neutral one, so an open eye over a laughing mouth reads as *startled*.
+Pushing it harder made it worse, which is how the direction was ruled out
+rather than merely undercooked. **Do not reopen this without drawing a
+genuinely new eye first.**
+
+A rainbow was wanted and does not fit: the ears and the bow fill the top of
+every one of these artboards, and the corners are the only free space.
+
+Three sparkle densities were compared as pictures before choosing: four in the
+corners read as too close to Good, and eight enlarged competed with her face.
+Eight at mixed sizes is the one in the file.
+
+Drawn 24 September 2026 from `feeling-good-<skin>`. The live `mood` artboard is
+still the outstanding Rive job, and its range is 0 to 5 now.
+
+**Duplicate one artboard per `duplicate_objects` call.** Batching three
+reported success, produced only two copies, and gave the rabbit a draw order
+scrambled deep inside its nodes -- `reorder_objects` on the head's children
+does not repair that. Delete the bad copy and redo it on its own, and
+`capture_artboard` every copy before editing it.
+
+**`path_editor.createParametricShapes` ignores `parentId` and drops the shape
+on the *active* artboard.** The first three sparkles landed on `sidekick`.
+Reparent immediately and re-capture `sidekick` to prove it is clean, or
+duplicate an existing shape inside the target artboard instead.
+
+**That session also lost both `Breathe` event keys**, without ever opening the
+`Breathe` timeline or the `sidekick` artboard -- the failure `/breath-events`
+exists for. They were repaired and re-proved by simulation before the export.
+
+**Two stops sharing one door is a wobble, taken knowingly.** Good and Really
+good both open Good things. The dial exists to let somebody say where they
+are, and a stop that has to earn a screen of its own before it may appear is a
+dial that can only hold whatever has been built.
+
+**The question is capped at `FeelingPickerView.titleWidth`, and 280 is a
+measured number.** It used to run the full gutter width at 28 points -- two
+lines nearly edge to edge, read by sweeping the eye rather than taken in at a
+glance. It is `SkText.sceneLine`'s own 24 now, with no invented size at the
+use site, capped so it breaks into two shorter lines. On an iPhone SE 280 is
+the widest cap that still gives two; below 260 it goes to three and pushes her
+head down the screen. `test/feeling_picker_view_test.dart` pins the width, the
+two lines, and the gap to her head, because a wrong wrap is invisible to every
+other test on the page.
+
+**The gap between the question and her head was never in `_dial`.** A scroll
+view is greedy -- it takes the whole height offered -- so its content already
+starts at the top and neither `Center` nor `Align` there moves anything. The
+`Align` in that method is documentation, so nobody re-adds a `Center`
+expecting it to do work. Shortening the question is what moved her up.
+
+**The axis is *how much help is wanted*, not *how bad it is*.** A dial is a
+claim that the stops belong on one line, so the line has to be nameable.
+Sorting by badness would have to rank Wound up against Low, and neither is
+worse than the other.
+
+**Nothing is picked when it opens.** The knob sits in the middle, grey. A dial
+parked on a stop would have answered the question for the reader, and their
+first move would be a correction. It is the same lesson the panic card's ring
+weight taught, in a louder shape.
+
+**The resting face is its own artboard -- `resting-<skin>` -- and it smiles a
+little.** Open eyes, a small soft mouth, nothing else. It borrowed
+`lesson-neutral-<skin>` for an hour on 24 September 2026, on the argument that a
+face over an unanswered question must claim nothing; that head is deliberately
+expressionless, and on the dial it read as the app being wary of the reader
+before they had said anything.
+
+**The rule that sent it there is narrower than it looked.** The lesson's flat
+mouth exists because a *smiling* head beside "is that a criticism, or is it
+expressing yourself?" is an unmeant answer to that question. There is no answer
+to give here -- "How are you feeling today?" is asked of the reader -- and
+a sidekick waiting for it is allowed to look pleased to see them. The beaming
+face is still banned: that one is `feeling-good`, and wearing it before a pick
+would be the app guessing. `lesson-neutral-<skin>` is untouched, because the
+lesson still needs a head that says nothing at all.
+
+**She changes as the knob crosses a stop, not after it is let go.** That is the
+whole reason the screen is a dial: the answer arrives as a face rather than as
+a word, and it arrives while the thumb is still moving. `SkMoodFace`
+(`lib/app/widgets/`) is what draws her -- one artboard, one skin number, one
+mood number -- and it falls back to the still `feeling-*` heads, crossfading
+between them, while the live `mood` artboard does not exist yet.
+
+**The knob is decoration to a screen reader and the stops are real
+buttons.** A drag along a curve is not a gesture anybody can make with VoiceOver
+on. Dragging is the nice way in, never the only way in.
+
+**At 200% text the dial is put away and a card per stop takes its place.** An arc is
+the one thing on the screen that cannot grow with the reader's font. Changing
+shape is the honest answer; shrinking the words is not.
+
+**The four body sensations moved behind "Can't cope", and that reverses the
+day-old decision below.** They sat on the picker itself from 23 to 24 September
+2026, so the feeling and the sensation were answered in the same tap, and the
+cost -- argued and taken at the time -- was that four panic symptoms were read
+by everybody who opened the screen, including somebody calm.
+
+The dial changed the sum. The page is now one control and one character, so
+there is no quiet second half for four tiles to sit in: they would be either as
+loud as the dial or below the fold. Behind the panic stop they are read by the
+people who said they could not cope and by nobody else, which is the group the
+question was written for. `BodySensationSheet` holds them, with the deleted
+`BodyView`'s own question at the top -- "What's happening in your body?", not
+"Body sensations", which is the clinical name rather than anything a reader
+would say.
+
+**It costs one extra tap on the way to the breathing, and that is affordable
+here and only here.** The tab-bar panic button reaches the pacer with no
+question at all, and it is the door somebody presses when they could not wait.
+This screen is the unhurried one.
+
+**Swiping the sheet away is not the same as "I'd rather not say".** One is
+still a request for the breathing; the other is "I did not mean to open this",
+and it lands back on the dial. Collapsing the two sends somebody who changed
+their mind into a six-minute script.
+
+**The button under the dial names its destination.** A reader on a hard
+evening should not have to press to find out where a stop goes. None of them
+congratulates and none of them scores -- "Write it down" and "Keep this one"
+are invitations, "Well done" would be a verdict on a feeling. A test asserts
+the labels are all different, so two stops sharing a door still say two
+different things. `Feeling.ctaLabel`.
 
 **Every door on the picker opens on an introduction page. The tab-bar panic
 button does not.** That is the one rule in this flow with the sharpest edge:
@@ -985,15 +1137,26 @@ last. The noun comes first now.
 catastrophic reading the script then spends two lines taking back. A tile may
 name the feeling without agreeing with the fear.
 
-**The sad face has nowhere to go now, and that is not a loss to mourn.** A
-`FaceSad` timeline was built for the body screen on 23 September 2026 and
-taken back out the same day, on the argument that her ordinary face smiles and
-a smile beside "What's happening in your body?" is the app not having noticed
-what the reader just pressed. The picker has no standing character -- it has
-four face cards, one of which is the panic face -- so there is no sidekick on
-that screen to wear it. **Do not rebuild it for the picker.** If it is ever
-wanted again, the place to argue for it is the introduction page, where she
-does stand.
+**The sad face had nowhere to go, and on 24 September 2026 it got one.** A
+`FaceSad` timeline was built for the body screen on 23 September 2026 and taken
+back out the same day, on the argument that her ordinary face smiles and a
+smile beside "What's happening in your body?" is the app not having noticed
+what the reader just pressed. The note that replaced it said the picker had no
+standing character to wear it and that it should not be rebuilt for that
+screen.
+
+**That is out of date and the reason is worth keeping.** The picker is a dial
+now, with one live head standing in it, and the head wears whichever of the
+six moods the knob is on -- so "Low" is the sad face, and it has a home. The
+argument that killed it was never about the expression; it was about a
+*smiling* character over a question the app should have noticed. That argument
+still holds exactly where it was made: the body sheet has no character on it,
+and it must not grow one.
+
+The dial's still faces do the job today. The live artboard that would let her
+*travel* between them -- `mood`, one artboard with a skin number and a mood
+number -- **is not built yet**, and `SkMoodFace` falls back to crossfading the
+still heads until it is. That is the next Rive job on this screen.
 
 It was a `FaceSad` timeline and `faceSad` trigger on the `sidekick` artboard,
 opacity-swapping the picker's **Low** head parts -- `mouth-low`,
@@ -1333,28 +1496,41 @@ Deliberately absent -- do not add without being asked:
 
 Not deliberate. These are bugs with a repro, waiting for their own job.
 
-**`SkFeedbackSheet` overflows at 200% text on a small phone, and takes the
-forward button off the screen with it.** Found 21 September 2026 while running
-the visual-style skill's own required 200% pass over the swap drill.
+**`SkFeedbackSheet` used to overflow at 200% text on a small phone and take
+the forward button off the screen with it. Fixed 24 September 2026.** Found
+21 September 2026 while running the visual-style skill's own required 200%
+pass over the swap drill.
 
 | | |
 | --- | --- |
 | Repro | `Routes.swapDrill` at `TextScaler.linear(2)` on a 375x667 surface. Read the introduction, answer any sorting card |
-| Symptom | `RenderFlex overflowed by 62 pixels` on the outer column of `swap_drill_view.dart`. "Next sentence" is not in the tree |
-| Cost | At that text size the reader cannot get past the first sorting card. The lesson is unfinishable |
+| Symptom | `RenderFlex overflowed by 62 pixels` on the outer column of `swap_drill_view.dart`. "Next sentence" was not in the tree |
+| Cost | At that text size the reader could not get past the first sorting card. The lesson was unfinishable |
 
 The sheet's explanation is its own paragraph and grows with the scaler, while
 the nav row and the progress bar above it are fixed. `Expanded` cannot go below
-zero, so the drill's scroll view is squeezed out and the sheet still does not
-fit. The fix is a cap on the sheet's height with the explanation scrolling
-inside it, so the pill keeps its place -- **not** shrinking the step above,
-which is already at zero by the time this happens.
+zero, so the drill's scroll view was squeezed out and the sheet still did not
+fit.
 
-**It is a shared widget**, used by more than the drill, so it is its own job
-rather than a line in someone else's. `test/swap_drill_view_test.dart` carries
-the hole in the open: "the closing step survives 200% text" runs on a 1400-point
-surface instead of the SE, with a comment saying why. **Put it back to
-`smallPhone` when the sheet is fixed** -- that test is the one that proves it.
+**The fix is a cap on the panel, and the words scroll inside it.**
+`SkFeedbackSheet.maxHeightFraction` is 0.6 of the screen. Everything the reader
+reads -- the heading, the explanation, the footnote -- sits in a `Flexible`
+scroll view; the forward control sits outside it and keeps its place. Shrinking
+the step above was rejected and stays rejected: it is already at zero by the
+time this happens, so there is nothing left there to take.
+
+**The cap is measured from `View.of(context)`, never from
+`MediaQuery.sizeOf`.** A bare `MediaQueryData` reports a size of zero, which is
+exactly what `test/support/pump_app.dart` supplies, and a cap of zero collapses
+the panel and pushes the button off the bottom -- the same bug, arrived at from
+the other side. `affirmation_sheet.dart` fell into this hole first and measures
+from its incoming constraints instead; a panel in a column has no bounded
+constraints to measure, which is why this one reads the view.
+
+**`test/swap_drill_view_test.dart` runs on `smallPhone` again.** Both 200%
+tests were on a 1400-point surface with a comment saying why; they are back on
+the SE, which is what proves the fix. Three other tests in that file were
+failing for the same reason and now pass.
 
 ## Visual style
 
@@ -1383,7 +1559,7 @@ The four rules it exists to stop people breaking:
 | Rule | The machinery |
 | --- | --- |
 | Colour comes from the theme, never a hex literal | `context.sk` (`SkColors`) |
-| A caption is a darker shade of its own ground, never `muted` | `SkContrast.captionOn()` |
+| Text on a coloured ground is that ground's darkest tint, never `muted` and never a grey | `SkContrast.captionOn()`, `SkContrast.inkOn()`, `SkStatusStyle.body` |
 | Every gap is a named step on a four-point grid | `SkLayout.xs` .. `SkLayout.huge` |
 | Spacing and display type answer the screen's width band | `SkLayout.gutter()`, `SkLayout.displayScale()` |
 
@@ -1564,8 +1740,77 @@ drill, and those are verdicts on **a sentence**. A page washed green or red, or
 a "3 of 7" set in red, is a verdict on the reader. Her face carries it instead,
 which is what `AnswerPose` exists for.
 
+**The teacher wears the score pose, and the reader's own character is down to
+one step.** Changed 24 September 2026, at the user's request. The whole second
+half of the drill -- "What would you like to practise?", "Three parts", the
+builder and the closing page -- now carries the same full-size
+teacher with its heading in a speech bubble, the shape the graded steps and
+introduction page one already used. The score step is hers too. That reverses
+`_Quiet`'s old note, which banned a bubble on those steps: the rule was about
+*whose* mouth the app's words come out of, and a teacher asking what the reader
+would like to practise is the job she exists for. `_Asked` in
+`swap_drill_view.dart` holds it. The reader's own character is left on
+`_Finished`, where the sentence in the bubble is theirs.
+
+**The reader's own sentence is built on one screen out of a bank of tiles, not
+three screens with two cards each.** Changed 24 September 2026, at the user's
+request, from a Duolingo word bank. The whole sentence stands at the top with a
+placeholder in every part it is still missing, every line the chosen situation
+offers is a tile underneath, and tapping a tile drops it into its own part.
+
+| | Was | Is |
+| --- | --- | --- |
+| Steps | Three, one per part | One |
+| On screen at once | One label, one helper, two cards | The sentence, and all seven lines |
+| The forward gate | Held each step until its own part landed | Holds the screen until the sentence is whole |
+| The three helpers | One per step, beside the part they describe | On the shape step, under the labels |
+
+**The reason is `/lesson-design` rule 3, and its own worked example is this
+drill.** A part on its own is not a subject -- "I feel disappointed" teaches
+nothing without "when plans change on the day" beside it. The teaching *is*
+that the three read down as one sentence, and one part at a time behind a Next
+button is the single arrangement in which that is invisible. The skill already
+says a four-part frame belongs on one page for exactly this reason.
+
+**Nothing in the bank can be wrong, and that is where it parts company with
+Duolingo.** Duolingo's bank marks the answer and seeds it with distractors.
+Every line here belongs to exactly one part, the app puts it there, and the
+reader is never asked which blank it goes in -- so there is nothing to mark.
+What the shape buys is that the sentence is *visible while it is being made*.
+
+**The bank is never shuffled.** Duolingo shuffles because finding the tile is
+the exercise. Here the tile cannot be wrong, so a shuffle would only make the
+reader hunt -- and the order the parts go in is the thing the step before this
+one teaches, so scrambling it on the screen that shows all three would teach
+against it.
+
+**The sentence is a picture, not a control.** Nothing in it takes a tap. An
+inline blank inside a run of text cannot be 48 points tall without wrecking
+the line it sits in, and the tile that filled it is already a full control a
+few points below -- so tapping a used tile is the way back out, and it is the
+only way. `SwapDrillScript.builderLead` says so out loud, because a reader who
+thinks a tap is final stops tapping.
+
+**A used tile stays where it is, dimmed, with its words still on it.** Duolingo
+empties the tile and leaves a grey hole. That is the better picture of "it
+moved" and the worse screen here: it takes the words away from somebody who may
+want to compare the two offers, and a bank that changes shape under a finger is
+what the motion rules exist to prevent. Nothing reflows; the tile goes quiet.
+
+**The half-built sentence is back on the screen, and the note that took it off
+is why it can be.** It was removed on 21 September 2026 because it carried two
+placeholder phrases beside a question and two cards, and read as a fourth thing
+to answer. There is no question on this screen -- the sentence *is* the
+question. That is the `CLAUDE.md` scope rule again: the rule was about a
+sentence competing with a question, and there is no longer a question.
+
+**The screen scrolls on an iPhone SE, and that is not a bug.** The teacher, the
+sentence and seven lines do not fit 667 points. Everything that can grow is
+inside the scroll view, the forward pill is not, and
+`test/swap_drill_view_test.dart` walks every tile at 200% text on that surface.
+
 **`AnswerPose` is not `LessonFace`, and the two are not to be merged.**
-`AnswerPose` reacts to the reader and fires once, on the score step.
+`AnswerPose` fires once, on the score step.
 `LessonFace` reacts to a sentence, and since 23 September 2026 it does that on
 the **introduction pages only**. The per-answer bob and wince deleted on 21
 September 2026 are **not** coming back:
@@ -1614,11 +1859,57 @@ against the canvas in every light palette, under the 4.5:1 WCAG 1.4.3 asks of
 small text, and it used to be the colour of every caption in the app.
 `test/contrast_test.dart` asserts that out loud so nobody re-adopts it.
 
-That test also holds an **audit baseline**: eleven foreground/background pairs
-across five palettes are under 4.5:1 today and are listed rather than fixed,
-because fixing them means repainting shipped themes. A new failing pair is a
-regression; a listed pair that starts passing means the list is stale. Both
-fail the test, with a message saying which.
+**The baseline is closed, as of 24 September 2026.** Eleven
+foreground/background pairs across five palettes used to be listed rather than
+fixed, four of them under 3.0:1. Two different fixes closed them:
+
+| Pair | What moved |
+| --- | --- |
+| `onAction` on `action`, twice | The **fill**. A white label cannot get lighter, so Harvest moon light went `#B06F2C` -> `#A46729` and Coral diorama light `#E8564A` -> `#E22C1D`. The only place a shipped palette changed |
+| `onScene` on a gradient stop, nine times | The **ground**. Five of the nine could not reach 4.5:1 at *any* lightness -- pure white on the Harvest moon dark sky tops out at 3.08 -- so `SkScenePanel` lays `SkContrast.sceneScrim` under the words. Nothing at all on the three palettes that already cleared it |
+
+`test/contrast_test.dart` is now a gate with an empty list: any pair under
+4.5:1 is a regression.
+
+## Motion
+
+Three things move on a screen here, and each has one owner. Reaching for the
+wrong one is the mistake this section exists to stop.
+
+| What is moving | What drives it |
+| --- | --- |
+| The character -- her breath, her tap reactions, her faces | Rive (`assets/rive/character.riv`), through `SkCharacter` |
+| A short entrance -- a line fading in, a card sliding up, a sheet arriving | `flutter_animate` |
+| Anything holding a value over time -- the orb's level, a progress bar filling | Flutter's own `AnimationController` / `Animated*` widgets |
+
+`flutter_animate` was added 24 September 2026. It is a convenience over
+Flutter's own animation and not a replacement for it: it exists so a screen
+that wants 300ms of fade does not hand-roll a controller, a ticker and a
+dispose for it.
+
+```
+Text(line).animate().fadeIn(duration: 300.ms).slideY(begin: 0.1)
+```
+
+**It is banned on the breathing screen and on the character.** The pacer's one
+rule is that its timing comes from the two Rive events and from nothing else,
+so a `.animate()` anywhere in that tree is a second clock -- which is the bug
+the rule was written about. `BreathFlower` is allowed only because every Rive
+event re-anchors its ramp, so it cannot drift from her.
+
+**It does not replace a driven value.** `SkBlobOrb`'s `level`, `SkProgressBar`'s
+fill and anything else whose number comes from the app's own state stay on an
+`AnimationController` or an `Animated*` widget. `flutter_animate` runs an effect
+on a schedule; those follow a value, which is a different job.
+
+Two rules it inherits from the rest of this file:
+
+- **Durations are short and the easing is ordinary.** A screen read at the
+  worst moment of somebody's day must not make them wait for a flourish.
+  `_docs/skills/lively-motion.md` is the long version.
+- **Nothing decorative moves under the reader.** An entrance plays once, when
+  the thing arrives. A loop on a screen the reader is trying to read is the
+  same failure as two clocks, one level down.
 
 ## Skills
 
@@ -1713,7 +2004,13 @@ explicitly chosen the version that got softened.
 | Length is the failure mode | Panic and low mood, where attention is measurably impaired | A meditation somebody calm sat down for |
 | The theme stops at the edge of an exercise | The **palette**. Six grounds making six promises about one lesson | Light and dark. That is the room the reader is in, not decoration -- and holding a page off-white in the dark is a bug, not consistency |
 | The forward pill is `ink` | A **third colour** on a page that already marks answers in green and red | How bright it is. A dimmed ink is still the ink's colour, and a full-width slab at text brightness is a lamp in the dark |
+| A paragraph on a wash is `ink` | A paragraph set in the **tone itself** -- a mid-tone red at 4.5:1, which is a raised voice for five lines | The tone taken *past* itself. `SkStatusStyle.body` carries the contrast `ink` already had on that fill, so it is never louder and never fainter. Reversed 24 September 2026 |
 | A pair passes at 4.5:1 | Text nobody can read. It is a **floor**, and it was calibrated on dark text on light grounds | Pale text on a dark ground, where WCAG over-rewards and APCA is the one to believe |
+| No character on the picker | A **smiling** character over a question the app should have noticed, on the body screen | The dial's own head, which wears the mood the reader has just chosen. The body sheet still has none |
+| The neutral head has a flat mouth | An unmeant **answer** to a question the lesson is asking about a sentence | A face waiting for the reader to answer. `resting-<skin>` smiles a little; `lesson-neutral-<skin>` still does not |
+| Nothing moves on the panic path | Motion that **startles** or sets a second clock -- the cut startle, the fidgeting idle | A control the reader is dragging. The face follows the thumb, so it is one instruction, not two |
+| A bubble holds only what somebody said | The app **ventriloquising** -- putting its own label or its own words in a character's mouth, on the steps where the sentence is hers or the reader's | An **exhibit**: the swap drill's two introduction bubbles, which the page holds up, names and quotes. "A criticism" sits inside one and the sentence is in quote marks |
+| A bubble already says somebody is talking, so quote marks say it twice | The same thing, one level down. Her six sorting sentences are **spoken**, so the marks are a second speaker tag | A sentence being **quoted** rather than said. On the introduction the page is citing a specimen, and that is what quote marks are for |
 
 **Add a row when you find another one.** The list is the point: a rule whose
 scope is written down cannot be over-applied by the next person, including you

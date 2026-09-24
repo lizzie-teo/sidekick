@@ -46,7 +46,10 @@ void main() {
   });
 
   test('every script line has its own recording', () {
-    for (final Sensation? sensation in <Sensation?>[null, ...Sensation.values]) {
+    for (final Sensation? sensation in <Sensation?>[
+      null,
+      ...Sensation.values
+    ]) {
       final List<String> lines = BreathingScript.forSensation(sensation);
       final List<String> clips = BreathingScript.clipsForSensation(sensation);
 

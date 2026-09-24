@@ -29,12 +29,16 @@ void main() {
       expect(find.text(line), findsOneWidget);
     }
 
-    // The standing permission is the last thing read before Begin, and it is
-    // word for word the one the Play scripts use.
+    // **No permission line on this page, as of 24 September 2026.** It read
+    // "You can stop whenever you want. Nothing here has to be finished." and
+    // was cut at the user's request. The tighten page is the one that still
+    // carries it, so this asserts absence rather than deleting itself -- a
+    // test that merely stopped looking would not notice it coming back by
+    // accident on the wrong screen.
     expect(
-      find.text('${BreathingScript.introPermission} '
-          '${BreathingScript.introPermissionNote}'),
-      findsOneWidget,
+      find.text('You can stop whenever you want. '
+          'Nothing here has to be finished.'),
+      findsNothing,
     );
 
     // Nothing has started. The lead-in is the first thing the pacer says, so

@@ -15,6 +15,7 @@ import 'package:sidekick/features/good_things/viewmodels/good_things_history_vie
 import 'package:sidekick/features/good_things/widgets/good_things_day_group.dart';
 import 'package:sidekick/features/good_things/widgets/good_things_month_switcher.dart';
 import 'package:sidekick/features/good_things/widgets/good_things_year_ago_card.dart';
+import 'package:sidekick/app/widgets/sk_contrast.dart';
 
 // History -- everything noticed, a month at a time, grouped by day.
 //
@@ -32,8 +33,7 @@ class GoodThingsHistoryView extends StatefulWidget {
 }
 
 class _GoodThingsHistoryViewState extends State<GoodThingsHistoryView> {
-  late final GoodThingsHistoryViewModel _viewModel =
-      GoodThingsHistoryViewModel(
+  late final GoodThingsHistoryViewModel _viewModel = GoodThingsHistoryViewModel(
     loggerService: getIt<LoggerService>(),
     goodThingsService: getIt<GoodThingsService>(),
     authStateService: getIt<AuthStateService>(),
@@ -78,8 +78,8 @@ class _GoodThingsHistoryViewState extends State<GoodThingsHistoryView> {
         top: false,
         child: ValueListenableBuilder<GoodThingsHistoryViewModelState>(
           valueListenable: _viewModel.state,
-          builder: (BuildContext context,
-              GoodThingsHistoryViewModelState state, Widget? child) {
+          builder: (BuildContext context, GoodThingsHistoryViewModelState state,
+              Widget? child) {
             if (state.isLoading) {
               return const Center(child: CircularProgressIndicator());
             }
@@ -182,7 +182,12 @@ class _QuietAccountLine extends StatelessWidget {
         Expanded(
           child: Text(
             'No email on this account. Add one to keep these safe.',
-            style: SkText.caption.copyWith(color: sk.muted, fontSize: 14),
+            // **`caption` at its own size.** It carried a `fontSize: 14`
+            // override, which put a size decision in a view instead of in
+            // `SkText`, and `muted`, which no text in this app may use.
+            style: SkText.caption.copyWith(
+              color: SkContrast.captionOn(sk.canvas),
+            ),
           ),
         ),
         SkTextButton(label: 'Add', onPressed: onTap),

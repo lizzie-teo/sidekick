@@ -87,92 +87,101 @@ class _ConnectViewState extends State<ConnectView> {
               ),
             )
           : null,
-      body: GestureDetector(
-        onTap: () => FocusScope.of(context).unfocus(),
-        behavior: HitTestBehavior.opaque,
-        child: Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 400),
-              child: ValueListenableBuilder<ConnectViewModelState>(
-                valueListenable: _viewModel.state,
-                builder: (context, state, child) {
-                  return Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      //
+      // **The body is inside a SafeArea.** A Scaffold does not inset its
+      // body for the status bar or the home indicator unless an AppBar is
+      // doing it, so without this the first line sits under the notch on
+      // every phone that has one -- and at a large text size the scroll view
+      // reaches the top edge on every phone.
+      body: SafeArea(
+        child: GestureDetector(
+          onTap: () => FocusScope.of(context).unfocus(),
+          behavior: HitTestBehavior.opaque,
+          child: Center(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 400),
+                child: ValueListenableBuilder<ConnectViewModelState>(
+                  valueListenable: _viewModel.state,
+                  builder: (context, state, child) {
+                    return Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        //
 
-                      Text(
-                        'Connect',
-                        style: Theme.of(context).textTheme.headlineMedium,
-                        textAlign: TextAlign.center,
-                      ),
-
-                      const SizedBox(height: 8),
-
-                      Text(
-                        'We will email you a code.',
-                        style: Theme.of(context).textTheme.bodyMedium,
-                        textAlign: TextAlign.center,
-                      ),
-
-                      const SizedBox(height: 32),
-
-                      TextField(
-                        controller: _controller,
-                        keyboardType: TextInputType.emailAddress,
-                        autocorrect: false,
-                        autofillHints: const [AutofillHints.email],
-                        textInputAction: TextInputAction.go,
-                        onSubmitted: (_) => _sendCode(),
-                        decoration: InputDecoration(
-                          labelText: 'Email address',
-                          border: const OutlineInputBorder(),
-                          errorText: state.errors['email'],
-                        ),
-                      ),
-
-                      if (state.errors['general'] != null) ...[
-                        const SizedBox(height: 12),
                         Text(
-                          state.errors['general']!,
-                          style:
-                              Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                    color: Theme.of(context).colorScheme.error,
-                                  ),
+                          'Connect',
+                          style: Theme.of(context).textTheme.headlineMedium,
                           textAlign: TextAlign.center,
                         ),
-                      ],
 
-                      const SizedBox(height: 24),
-
-                      AsyncButton(
-                        onPressed: _sendCode,
-                        child: const Text('Send code'),
-                      ),
-
-                      // The way back to a code already sitting in the user's
-                      // inbox. Without it, someone who leaves the verify
-                      // screen is locked out for the length of the resend
-                      // cooldown while holding a code that still works.
-                      //
-                      // Shown only when Supabase says an address is waiting to
-                      // be confirmed, so it cannot lead to an empty screen.
-                      if (state.pendingEmail.isNotEmpty) ...[
                         const SizedBox(height: 8),
-                        TextButton(
-                          onPressed: () => _goVerify(state.pendingEmail),
-                          child: Text(
-                            'I already have a code for ${state.pendingEmail}',
-                            textAlign: TextAlign.center,
+
+                        Text(
+                          'We will email you a code.',
+                          style: Theme.of(context).textTheme.bodyMedium,
+                          textAlign: TextAlign.center,
+                        ),
+
+                        const SizedBox(height: 32),
+
+                        TextField(
+                          controller: _controller,
+                          keyboardType: TextInputType.emailAddress,
+                          autocorrect: false,
+                          autofillHints: const [AutofillHints.email],
+                          textInputAction: TextInputAction.go,
+                          onSubmitted: (_) => _sendCode(),
+                          decoration: InputDecoration(
+                            labelText: 'Email address',
+                            border: const OutlineInputBorder(),
+                            errorText: state.errors['email'],
                           ),
                         ),
+
+                        if (state.errors['general'] != null) ...[
+                          const SizedBox(height: 12),
+                          Text(
+                            state.errors['general']!,
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodyMedium
+                                ?.copyWith(
+                                  color: Theme.of(context).colorScheme.error,
+                                ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
+
+                        const SizedBox(height: 24),
+
+                        AsyncButton(
+                          onPressed: _sendCode,
+                          child: const Text('Send code'),
+                        ),
+
+                        // The way back to a code already sitting in the user's
+                        // inbox. Without it, someone who leaves the verify
+                        // screen is locked out for the length of the resend
+                        // cooldown while holding a code that still works.
+                        //
+                        // Shown only when Supabase says an address is waiting to
+                        // be confirmed, so it cannot lead to an empty screen.
+                        if (state.pendingEmail.isNotEmpty) ...[
+                          const SizedBox(height: 8),
+                          TextButton(
+                            onPressed: () => _goVerify(state.pendingEmail),
+                            child: Text(
+                              'I already have a code for ${state.pendingEmail}',
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                        ],
                       ],
-                    ],
-                  );
-                },
+                    );
+                  },
+                ),
               ),
             ),
           ),

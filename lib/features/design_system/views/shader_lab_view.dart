@@ -8,6 +8,7 @@ import 'package:sidekick/app/widgets/sk_character.dart';
 import 'package:sidekick/app/widgets/sk_colors.dart';
 import 'package:sidekick/app/widgets/sk_segmented.dart';
 import 'package:sidekick/app/widgets/sk_text.dart';
+import 'package:sidekick/app/widgets/sk_contrast.dart';
 
 // A workbench for the breathing halo. **Debug builds only** -- the route is
 // registered behind kDebugMode in DesignSystemModule, so it cannot ship.
@@ -209,8 +210,7 @@ class _ShaderLabViewState extends State<ShaderLabView>
         SkSegmented(
           labels: const <String>['Soft', 'Warm', 'Mist'],
           selected: _style.index,
-          onChanged: (int i) =>
-              setState(() => _style = SkHaloStyle.values[i]),
+          onChanged: (int i) => setState(() => _style = SkHaloStyle.values[i]),
         ),
 
         const SizedBox(height: 20),
@@ -231,10 +231,12 @@ class _ShaderLabViewState extends State<ShaderLabView>
           value: _isBreathing,
           onChanged: _toggleBreathing,
           activeThumbColor: sk.action,
-          title: Text('Run the pacer', style: SkText.rowLabel.copyWith(color: sk.ink)),
+          title: Text('Run the pacer',
+              style: SkText.rowLabel.copyWith(color: sk.ink)),
           subtitle: Text(
             '3.9s in, 6.1s out — the real Breathe timeline',
-            style: SkText.caption.copyWith(color: sk.muted),
+            style:
+                SkText.caption.copyWith(color: SkContrast.captionOn(sk.canvas)),
           ),
         ),
 
@@ -334,7 +336,8 @@ class _ShaderLabViewState extends State<ShaderLabView>
       padding: const EdgeInsets.only(bottom: 8),
       child: Text(
         text.toUpperCase(),
-        style: SkText.sectionHeader.copyWith(color: sk.muted),
+        style: SkText.sectionHeader
+            .copyWith(color: SkContrast.captionOn(sk.canvas)),
       ),
     );
   }
@@ -374,7 +377,9 @@ class _ShaderLabViewState extends State<ShaderLabView>
               ),
             ],
           ),
-          Text(hint, style: SkText.tabLabel.copyWith(color: sk.muted)),
+          Text(hint,
+              style: SkText.tabLabel
+                  .copyWith(color: SkContrast.captionOn(sk.canvas))),
           Slider.adaptive(
             value: value.clamp(min, max),
             min: min,
@@ -409,7 +414,8 @@ class _ShaderLabViewState extends State<ShaderLabView>
         children: <Widget>[
           Text(
             'THESE NUMBERS',
-            style: SkText.sectionHeader.copyWith(color: sk.muted),
+            style: SkText.sectionHeader
+                .copyWith(color: SkContrast.captionOn(sk.canvas)),
           ),
           const SizedBox(height: 8),
           SelectableText(

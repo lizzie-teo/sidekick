@@ -3,6 +3,7 @@ import 'package:flutter/widgets.dart';
 import 'package:sidekick/app/widgets/sk_colors.dart';
 import 'package:sidekick/app/widgets/sk_pressable.dart';
 import 'package:sidekick/app/widgets/sk_text.dart';
+import 'package:sidekick/app/widgets/sk_contrast.dart';
 
 // Light / Dark / Auto. Selected pill is a surface with a soft shadow, never
 // the action colour -- a selection is not an action.
@@ -54,10 +55,19 @@ class SkSegmented extends StatelessWidget {
                       : null,
                   child: Text(
                     labels[i],
-                    style: SkText.caption.copyWith(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: i == selected ? sk.ink : sk.muted,
+                    // **`chipLabel`, not `caption` with two overrides.** The
+                    // two overrides were 14/600 -- which is `chipLabel`
+                    // exactly, so the style already existed and this was a
+                    // copy of it with the size hidden in a widget.
+                    //
+                    // The unselected label was `muted`, which no text in this
+                    // app may use: it measures under 3.3:1 on every light
+                    // canvas, and an unselected segment is still a word
+                    // somebody reads to decide what to press.
+                    style: SkText.chipLabel.copyWith(
+                      color: i == selected
+                          ? sk.ink
+                          : SkContrast.captionOn(sk.surfaceMuted),
                     ),
                   ),
                 ),
