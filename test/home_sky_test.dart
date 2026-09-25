@@ -39,6 +39,21 @@ void main() {
         expect(SkContrast.ratio(sky.land, sky.farHill),
             greaterThanOrEqualTo(1.3),
             reason: 'near land against the far hills');
+
+        // Distance is paler, in both modes: that is what makes a valley
+        // read as deep rather than as stripes. Dark mode ran the other way
+        // until 25 September 2026 and the nearest hill glowed.
+        final List<Color> nearToFar = <Color>[
+          sky.grass,
+          sky.land,
+          sky.farHill,
+          sky.distantHill,
+        ];
+        for (int i = 1; i < nearToFar.length; i++) {
+          expect(nearToFar[i].computeLuminance(),
+              greaterThan(nearToFar[i - 1].computeLuminance()),
+              reason: 'layer $i is further back, so it must be paler');
+        }
       });
     }
   }

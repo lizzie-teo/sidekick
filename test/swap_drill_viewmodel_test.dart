@@ -47,7 +47,6 @@ void main() {
             viewModel.choose(slot.part, state().chipsFor(slot.part).first);
           }
         case SwapStepKind.introduction:
-        case SwapStepKind.shape:
         case SwapStepKind.finished:
         case SwapStepKind.beforeYouTry:
           break;
@@ -192,7 +191,6 @@ void main() {
         SwapStepKind.card,
         SwapStepKind.fixOne,
         SwapStepKind.situation,
-        SwapStepKind.shape,
         SwapStepKind.slot,
         SwapStepKind.finished,
         SwapStepKind.beforeYouTry,
@@ -437,13 +435,6 @@ void main() {
       // you want." on the finish screen as though that were finished.
       walkTo(SwapStepKind.situation);
       viewModel.chooseSituation(0);
-      viewModel.carryOn();
-
-      // The shape step, which asks for nothing and lets the reader straight
-      // through. It sits here so the three parts are seen whole on the screen
-      // before the first one is asked for.
-      expect(state().step.kind, SwapStepKind.shape);
-      expect(state().canGoForward, isTrue);
       viewModel.carryOn();
 
       // **A page per part**, and each one holds until its own part lands.

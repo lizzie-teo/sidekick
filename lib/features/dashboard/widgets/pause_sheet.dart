@@ -91,8 +91,7 @@ class PauseSheet extends StatelessWidget {
         Icons.coffee_rounded,
   };
 
-  static IconData iconFor(String prompt) =>
-      icons[prompt] ?? Icons.spa_rounded;
+  static IconData iconFor(String prompt) => icons[prompt] ?? Icons.spa_rounded;
 
   @override
   Widget build(BuildContext context) {

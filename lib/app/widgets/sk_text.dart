@@ -209,6 +209,19 @@ abstract final class SkText {
     height: 1.4,
   );
 
+  // "How are you?" beside the moth on Home. The handwritten face, because
+  // the moth is asking -- quoted speech is what `quoted` is for -- set two
+  // points under `lessonSpoken`, because it is a whisper beside her rather
+  // than a line on a page, and it still clears the 17 of body text at
+  // Shantell's taller x-height.
+  static const TextStyle homeMothWords = TextStyle(
+    fontFamily: quoted,
+    fontWeight: FontWeight.w600,
+    fontVariations: <FontVariation>[FontVariation('wght', 600)],
+    fontSize: 18,
+    height: 1.25,
+  );
+
   // Card titles. 18, not 20: at 20 the soft buttons and the invite card were
   // a point *larger* than the primary button beside them, so the loudest
   // thing on Home was whatever was not the main action. Size now falls the

@@ -7,6 +7,7 @@ import 'package:sidekick/data/models/noticing_prompts.dart';
 import 'package:sidekick/features/dashboard/models/daily_quotes.dart';
 import 'package:sidekick/features/dashboard/views/dashboard_view.dart';
 import 'package:sidekick/features/dashboard/widgets/affirmation_sheet.dart';
+import 'package:sidekick/features/dashboard/widgets/feelings_moth.dart';
 import 'package:sidekick/features/dashboard/widgets/pause_sheet.dart';
 import 'package:sidekick/features/play/views/scribble_view.dart';
 import 'package:sidekick/features/play/widgets/scribble_pad.dart';
@@ -27,7 +28,8 @@ void main() {
     usePhone(tester);
     await pumpApp(tester, isAuthenticated: true);
 
-    expect(find.text('Tap me'), findsOneWidget);
+    expect(find.text(FeelingsMoth.caption), findsOneWidget);
+    expect(find.text('Tap me'), findsNothing);
     expect(find.text(DashboardView.tilesHeading), findsOneWidget);
 
     // Meditate opened nothing, and went when the pills became tiles.
@@ -160,8 +162,7 @@ void main() {
           )
           .first;
       for (final String label in <String>[
-        'Tap me',
-        'Breathe',
+        FeelingsMoth.caption,
         'Scribble',
         PauseSheet.buttonLabel,
       ]) {

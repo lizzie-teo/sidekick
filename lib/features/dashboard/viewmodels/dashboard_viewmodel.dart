@@ -185,8 +185,7 @@ class DashboardViewModel extends ViewModel<DashboardViewModelState> {
     // the same day is two reads and no writes.
     if (!alreadyPicked) {
       await _deviceSettingsService.setInt(SettingsKeys.homePromptIndex, index);
-      await _deviceSettingsService.setString(
-          SettingsKeys.homePromptDay, today);
+      await _deviceSettingsService.setString(SettingsKeys.homePromptDay, today);
     }
   }
 

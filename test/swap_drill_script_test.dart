@@ -250,11 +250,10 @@ void main() {
       expect(examples(last).first.label, SwapDrillScript.criticismLabel);
       expect(examples(last).last.label, SwapDrillScript.expressingLabel);
 
-      // **The three parts are not on it, since 23 September 2026.** They have
-      // a step of their own between the situation picker and the builder,
-      // where they are used. This page teaches the swap, and one page teaches
-      // one thing.
-      expect(SwapDrillScript.shapeTitle, isNotEmpty);
+      // **The three parts are not on it, since 23 September 2026.** They are
+      // shown on the builder, where they are used. This page teaches the
+      // swap, and one page teaches one thing.
+      expect(SwapDrillScript.builderTitle, isNotEmpty);
     });
 
     test('models both kinds, and not with a sentence the drill will ask about',
@@ -657,27 +656,17 @@ void main() {
       expect(firstSlot, greaterThan(situation));
     });
 
-    test('the shape is shown once, directly before the builder asks for it',
-        () {
-      // **A thing is taught where it is used.** The three parts sat in the
-      // middle of the introduction's last page until 23 September 2026 --
-      // read, then left alone through six sorting questions and a situation
-      // picker before anything was done with them. It is the same argument
-      // that moved the per-part helpers off that page on 21 September 2026.
+    test('the builder follows the situation directly', () {
+      // **There is no shape step, since 25 September 2026.** It sat between
+      // the two and held up the empty sentence, which the first builder page
+      // already holds up. Deleted at the user's request.
       final List<SwapStepKind> kinds =
           SwapDrillScript.steps.map((SwapStep s) => s.kind).toList();
 
-      expect(
-        kinds.where((SwapStepKind k) => k == SwapStepKind.shape),
-        hasLength(1),
-      );
-
-      final int shape = kinds.indexOf(SwapStepKind.shape);
       final int situation = kinds.indexOf(SwapStepKind.situation);
       final int firstSlot = kinds.indexOf(SwapStepKind.slot);
 
-      expect(shape, situation + 1, reason: 'not straight after the situation');
-      expect(firstSlot, shape + 1, reason: 'not straight before the builder');
+      expect(firstSlot, situation + 1);
     });
 
     test('are one list with no section to reset at', () {
@@ -685,8 +674,8 @@ void main() {
         SwapDrillScript.steps.length,
         SwapDrillScript.introduction.length +
             SwapDrillScript.cards.length +
-            // fix, situation, shape
-            3 +
+            // fix, situation
+            2 +
             SwapDrillScript.slots.length +
             // finish, closing
             2,
@@ -716,7 +705,6 @@ void main() {
             expect(step.index, lessThan(SwapDrillScript.introduction.length));
           case SwapStepKind.fixOne:
           case SwapStepKind.situation:
-          case SwapStepKind.shape:
           case SwapStepKind.finished:
           case SwapStepKind.beforeYouTry:
             break;
@@ -778,8 +766,7 @@ void main() {
             .whereType<SwapIntroSaid>()
             .map((SwapIntroSaid b) => b.said),
         SwapDrillScript.closingSaid,
-        SwapDrillScript.shapeTitle,
-        SwapDrillScript.shapeLead,
+        SwapDrillScript.builderTitle,
         SwapDrillScript.introCriticismExample,
         SwapDrillScript.introExpressingExample,
         SwapDrillScript.correct,

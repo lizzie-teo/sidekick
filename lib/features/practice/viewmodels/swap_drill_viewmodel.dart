@@ -104,7 +104,6 @@ class SwapDrillViewModel extends ViewModel<SwapDrillState> {
 
       case SwapStepKind.introduction:
       case SwapStepKind.situation:
-      case SwapStepKind.shape:
       case SwapStepKind.slot:
       case SwapStepKind.finished:
       case SwapStepKind.beforeYouTry:
@@ -192,7 +191,6 @@ class SwapDrillViewModel extends ViewModel<SwapDrillState> {
 
       case SwapStepKind.introduction:
       case SwapStepKind.situation:
-      case SwapStepKind.shape:
       case SwapStepKind.slot:
       case SwapStepKind.finished:
       case SwapStepKind.beforeYouTry:
@@ -496,7 +494,6 @@ class SwapDrillState {
 
       case SwapStepKind.introduction:
       case SwapStepKind.situation:
-      case SwapStepKind.shape:
       case SwapStepKind.slot:
       case SwapStepKind.finished:
       case SwapStepKind.beforeYouTry:
@@ -571,7 +568,6 @@ class SwapDrillState {
 
       case SwapStepKind.introduction:
       case SwapStepKind.situation:
-      case SwapStepKind.shape:
       case SwapStepKind.slot:
       case SwapStepKind.finished:
       case SwapStepKind.beforeYouTry:
@@ -648,13 +644,6 @@ class SwapDrillState {
       case SwapStepKind.situation:
         return hasSituation ? SwapDrillScript.next : SwapDrillScript.pickOne;
 
-      // The same word the builder steps use, because the first builder step
-      // is what it leads to. A label of its own here would make the shape
-      // screen look like a different kind of thing from the three that follow
-      // it, and it is the first of the four.
-      case SwapStepKind.shape:
-        return SwapDrillScript.next;
-
       // A page per part, since 25 September 2026. The first two carry on to
       // the next part; the last goes to the whole sentence.
       //
@@ -683,9 +672,6 @@ class SwapDrillState {
   bool get canGoForward {
     switch (step.kind) {
       case SwapStepKind.introduction:
-      // Nothing is asked on the shape step. It shows the reader what they are
-      // about to fill in, and the next tap fills the first part of it.
-      case SwapStepKind.shape:
       case SwapStepKind.finished:
       case SwapStepKind.beforeYouTry:
         return true;

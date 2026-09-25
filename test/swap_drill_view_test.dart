@@ -233,9 +233,9 @@ void main() {
       }
 
       // **No part of the sentence's shape is taught here, since 23 September
-      // 2026.** The three labels have their own step, directly before the
-      // builder asks for them. An introduction page showing them was the
-      // same instruction read three screens early.
+      // 2026.** The three labels are on the builder, where they are asked
+      // for. An introduction page showing them was the same instruction read
+      // three screens early.
       for (final SwapSlot slot in SwapDrillScript.slots) {
         expect(find.text(slot.label), findsNothing, reason: slot.label);
       }
@@ -393,10 +393,6 @@ void main() {
 
       final SwapSituation situation = SwapDrillScript.situations.first;
       await press(tester, situation.title);
-      await press(tester, SwapDrillScript.next);
-      // **Past the shape step.** It sits between the situation and the
-      // builder since 23 September 2026: the three parts of the sentence,
-      // shown whole, on the screen before the first one is asked for.
       await press(tester, SwapDrillScript.next);
 
       // **A page per part, one tap and one press on each**, since 25
@@ -647,26 +643,17 @@ void main() {
       final SwapSituation situation = SwapDrillScript.situations.first;
       await press(tester, situation.title);
 
-      // **The shape step and the builder are measured against each other,
-      // not against the quiet steps, since 25 September 2026.** Both put the
-      // heading at the top of the page and a sentence in her bubble, so she
-      // starts one heading lower than on the situation step. That is a
-      // different screen, not her moving.
+      // **The builder is measured against itself, not against the quiet
+      // steps.** It puts the heading at the top of the page and a sentence in
+      // her bubble, so she starts one heading lower than on the situation
+      // step. That is a different screen, not her moving.
       //
       // **What the rule is actually about is a character shifting under
-      // somebody who is reading her**, so the tests that matter are below:
-      // she stands still from the shape step into the builder, and the
-      // sentence in her bubble grows as it fills without her following it.
+      // somebody who is reading her**, so the test that matters is below: the
+      // sentence in her bubble grows as it fills, and she must not follow it.
       await press(tester, SwapDrillScript.next);
 
       final Rect building = tester.getRect(find.byType(SkCharacter));
-
-      await press(tester, SwapDrillScript.next);
-      expect(
-        tester.getRect(find.byType(SkCharacter)),
-        building,
-        reason: 'going from the shape step to the builder moved her',
-      );
 
       // **A page per part since 25 September 2026.** Each page has the same
       // one-line heading, so she stands in the same place on all three.
@@ -1456,8 +1443,6 @@ void main() {
 
       await press(tester, SwapDrillScript.situations.first.title);
       await press(tester, SwapDrillScript.next);
-      // Past the shape step -- see the note in `finishTheRest`.
-      await press(tester, SwapDrillScript.next);
 
       expect(find.byType(SkFeedbackSheet), findsNothing);
     });
@@ -1684,43 +1669,6 @@ void main() {
     }
   });
 
-  testWidgets('the shape step holds up the empty sentence', (
-    WidgetTester tester,
-  ) async {
-    await open(tester);
-    await sortAll(tester);
-    await answerWith(tester, SwapDrillScript.fixes.first.said);
-    await press(tester, SwapDrillScript.yourTurn);
-    await press(tester, SwapDrillScript.situations.first.title);
-    await press(tester, SwapDrillScript.next);
-
-    expect(find.text(SwapDrillScript.shapeTitle), findsOneWidget);
-    expect(find.text(SwapDrillScript.shapeLead), findsOneWidget);
-
-    // **The empty sentence, not three label tiles, since 25 September
-    // 2026.** Its blanks are drawn rules, so the assertion is on what a
-    // screen reader hears. No part name and no helper yet: those are on each
-    // part's own page.
-    for (final SwapSlot slot in SwapDrillScript.slots) {
-      expect(
-        find.bySemanticsLabel(RegExp(RegExp.escape(slot.blank))),
-        findsOneWidget,
-        reason: slot.blank,
-      );
-      expect(find.text(slot.title), findsNothing, reason: slot.title);
-      final String? helper = slot.helper;
-      if (helper != null) {
-        expect(find.text(helper), findsNothing, reason: helper);
-      }
-    }
-
-    await press(tester, SwapDrillScript.next);
-
-    // The first part's name, over its lines, and the page heading stays.
-    expect(find.text(SwapDrillScript.shapeTitle), findsOneWidget);
-    expect(find.text(SwapDrillScript.slots.first.title), findsOneWidget);
-  });
-
   testWidgets('the builder is a page per part, each holding the whole sentence', (
     WidgetTester tester,
   ) async {
@@ -1729,8 +1677,6 @@ void main() {
     await answerWith(tester, SwapDrillScript.fixes.first.said);
     await press(tester, SwapDrillScript.yourTurn);
     await press(tester, SwapDrillScript.situations.first.title);
-    await press(tester, SwapDrillScript.next);
-    // Past the shape step, which asks for nothing.
     await press(tester, SwapDrillScript.next);
 
     final SwapSituation situation = SwapDrillScript.situations.first;
@@ -1794,9 +1740,6 @@ void main() {
     await press(tester, SwapDrillScript.yourTurn);
     await press(tester, SwapDrillScript.situations.first.title);
     await press(tester, SwapDrillScript.next);
-    // Past the shape step, which sits between the situation and the builder
-    // since 23 September 2026 and asks for nothing.
-    await press(tester, SwapDrillScript.next);
 
     // **Each page waits for its own part.** Pressing on with the part empty
     // must leave the reader where they are: the pill is disabled, so the tap
@@ -1842,14 +1785,6 @@ void main() {
     await press(tester, situation.title);
     await press(tester, SwapDrillScript.next);
 
-    // The shape step. It shows the three parts and asks for nothing, so there
-    // is no field here either -- and no card, which is what makes it a page
-    // to read rather than a fourth question.
-    expect(find.byType(TextField), findsNothing);
-    expect(find.byType(SkOptionCard), findsNothing);
-
-    await press(tester, SwapDrillScript.next);
-
     // The builder screen: a bank of tiles, and still no field. The tiles are
     // not `SkOptionCard`s -- a full-width card is the shape of an answer, and
     // a tile is the shape of a piece of a sentence. See `_Tile`.
@@ -1884,9 +1819,6 @@ void main() {
     await press(tester, SwapDrillScript.yourTurn);
     await press(tester, SwapDrillScript.situations.first.title);
     await press(tester, SwapDrillScript.next);
-    // Past the shape step, which sits between the situation and the builder
-    // since 23 September 2026 and asks for nothing.
-    await press(tester, SwapDrillScript.next);
 
     final SwapSituation situation = SwapDrillScript.situations.first;
     final String feel = situation.chipsFor(SwapPart.feel).first;
@@ -1917,9 +1849,6 @@ void main() {
     await answerWith(tester, SwapDrillScript.fixes.first.said);
     await press(tester, SwapDrillScript.yourTurn);
     await press(tester, SwapDrillScript.situations.first.title);
-    await press(tester, SwapDrillScript.next);
-    // Past the shape step, which sits between the situation and the builder
-    // since 23 September 2026 and asks for nothing.
     await press(tester, SwapDrillScript.next);
 
     final SwapSituation situation = SwapDrillScript.situations.first;
@@ -1978,9 +1907,6 @@ void main() {
     await answerWith(tester, SwapDrillScript.fixes.first.said);
     await press(tester, SwapDrillScript.yourTurn);
     await press(tester, SwapDrillScript.situations.first.title);
-    await press(tester, SwapDrillScript.next);
-    // Past the shape step, which sits between the situation and the builder
-    // since 23 September 2026 and asks for nothing.
     await press(tester, SwapDrillScript.next);
 
     final SwapSituation situation = SwapDrillScript.situations.first;
@@ -2371,7 +2297,6 @@ void main() {
       await press(tester, SwapDrillScript.yourTurn);
       await press(tester, SwapDrillScript.situations.first.title);
       await press(tester, SwapDrillScript.next);
-      await press(tester, SwapDrillScript.next);
 
       final SwapSituation situation = SwapDrillScript.situations.first;
 
@@ -2433,7 +2358,6 @@ void main() {
     await answerWith(tester, SwapDrillScript.fixes.first.said);
     await press(tester, SwapDrillScript.yourTurn);
     await press(tester, SwapDrillScript.situations.first.title);
-    await press(tester, SwapDrillScript.next);
     await press(tester, SwapDrillScript.next);
 
     final SwapSituation situation = SwapDrillScript.situations.first;
@@ -2546,13 +2470,6 @@ void main() {
     await reach(situation.title);
     await reach(SwapDrillScript.next);
 
-    // The shape step, which at this scale is a heading and a tall bubble.
-    // It is checked rather than skipped, so an overflow on it fails here
-    // rather than on somebody's phone.
-    await tester.ensureVisible(find.text(SwapDrillScript.shapeLead));
-    await tester.pumpAndSettle();
-    expect(tester.takeException(), isNull, reason: 'the shape step');
-    await reach(SwapDrillScript.next);
 
     for (final SwapSlot slot in SwapDrillScript.slots) {
       // A pick moves on to the next part by itself.

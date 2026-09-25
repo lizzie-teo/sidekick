@@ -7,7 +7,8 @@
 // sky works out sunrise and sunset from this, so the app never has to ask
 // the reader where they are. `sun_times.dart` holds the reasoning.
 
-const Map<String, (double, double)> zoneCoordinates = <String, (double, double)>{
+const Map<String, (double, double)> zoneCoordinates =
+    <String, (double, double)>{
   'Africa/Abidjan': (5.32, -4.03),
   'Africa/Accra': (5.55, -0.22),
   'Africa/Addis_Ababa': (9.03, 38.70),

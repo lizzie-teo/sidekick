@@ -538,10 +538,6 @@ enum SwapStepKind {
   // Which situation the reader wants to practise.
   situation,
 
-  // The three parts of the sentence, shown whole, immediately before the
-  // builder asks for them one at a time.
-  shape,
-
   // One of the three builder steps, one part each. `SwapStep.index` is the
   // index into `slots`.
   slot,
@@ -871,7 +867,7 @@ abstract final class SwapDrillScript {
         // It is the other half of a decision already taken here. The
         // builder's one-line helpers came off this page on 21 September 2026
         // for exactly this reason -- an instruction is worth most at the
-        // moment it is followed. See `shapeTitle`.
+        // moment it is followed. See `builderTitle`.
         SwapIntroText('The same dinner, said two ways:'),
 
         // **The swap is said in the layout as well as in the words.** Her on
@@ -1205,27 +1201,18 @@ abstract final class SwapDrillScript {
   // by `SwapSlot.title` and led by `SwapSlot.helper`, and with only one
   // part's lines on the page there is no question of where a tile goes.
 
-  // The step between picking a situation and building the sentence, added 23
-  // September 2026 with the shape it shows.
+  // The heading over all three builder pages.
   //
-  // **It is one screen with one job: here is the shape you are about to fill
-  // in.** The shape used to sit on the last page of the introduction, three
-  // screens and a six-question drill before anything was done with it.
+  // **It was the heading of its own step until 25 September 2026.** That
+  // step sat between the situation and the builder and held up the empty
+  // sentence. The first builder page already holds up the same empty
+  // sentence, so it was one page showing the next page. It was deleted at the
+  // user's request, and its heading moved here.
   //
-  // **The heading names what the reader is about to do.** It was "Three
-  // parts" until 25 September 2026, and user feedback was that it said
+  // **The heading names what the reader is doing.** "Three parts" said
   // nothing: a count is not a subject, and `/practice-writer` rule 2 asks
-  // every screen to name its own. "The three-part shape" is still out -- the
-  // brief's word for the frame is a design word, rule 10's own failure case.
-  static const String shapeTitle = 'How to build your sentence';
-
-  // What she says in her bubble, over the empty sentence.
-  //
-  // **Short, since 25 September 2026, at the user's request.** It used to
-  // explain the three parts and point at three tiles under it. The tiles are
-  // gone: the empty sentence under this line shows the three parts and their
-  // order, so the line only has to say what happens next.
-  static const String shapeLead = "Now let's build a sentence.";
+  // every screen to name its own.
+  static const String builderTitle = 'How to build your sentence';
 
   // The line she says on the closing step, and the reason the three sections
   // under it are worth doing.
@@ -1447,7 +1434,6 @@ abstract final class SwapDrillScript {
     for (int i = 0; i < cards.length; i++) SwapStep(SwapStepKind.card, i),
     const SwapStep(SwapStepKind.fixOne),
     const SwapStep(SwapStepKind.situation),
-    const SwapStep(SwapStepKind.shape),
     for (int i = 0; i < slots.length; i++) SwapStep(SwapStepKind.slot, i),
     const SwapStep(SwapStepKind.finished),
     const SwapStep(SwapStepKind.beforeYouTry),

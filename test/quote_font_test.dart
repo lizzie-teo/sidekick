@@ -115,11 +115,16 @@ void main() {
 
     final int uses = 'fontFamily: quoted'.allMatches(source).length;
 
+    // **The third is `homeMothWords`, from 25 September 2026, at the user's
+    // request.** It keeps the signal rather than spending it: the face means
+    // *somebody is speaking*, and "How are you?" is the moth on Home asking.
+    // A heading or a button in it would still be decoration.
     expect(
       uses,
-      2,
-      reason: 'only SkText.quote and SkText.lessonSpoken may take '
-          'Shantell Sans. A third use spends the one signal the face '
+      3,
+      reason: 'only SkText.quote, SkText.lessonSpoken and '
+          'SkText.homeMothWords may take Shantell Sans -- all three are '
+          'somebody speaking. A fourth use spends the one signal the face '
           'carries -- read the note on SkText.quoted before changing this.',
     );
   });

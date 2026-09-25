@@ -33,7 +33,7 @@ abstract class Routes {
   static const String me = '/me';
 
   // The feeling picker. Reached from the Home CTA, which is the unhurried
-  // door: someone tapping "Tap me" has room for a question.
+  // door: someone tapping her moth on Home has room for a question.
   // The centre slot of the tab bar deliberately does not come here.
   static const String panic = '/panic';
 

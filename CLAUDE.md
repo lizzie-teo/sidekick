@@ -422,9 +422,12 @@ and one quote at the top, and her standing on a hill.
 | **The clock picks what is in the sky; light or dark mode picks how bright.** Dark mode at noon is a deep day sky | `HomeSkyColors.of` |
 | **The scene is the time of day's colours, not the palette's.** Yellow-pink morning, blue day, violet-pink evening, navy night, from references the user brought. The land is the sky's own hue a step on, never green | `HomeSkyColors._scenes` |
 | Two layers of hills are what separate land from sky. The first hill was the canvas and measured 1.02:1 against the night sky | `test/home_sky_test.dart` |
+| Alto's Odyssey is the reference: big layered mountains with haze at the foot of each layer, tall slim pines far bigger than her, and one long slope with a gentle crest under her feet. No river, no grass, no rocks -- each was tried on 25 September 2026 and taken out. Fireflies and butterflies **move**, slowly, at the user's request -- see the Motion section | `_StagePainter` |
+| The sun and moon sit clear of every peak and to the side of her head. The moon used to sit behind a peak and her ear | `_StagePainter.paint` |
 | The words on the sky are near-black or near-white per sky (`onSky`), not the palette's `ink` | same |
 | **Tap me and the tiles sit on a canvas panel, not on the land.** The palette's action fill measured as low as 1.02:1 on a violet hill | `DashboardView` |
 | One quote a day, the same all day. Every quote needs its source checked before release | `daily_quotes.dart` |
+| **The door to the feeling picker is her moth**, not a "Tap me" pill. It lands on her shoulder, says "How are you?" on its first two landings of a visit, then flies round her. A screen reader always finds it on her shoulder. The fluffball and her shadow were tried first and removed | `feelings_moth.dart` |
 
 The time zone, not the location, was the user's choice: a permission prompt
 in a wellbeing app to colour a sky is a big ask, and a "no" needs this
@@ -2036,6 +2039,17 @@ Two rules it inherits from the rest of this file:
   the thing arrives. A loop on a screen the reader is trying to read is the
   same failure as two clocks, one level down.
 
+**Home's fireflies and butterflies are the one decorative loop, and it was
+the user's call.** Made 25 September 2026 with this rule on the table: the
+quote sits above the scene, not on it, so nothing moves under the words. The
+creatures come and go rather than hover: a butterfly appears small, as if
+far off, grows as it comes nearer, then flies out of the scene or shrinks
+back into the distance; a firefly lights, drifts up, fades and lights again
+a short way off. It runs on a 24-second `AnimationController` in
+`HomeStage`, and every movement repeats a whole number of times per loop so
+there is no jump. Reduce Motion stops it: every firefly lit, every butterfly
+at its nearest point with its wings open.
+
 ## Skills
 
 Each one is a folder under `.claude/skills/`, holding a `SKILL.md`. Invoke one
@@ -2143,6 +2157,7 @@ explicitly chosen the version that got softened.
 | The neutral head has a flat mouth | An unmeant **answer** to a question the lesson is asking about a sentence | A face waiting for the reader to answer. `resting-<skin>` smiles a little; `lesson-neutral-<skin>` still does not |
 | Nothing moves on the panic path | Motion that **startles** or sets a second clock -- the cut startle, the fidgeting idle | A control the reader is dragging. The face follows the thumb, so it is one instruction, not two |
 | A bubble holds only what somebody said | The app **ventriloquising** -- putting its own label or its own words in a character's mouth, on the steps where the sentence is hers or the reader's | An **exhibit**: the swap drill's two introduction bubbles, which the page holds up, names and quotes. "A criticism" sits inside one and the sentence is in quote marks |
+| Only two styles take the handwriting face | Spending the face's one meaning -- *somebody is speaking* -- on a heading or a button | Words somebody says. The Home moth's "How are you?" is the third style, `SkText.homeMothWords`, added 25 September 2026 |
 | A bubble already says somebody is talking, so quote marks say it twice | The same thing, one level down. Her six sorting sentences are **spoken**, so the marks are a second speaker tag | A sentence being **quoted** rather than said. On the introduction the page is citing a specimen, and that is what quote marks are for |
 
 **Add a row when you find another one.** The list is the point: a rule whose

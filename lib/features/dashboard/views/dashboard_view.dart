@@ -12,13 +12,13 @@ import 'package:sidekick/app/widgets/sk_character.dart';
 import 'package:sidekick/app/widgets/sk_colors.dart';
 import 'package:sidekick/app/widgets/sk_layout.dart';
 import 'package:sidekick/app/widgets/sk_main_tab_bar.dart';
-import 'package:sidekick/app/widgets/sk_primary_button.dart';
 import 'package:sidekick/app/widgets/sk_pressable.dart';
 import 'package:sidekick/app/widgets/sk_text.dart';
 import 'package:sidekick/features/dashboard/models/daily_quotes.dart';
 import 'package:sidekick/features/dashboard/services/home_place_service.dart';
 import 'package:sidekick/features/dashboard/viewmodels/dashboard_viewmodel.dart';
 import 'package:sidekick/features/dashboard/widgets/affirmation_sheet.dart';
+import 'package:sidekick/features/dashboard/widgets/feelings_moth.dart';
 import 'package:sidekick/features/dashboard/widgets/home_sky.dart';
 import 'package:sidekick/features/dashboard/widgets/pause_sheet.dart';
 
@@ -29,7 +29,7 @@ import 'package:sidekick/features/dashboard/widgets/pause_sheet.dart';
 // and why she still reads; `daily_quotes.dart` holds the rules for a quote.
 // The land runs on under the rest of the page, where the canvas used to be.
 //
-// The three glass pills and the dashed invitation became one row of four
+// The three glass pills and the dashed invitation became one row of
 // tiles under "Now for you". Meditate went with them: it opened nothing, and
 // a door that looks like it worked is worse than no door.
 //
@@ -61,11 +61,9 @@ import 'package:sidekick/features/dashboard/widgets/pause_sheet.dart';
 // is the fifth: the same chip, stated by a rim and a shadow rather than by
 // its tint. Its comment holds the numbers for all five.
 //
-// **Home now says its hierarchy in treatment rather than in colour.** One
-// filled pill above -- Tap me, the way into the panic path -- and two outline
-// pills of the same shape below it. The invitation under them is the same
-// shape language one step quieter again: a dashed edge rather than a solid
-// one, because it is a space waiting to be filled rather than a thing to do.
+// **Tap me is gone, 25 September 2026.** The door to the feeling picker is a
+// moth flying round her -- `feelings_moth.dart` holds why, and the three
+// ideas that came before it. The panel now opens straight on the tiles.
 class DashboardView extends StatefulWidget {
   const DashboardView({super.key});
 
@@ -190,9 +188,20 @@ class _DashboardViewState extends State<DashboardView> {
                       return HomeStage(
                         phase: state.phase,
                         height: DashboardView.characterHeight + SkLayout.lg,
-                        child: SkCharacter(
-                          height: DashboardView.characterHeight,
-                          skin: state.character.skin,
+                        // The door to the feeling picker: her moth, flying
+                        // round her. It holds her, because it passes behind
+                        // her for part of the way and in front for the rest.
+                        child: SizedBox.expand(
+                          child: FeelingsMoth(
+                            phase: state.phase,
+                            // Pushed, so "Just looking" comes straight back
+                            // to Home.
+                            onPressed: () => context.push(Routes.panic),
+                            child: SkCharacter(
+                              height: DashboardView.characterHeight,
+                              skin: state.character.skin,
+                            ),
+                          ),
                         ),
                       );
                     },
@@ -205,19 +214,24 @@ class _DashboardViewState extends State<DashboardView> {
                 SliverFillRemaining(
                   hasScrollBody: false,
                   //
-                  // **A panel in the palette's canvas, rising out of the
-                  // land.** The scene is the time of day's colours and the
-                  // controls are the palette's, and the two do not mix: the
-                  // Tap me fill measured as low as 1.02:1 on a violet hill.
-                  // The land shows round the panel's top corners, so the
-                  // hill still runs under the page.
+                  // **A panel in the palette's canvas, under the scene.** The
+                  // scene is the time of day's colours and the controls are
+                  // the palette's, and the two do not mix: the old Tap me fill
+                  // measured as low as 1.02:1 on a violet hill.
+                  //
+                  // **Rounded top corners, with the ground's own colour
+                  // behind them,** so the panel reads as lying on the
+                  // hill. Blue once showed on the cream here; that was the
+                  // scene's trees painting below its foot, not the corners,
+                  // and `HomeStage` now clips its foot. A straight edge was
+                  // tried for a few minutes and the rounded one preferred.
                   child: ValueListenableBuilder<DashboardViewModelState>(
                     valueListenable: _viewModel.state,
                     builder: (context, state, child) => ColoredBox(
                       color: HomeSkyColors.of(
                         state.phase,
                         Theme.of(context).brightness,
-                      ).land,
+                      ).ground,
                       child: child,
                     ),
                     child: DecoratedBox(
@@ -233,17 +247,6 @@ class _DashboardViewState extends State<DashboardView> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: <Widget>[
-                            Center(
-                              child: SkPrimaryButton(
-                                label: 'Tap me',
-                                compact: true,
-                                // The way into the panic path: the feeling
-                                // picker, not the breathing. Pushed, so "Just
-                                // looking" comes straight back to Home.
-                                onPressed: () => context.push(Routes.panic),
-                              ),
-                            ),
-                            const SizedBox(height: SkLayout.xxl),
                             Semantics(
                               header: true,
                               child: Text(
@@ -254,17 +257,14 @@ class _DashboardViewState extends State<DashboardView> {
                             ),
                             const SizedBox(height: SkLayout.md),
                             _Tiles(
+                              // No Breathe tile. It opened the panic pacer,
+                              // which the tab bar's panic button and the
+                              // fluffball's "Can't cope" already reach -- and
+                              // its first line is "When you panic", which is
+                              // the wrong welcome for somebody calm who wanted
+                              // to breathe. A calm breathing exercise belongs
+                              // on the Meditate tab. Removed 25 September 2026.
                               children: <Widget>[
-                                _Tile(
-                                  icon: Icons.air_rounded,
-                                  label: 'Breathe',
-                                  // The unhurried door into the pacer, so it
-                                  // opens on the introduction page. The tab
-                                  // bar's panic button is the one that skips
-                                  // it.
-                                  onPressed: () => context.push(
-                                      '${Routes.breathe}?${Routes.introQuery}=1'),
-                                ),
                                 _Tile(
                                   icon: Icons.gesture_rounded,
                                   label: 'Scribble',

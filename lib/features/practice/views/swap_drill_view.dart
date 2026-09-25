@@ -811,8 +811,6 @@ class _Step extends StatelessWidget {
           teacherKey: teacherKey,
         );
 
-      case SwapStepKind.shape:
-        return _Shape(state: state, teacherKey: teacherKey);
 
       case SwapStepKind.slot:
         return _Builder(
@@ -1593,69 +1591,6 @@ class _Paragraph extends StatelessWidget {
           TextSpan(text: text.substring(at + emphasis!.length)),
         ],
       ),
-    );
-  }
-}
-
-// The shape of the sentence, on its own step, between picking a situation and
-// building it. Added 23 September 2026.
-//
-// **It is here because a thing is taught where it is used.** The three parts
-// were the middle of the introduction's last page -- read, then left alone
-// through a six-sentence sorting drill and a situation picker before anything
-// was done with them. That page was also carrying the before-and-after swap,
-// which is its subject. Two subjects on one screen is two screens.
-//
-// It is the other half of a decision this drill already took. The builder's
-// one-line helpers came off that same page on 21 September 2026, for exactly
-// this reason: an instruction is worth most at the moment it is followed.
-// `/lesson-design` rule 4.
-//
-// **It asks for nothing.** The forward control is live from the first frame,
-// and it says the same word the three builder steps say, because it is the
-// first of four screens about one sentence.
-//
-// **It is laid out like the builder pages, since 25 September 2026, at the
-// user's request.** The heading is across the top and the teacher holds up
-// the empty sentence -- "I feel ___ when ___. I'd like ___." -- which is the
-// same sentence the next three pages fill in. It replaced a paragraph and
-// three label tiles. The joining words already name the three parts and
-// their order, so the tiles said the same thing a second time.
-class _Shape extends StatelessWidget {
-  final SwapDrillState state;
-
-  // The teacher's, not the reader's own. See `_Asked`.
-  final GlobalKey teacherKey;
-
-  const _Shape({required this.state, required this.teacherKey});
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: <Widget>[
-        _Heading(SwapDrillScript.shapeTitle),
-        const SizedBox(height: SkLayout.lg),
-        _Asked(
-          characterKey: teacherKey,
-          skin: _teacherSkin(),
-          pose: state.pose,
-          poseSerial: state.poseSerial,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              Text(
-                SwapDrillScript.shapeLead,
-                style: SkText.lessonSpoken.copyWith(
-                  color: context.exercise.ink,
-                ),
-              ),
-              const SizedBox(height: SkLayout.md),
-              _SentenceSoFar(state),
-            ],
-          ),
-        ),
-      ],
     );
   }
 }
@@ -2881,10 +2816,10 @@ class _Builder extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
-        // **The shape step's heading, on all four pages, since 25 September
-        // 2026.** The part's own name moved down to sit over its lines, so
-        // the four pages read as one page filling in.
-        _Heading(SwapDrillScript.shapeTitle),
+        // **One heading on all three pages, since 25 September 2026.** The
+        // part's own name sits over its lines, so the three pages read as one
+        // page filling in.
+        _Heading(SwapDrillScript.builderTitle),
         const SizedBox(height: SkLayout.lg),
 
         // **The sentence is an exhibit, not her words.** She holds up the
@@ -3121,8 +3056,8 @@ class _Tile extends StatelessWidget {
 // fourteen words on the screen and only six of them were the sentence.
 //
 // **The joining words carry the teaching on their own.** "I feel ... when
-// ... I'd like ..." names all three parts and names the order, which is what
-// the shape step two screens earlier taught. The blank only has to say
+// ... I'd like ..." names all three parts and names the order, and it is on
+// the screen from the first builder page. The blank only has to say
 // *something goes here*, and a rule says that in no words at all.
 //
 // **It is as long as the words it replaced, capped at 14.** A blank the

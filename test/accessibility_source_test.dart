@@ -151,6 +151,9 @@ void main() {
         'transparent are alpha values, not paint',
     'theme_sheet_view.dart':
         'a drawing of a phone, not part of the app surface',
+    'feelings_moth.dart': "the moth on Home, a creature made of light. "
+        'Fixed in every sky for the same reason the sun is yellow; its edge '
+        'and its words are measured in feelings_moth_test.dart',
   };
 
   test('a raw colour literal only appears where it is the decision', () {

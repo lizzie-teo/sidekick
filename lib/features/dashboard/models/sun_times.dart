@@ -39,8 +39,9 @@ class SunTimes {
     final double noon = n - longitude / 360;
     final double anomaly = _wrap(357.5291 + 0.98560028 * noon);
     final double m = _rad(anomaly);
-    final double centre =
-        1.9148 * math.sin(m) + 0.0200 * math.sin(2 * m) + 0.0003 * math.sin(3 * m);
+    final double centre = 1.9148 * math.sin(m) +
+        0.0200 * math.sin(2 * m) +
+        0.0003 * math.sin(3 * m);
     final double eclipticLongitude = _rad(_wrap(anomaly + centre + 282.9372));
 
     final double transit = 2451545.0 +

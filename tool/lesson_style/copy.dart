@@ -119,8 +119,8 @@ List<CopyItem> swapDrillCopy() {
   }
 
   items.addAll(<CopyItem>[
-    const CopyItem('$s.shapeTitle', CopyKind.label, SwapDrillScript.shapeTitle),
-    const CopyItem('$s.shapeLead', CopyKind.prose, SwapDrillScript.shapeLead),
+    const CopyItem(
+        '$s.builderTitle', CopyKind.label, SwapDrillScript.builderTitle),
     const CopyItem('$s.closingSaid', CopyKind.spoken, SwapDrillScript.closingSaid),
     const CopyItem(
         '$s.finishedTitle', CopyKind.label, SwapDrillScript.finishedTitle),
