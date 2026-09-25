@@ -41,6 +41,57 @@ abstract final class SkLayout {
   static const double xxxl = 32;
   static const double huge = 40;
 
+  // The gap between a section marker and the text it names -- "What we say"
+  // and the paragraph under it, on a lesson reading page.
+  //
+  // **8, and it is a named step rather than `sm` at the use site**, because
+  // two screens have to agree on it. The introduction pages and the closing
+  // step both set a 20/400 marker over a block, and they held their own copy
+  // of the number: the two are one decision and a copy each is how they
+  // drift.
+  //
+  // **It came down from 12 on 25 September 2026, and the reason is that 12
+  // was measured against a different marker.** It was the right pair for the
+  // 13pt uppercase eyebrow these pages used until 24 September 2026 -- app
+  // furniture, which wants air under it so it reads as a label rather than as
+  // a first line. The marker is a 20pt line of text now, so it is the top of
+  // the paragraph rather than a tag above it, and at 12 it floated off the
+  // words it names.
+  //
+  // **The nesting rule is what bounds it**, not taste: 8 under the marker,
+  // 20 between two paragraphs, 32 starting the next section. Anything that
+  // raises this has to raise those two as well or the page stops reading as
+  // groups.
+  static const double markerGap = sm;
+
+  // The gap between two points of a list, and the gap under the heading that
+  // names them. **One number for both, on purpose.**
+  //
+  // A heading is the top of the list it names, so it must not sit further
+  // from the first point than the points sit from each other -- at 8 over a
+  // 12 list the heading read as glued to point one while the points read as
+  // separate, which is two different groupings on one short block. Setting
+  // the two from one constant is what stops them drifting apart again.
+  //
+  // **8, down from 12 on 25 September 2026, at the user's request.** The
+  // three-line chain on the introduction page was reported as too loose, and
+  // it is the shape that shows the fault best: three one-line consequences,
+  // each already carrying a whole line box of leading above and below it, and
+  // then 12 more points of gap on top. A bulleted list is not a run of
+  // paragraphs -- its items are short, the dot already says where one ends
+  // and the next begins, and the gap only has to be clear rather than wide.
+  //
+  // **The rule that put it at 12 is narrower than it read.** It said a point
+  // is a block the eye lands on one at a time, so it wants a clearer step
+  // than the 8 a paragraph marker takes. That is about *ranking the two
+  // gaps*, and it was answered by pushing the list up rather than by asking
+  // what the list itself needed. The two numbers are equal now, and the
+  // ranking survives elsewhere: a list still sits inside `xxl` between
+  // sections, which is what tells one group from the next.
+  //
+  // The nesting still holds: 8 inside a section, 24 between two sections.
+  static const double listGap = sm;
+
   // The widest a column of reading text may be.
   //
   // 45 to 75 characters is what the eye tracks back across without losing its

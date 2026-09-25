@@ -1,5 +1,4 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:sidekick/features/practice/models/answer_pose.dart';
 import 'package:sidekick/features/practice/models/lesson_face.dart';
 import 'package:sidekick/features/practice/models/swap_drill_script.dart';
 import 'package:sidekick/features/practice/viewmodels/swap_drill_viewmodel.dart';
@@ -33,10 +32,14 @@ void main() {
   void walkTo(SwapStepKind kind) {
     while (state().step.kind != kind) {
       switch (state().step.kind) {
+        // **Picked and checked**, because a pick on its own is not an answer
+        // since 25 September 2026 -- see `SwapDrillViewModel.check`.
         case SwapStepKind.card:
           viewModel.answer(state().step.index, SwapKind.criticism);
+          viewModel.check();
         case SwapStepKind.fixOne:
           viewModel.fix(0);
+          viewModel.check();
         case SwapStepKind.situation:
           viewModel.chooseSituation(0);
         case SwapStepKind.slot:
@@ -44,7 +47,6 @@ void main() {
             viewModel.choose(slot.part, state().chipsFor(slot.part).first);
           }
         case SwapStepKind.introduction:
-        case SwapStepKind.score:
         case SwapStepKind.shape:
         case SwapStepKind.finished:
         case SwapStepKind.beforeYouTry:
@@ -189,7 +191,6 @@ void main() {
       for (final SwapStepKind kind in <SwapStepKind>[
         SwapStepKind.card,
         SwapStepKind.fixOne,
-        SwapStepKind.score,
         SwapStepKind.situation,
         SwapStepKind.shape,
         SwapStepKind.slot,
@@ -208,6 +209,9 @@ void main() {
   });
 
   group('sorting a sentence', () {
+    // **Three stages on one step, since 25 September 2026**: nothing picked,
+    // picked and not marked, marked. The middle one is what the Check button
+    // added -- the mark used to arrive on the tap that picked the card.
     test('holds the forward control until one is picked', () {
       walkTo(SwapStepKind.card);
 
@@ -218,7 +222,58 @@ void main() {
       viewModel.answer(0, SwapKind.criticism);
 
       expect(state().canGoForward, isTrue);
+      expect(state().forwardLabel, SwapDrillScript.check);
+
+      // Nothing is marked yet, so there is nothing for the sheet to show.
+      expect(state().answerFor(0), isNull);
+      expect(state().feedback, isNull);
+
+      viewModel.check();
+
+      expect(state().answerFor(0), SwapKind.criticism);
+      expect(state().feedback, isNotNull);
       expect(state().forwardLabel, SwapDrillScript.nextSentence);
+    });
+
+    // The pick is changeable right up to the mark. That is what the button
+    // buys: a finger that landed on the wrong card is not a wrong answer.
+    test('the pick can be changed until it is checked', () {
+      walkTo(SwapStepKind.card);
+
+      viewModel.answer(0, SwapKind.criticism);
+      viewModel.answer(0, SwapKind.expressing);
+
+      expect(state().pendingKind, SwapKind.expressing);
+      expect(state().answerFor(0), isNull);
+
+      viewModel.check();
+
+      expect(state().answerFor(0), SwapKind.expressing);
+    });
+
+    // Tapping the picked card again takes the pick off, the way the
+    // situation step does. A mis-tap must not be something the reader is
+    // stuck with, and here that means the button goes back to "Pick one".
+    test('tapping the picked card again clears it', () {
+      walkTo(SwapStepKind.card);
+
+      viewModel.answer(0, SwapKind.criticism);
+      viewModel.answer(0, SwapKind.criticism);
+
+      expect(state().pendingKind, isNull);
+      expect(state().canGoForward, isFalse);
+      expect(state().forwardLabel, SwapDrillScript.pickOne);
+    });
+
+    // An unchecked pick belongs to the question it was made on.
+    test('a pick does not travel to another step', () {
+      walkTo(SwapStepKind.card);
+      viewModel.answer(0, SwapKind.criticism);
+      viewModel.check();
+      viewModel.carryOn();
+
+      expect(state().pendingKind, isNull);
+      expect(state().forwardLabel, SwapDrillScript.pickOne);
     });
 
     test('a wrong pick is recorded as the pick, not thrown away', () {
@@ -226,23 +281,28 @@ void main() {
       // right, so the reader can see what they did.
       walkTo(SwapStepKind.card);
       viewModel.answer(0, SwapKind.expressing);
+      viewModel.check();
 
       expect(state().answerFor(0), SwapKind.expressing);
     });
 
-    test('the first tap is the only one that counts', () {
+    test('a checked answer is the only one that counts', () {
       // The point of the drill is the guess. A second guess against a visible
-      // answer is not one.
+      // answer is not one -- so the cards stop taking taps at the mark, which
+      // is where "the first tap" moved to on 25 September 2026.
       walkTo(SwapStepKind.card);
       viewModel.answer(0, SwapKind.criticism);
+      viewModel.check();
       viewModel.answer(0, SwapKind.expressing);
 
       expect(state().answerFor(0), SwapKind.criticism);
+      expect(state().pendingKind, isNull);
     });
 
     test('answers survive going back to look again', () {
       walkTo(SwapStepKind.card);
       viewModel.answer(0, SwapKind.criticism);
+      viewModel.check();
       viewModel.carryOn();
       viewModel.goBack();
 
@@ -267,17 +327,33 @@ void main() {
 
       viewModel.fix(1);
 
-      expect(state().fixPick, 1);
+      // Picked, and not marked. The seventh graded question runs the same
+      // three stages as the six before it -- see the sorting group.
+      expect(state().fixPick, isNull);
+      expect(state().pendingFix, 1);
       expect(state().canGoForward, isTrue);
+      expect(state().forwardLabel, SwapDrillScript.check);
 
-      // The score step sits between the fix and the builder now, so this is
-      // where "Your turn" used to be and is not any more.
-      expect(state().forwardLabel, SwapDrillScript.howThatWent);
+      viewModel.check();
+
+      expect(state().fixPick, 1);
+
+      expect(state().forwardLabel, SwapDrillScript.yourTurn);
     });
 
-    test('the first tap is the only one that counts', () {
+    test('the pick can be changed until it is checked', () {
       walkTo(SwapStepKind.fixOne);
       viewModel.fix(1);
+      viewModel.fix(0);
+      viewModel.check();
+
+      expect(state().fixPick, 0);
+    });
+
+    test('a checked answer is the only one that counts', () {
+      walkTo(SwapStepKind.fixOne);
+      viewModel.fix(1);
+      viewModel.check();
       viewModel.fix(0);
 
       expect(state().fixPick, 1);
@@ -370,37 +446,53 @@ void main() {
       expect(state().canGoForward, isTrue);
       viewModel.carryOn();
 
-      // **One screen holds all three now**, so the gate is on the whole
-      // sentence rather than on a part at a time: it stays shut until the
-      // last of the three lands.
-      expect(state().step.kind, SwapStepKind.slot);
+      // **A page per part**, and each one holds until its own part lands.
+      // Picking a line on the first two moves on by itself; the last waits
+      // for "See the whole thing".
+      for (int i = 0; i < SwapDrillScript.slots.length; i++) {
+        final SwapSlot slot = SwapDrillScript.slots[i];
+        final bool last = i == SwapDrillScript.slots.length - 1;
 
-      for (final SwapSlot slot in SwapDrillScript.slots) {
+        expect(state().step.kind, SwapStepKind.slot);
+        expect(state().step.index, i);
         expect(state().canGoForward, isFalse, reason: slot.label);
-        viewModel.choose(slot.part, state().chipsFor(slot.part).first);
-      }
+        expect(state().forwardLabel, SwapDrillScript.pickOne);
 
-      expect(state().canGoForward, isTrue);
-      viewModel.carryOn();
+        viewModel.choose(slot.part, state().chipsFor(slot.part).first);
+
+        if (last) {
+          expect(state().step.index, i, reason: 'the last part waits');
+          expect(state().canGoForward, isTrue, reason: slot.label);
+          expect(state().forwardLabel, SwapDrillScript.seeIt);
+          viewModel.carryOn();
+        } else {
+          expect(state().step.index, i + 1, reason: 'a pick moves on');
+        }
+      }
 
       expect(state().step.kind, SwapStepKind.finished);
       expect(state().parts.length, SwapDrillScript.slots.length);
     });
 
     test('picks a line, and tapping it again clears it and blocks Next', () {
+      // The first builder page, which asks for the feeling.
       walkTo(SwapStepKind.slot);
-
-      // The other two first, so the gate is resting on the one being
-      // toggled. All three are required, so a single pick can never open it.
-      viewModel.choose(SwapPart.when, state().chipsFor(SwapPart.when).first);
-      viewModel.choose(SwapPart.want, state().chipsFor(SwapPart.want).first);
+      expect(state().step.index, 0);
 
       viewModel.choose(SwapPart.feel, 'worried');
       expect(state().parts[SwapPart.feel], 'worried');
-      expect(state().canGoForward, isTrue);
 
+      // The pick moved on to the next part. Back returns to it, still picked.
+      expect(state().step.index, 1);
+      viewModel.goBack();
+      expect(state().step.index, 0);
+      expect(state().canGoForward, isTrue);
+      expect(state().forwardLabel, SwapDrillScript.carryOn);
+
+      // Tapping it again clears it and stays on the page.
       viewModel.choose(SwapPart.feel, 'worried');
       expect(state().parts[SwapPart.feel], isNull);
+      expect(state().step.index, 0);
       expect(state().canGoForward, isFalse);
     });
 
@@ -424,13 +516,15 @@ void main() {
       viewModel.choose(SwapPart.feel, feel);
       viewModel.choose(SwapPart.when, when);
 
-      // Back onto the shape step and forward again. The builder is one step
-      // now, so this is the move that used to be made between two of them.
+      // Back to the feeling page and forward again. Nothing is lost on the
+      // way.
       viewModel.goBack();
-      expect(state().step.kind, SwapStepKind.shape);
+      viewModel.goBack();
+      expect(state().step.index, 0);
+      expect(state().parts[SwapPart.feel], feel);
       viewModel.carryOn();
 
-      expect(state().step.kind, SwapStepKind.slot);
+      expect(state().step.index, 1);
       expect(state().parts[SwapPart.feel], feel);
       expect(state().parts[SwapPart.when], when);
     });
@@ -463,6 +557,7 @@ void main() {
       expect(arrived, LessonFace.neutral.trigger);
 
       viewModel.answer(state().step.index, first.kind);
+      viewModel.check();
 
       expect(state().pose, arrived);
       expect(state().poseSerial, serial);
@@ -484,6 +579,7 @@ void main() {
 
           final int serial = vm.state.value.poseSerial;
           vm.answer(i, guess);
+          vm.check();
 
           expect(
             vm.state.value.pose,
@@ -509,6 +605,7 @@ void main() {
 
         final int serial = vm.state.value.poseSerial;
         vm.fix(i);
+        vm.check();
 
         expect(
           vm.state.value.pose,
@@ -551,6 +648,7 @@ void main() {
     test('she is still flat after answering and after moving on', () {
       walkTo(SwapStepKind.card);
       viewModel.answer(state().step.index, wrongKind);
+      viewModel.check();
       expect(state().pose, LessonFace.neutral.trigger);
 
       viewModel.carryOn();
@@ -566,12 +664,6 @@ void main() {
     test('a step with nothing to answer gives her her own face back', () {
       walkTo(SwapStepKind.fixOne);
       expect(state().pose, LessonFace.neutral.trigger);
-
-      // The score step is between them, and it is the one step that does not
-      // reset her -- it fires one of the two answer poses instead. Its own
-      // rules are pinned in the 'the score' group below.
-      viewModel.carryOn();
-      expect(state().step.kind, SwapStepKind.score);
 
       viewModel.carryOn();
 
@@ -606,169 +698,6 @@ void main() {
       expect(state().isLast, isTrue);
       expect(state().forwardLabel, SwapDrillScript.done);
       expect(state().canGoForward, isTrue);
-    });
-  });
-
-  // The score step, added 22 September 2026. It is the one place the app puts
-  // a number in front of the reader, and the one place a pose is about them
-  // rather than about a sentence.
-  group('the score', () {
-    // Answers all six sentences the way the lesson does, then picks the right
-    // fix. `walkTo` deliberately gets things wrong instead, so a test needs
-    // both paths to reach both poses.
-    void sortEverythingRight() {
-      while (state().step.kind != SwapStepKind.score) {
-        switch (state().step.kind) {
-          case SwapStepKind.card:
-            viewModel.answer(
-              state().step.index,
-              SwapDrillScript.cards[state().step.index].kind,
-            );
-          case SwapStepKind.fixOne:
-            viewModel.fix(
-              SwapDrillScript.fixes.indexWhere((SwapFix f) => f.isRight),
-            );
-          case SwapStepKind.introduction:
-          case SwapStepKind.score:
-          case SwapStepKind.shape:
-          case SwapStepKind.situation:
-          case SwapStepKind.slot:
-          case SwapStepKind.finished:
-          case SwapStepKind.beforeYouTry:
-            break;
-        }
-
-        viewModel.carryOn();
-      }
-    }
-
-    test('it comes after the fix and before the builder', () {
-      final List<SwapStepKind> kinds =
-          SwapDrillScript.steps.map((SwapStep s) => s.kind).toList();
-
-      expect(
-        kinds.indexOf(SwapStepKind.score),
-        kinds.indexOf(SwapStepKind.fixOne) + 1,
-      );
-      expect(
-        kinds.indexOf(SwapStepKind.situation),
-        kinds.indexOf(SwapStepKind.score) + 1,
-      );
-    });
-
-    test('nothing is counted before anything is answered', () {
-      expect(state().rightCount, 0);
-      expect(state().didWell, isFalse);
-    });
-
-    test('it counts the six sentences and the fix, and nothing else', () {
-      sortEverythingRight();
-
-      expect(state().rightCount, SwapDrillScript.graded);
-      expect(SwapDrillScript.graded, SwapDrillScript.cards.length + 1);
-    });
-
-    // A wrong pick is worth nothing, not minus one. The number is a count of
-    // what landed, never a mark out of anything.
-    test('a wrong sentence subtracts nothing', () {
-      walkTo(SwapStepKind.score);
-
-      final int wrongCards = SwapDrillScript.cards
-          .where((SwapCard c) => c.kind != SwapKind.criticism)
-          .length;
-
-      expect(
-        state().rightCount,
-        SwapDrillScript.cards.length - wrongCards + 1,
-      );
-      expect(state().rightCount, lessThan(SwapDrillScript.passMark));
-    });
-
-    test('the pass mark is reachable and is not a perfect run', () {
-      expect(SwapDrillScript.passMark, lessThan(SwapDrillScript.graded));
-      expect(SwapDrillScript.passMark, greaterThan(1));
-    });
-
-    test('a good run gets the bob', () {
-      sortEverythingRight();
-
-      expect(state().step.kind, SwapStepKind.score);
-      expect(state().didWell, isTrue);
-      expect(state().pose, AnswerPose.bob.trigger);
-    });
-
-    // `walkTo` calls every sentence a criticism, which is three of six, plus
-    // the right fix -- four of seven, under the mark.
-    test('a poor run gets the wince', () {
-      walkTo(SwapStepKind.score);
-
-      expect(state().didWell, isFalse);
-      expect(state().pose, AnswerPose.wince.trigger);
-    });
-
-    // The two poses react to the reader, which is exactly why they may not
-    // reach a step that is about one sentence. `LessonFace` owns those.
-    test('neither pose reaches any other step', () {
-      final Set<String> answerPoses = <String>{
-        AnswerPose.bob.trigger,
-        AnswerPose.wince.trigger,
-      };
-
-      sortEverythingRight();
-
-      for (int i = 0; i < SwapDrillScript.steps.length; i++) {
-        if (state().step.kind == SwapStepKind.score) {
-          expect(state().pose, isIn(answerPoses));
-        } else {
-          expect(
-            answerPoses.contains(state().pose),
-            isFalse,
-            reason: 'step $i (${state().step.kind.name})',
-          );
-        }
-
-        if (state().isLast) break;
-
-        switch (state().step.kind) {
-          case SwapStepKind.situation:
-            viewModel.chooseSituation(0);
-          case SwapStepKind.slot:
-            for (final SwapSlot slot in SwapDrillScript.slots) {
-              viewModel.choose(slot.part, state().chipsFor(slot.part).first);
-            }
-          case SwapStepKind.introduction:
-          case SwapStepKind.card:
-          case SwapStepKind.fixOne:
-          case SwapStepKind.score:
-          case SwapStepKind.shape:
-          case SwapStepKind.finished:
-          case SwapStepKind.beforeYouTry:
-            break;
-        }
-
-        viewModel.carryOn();
-      }
-    });
-
-    test('it asks nothing, so it never holds the reader', () {
-      walkTo(SwapStepKind.score);
-
-      expect(state().canGoForward, isTrue);
-      expect(state().forwardLabel, SwapDrillScript.yourTurn);
-      expect(state().feedback, isNull);
-    });
-
-    // The number is read off the answers every time. There is no stored copy
-    // that could disagree with the marks on the steps behind it.
-    test('going back and forward does not move the number', () {
-      sortEverythingRight();
-      final int atFirst = state().rightCount;
-
-      viewModel.goBack();
-      viewModel.carryOn();
-
-      expect(state().step.kind, SwapStepKind.score);
-      expect(state().rightCount, atFirst);
     });
   });
 }

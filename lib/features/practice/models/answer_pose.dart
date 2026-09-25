@@ -1,29 +1,14 @@
-// What the sidekick does when a lesson's score lands.
+// The two whole-figure reactions to a marked answer: a bob and a wince.
 //
-// **It came back on 22 September 2026, and the axis is why it can.** A file
-// of this name existed until 21 September 2026 and was deleted because it
-// reacted to the *reader* -- a pleased bob after every right answer, a wince
-// after every wrong one, up to seven times in one sitting. That is the app
-// marking somebody, on a lesson about criticism, which is the thing the
-// lesson teaches you to spot.
+// **Only the teacher wears them.** `Teacher.explainRight` and
+// `Teacher.explainWrong` fire them after each graded answer. The reader's own
+// sidekick never does: a friend reacting to every answer is a friend scoring
+// you, on a lesson about criticism. That is why the per-answer version on the
+// reader's character was deleted on 21 September 2026.
 //
-// What changed is when it fires. There is one score step now, after the last
-// graded question, and these two poses fire **once** on it. The difference is
-// not a detail:
-//
-// | | The deleted version | This one |
-// | --- | --- | --- |
-// | Fires | After every marked tap, up to 7 times | Once, on the score step |
-// | Reacting to | One answer | The run, which the reader chose to see |
-// | Tiresome by | The fourth | Never -- there is no fourth |
-//
-// **Per-answer reactions stay deleted**, and as of 23 September 2026 there is
-// nothing else on a graded step either. `LessonFace` used to drive her off the
-// *sentence's* kind rather than off the mark; that went too, because a face
-// pronouncing on one sorted sentence teaches that sorting is a property of
-// sentences, which a real conversation does not honour. She wears
-// `LessonFace.neutral` for the whole question and this is the only pose in
-// the quiz half. See `lesson_face.dart` and `SwapDrillViewModel.answer`.
+// **There is no score step.** One ran from 22 to 25 September 2026 and fired
+// these once, on "5 of 7". It was deleted at the user's request, and with it
+// the only count the app showed.
 //
 // **Neither pose is a verdict, and the old brief's rule still holds.**
 // `_docs/briefs/answer-poses-brief.md`: shoulders **up**, never down. Up is
@@ -32,7 +17,7 @@
 //
 // The triggers are already in `assets/rive/character.riv`. An unbuilt trigger
 // is a no-op -- `SkCharacter` looks the name up and does nothing when it is
-// missing -- so the score step is correct on her idle either way.
+// missing.
 enum AnswerPose {
   // A small pleased bob, sparks beside her head. Not applause, not a jump.
   bob('answerRight'),
@@ -45,10 +30,4 @@ enum AnswerPose {
 
   // The Rive trigger that plays this pose on the whole figure.
   final String trigger;
-
-  // Which pose a finished run earns.
-  //
-  // **The threshold lives on `SwapDrillScript`, not here**, because it is a
-  // fact about one lesson's questions and this enum is shared by all of them.
-  static AnswerPose forScore(bool didWell) => didWell ? bob : wince;
 }

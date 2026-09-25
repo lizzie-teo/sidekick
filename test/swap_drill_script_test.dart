@@ -455,11 +455,17 @@ void main() {
   });
 
   group('the situations', () {
-    test('there are three, and each one carries all three sets of lines', () {
+    test('there is an even number, each carrying all three sets of lines', () {
       // **The chips belong to a situation, and that is the point of the
       // step.** They used to come from nowhere in particular, so a reader
       // could build three lines that do not belong in one sentence.
-      expect(SwapDrillScript.situations.length, 3);
+      //
+      // **An even count, because the step is a grid two tiles wide.** It was
+      // pinned at three until 25 September 2026, when a fourth was asked for
+      // -- three tiles two abreast leave a hole in the corner, and a hole
+      // reads as a card that failed to load. `_Situation` holds the rest.
+      expect(SwapDrillScript.situations.length.isEven, isTrue);
+      expect(SwapDrillScript.situations.length, greaterThanOrEqualTo(4));
 
       for (final SwapSituation situation in SwapDrillScript.situations) {
         for (final SwapPart part in SwapPart.values) {
@@ -550,14 +556,19 @@ void main() {
       );
     });
 
-    test('every step has a placeholder and one short helper', () {
+    test('every step has a placeholder, and any helper is short', () {
       for (final SwapSlot slot in SwapDrillScript.slots) {
         expect(slot.blank, isNotEmpty, reason: slot.label);
-        expect(slot.helper, isNotEmpty, reason: slot.label);
+
+        // The first part has none since 25 September 2026: "One word is
+        // enough." was removed at the user's request.
+        final String? helper = slot.helper;
+        if (helper == null) continue;
 
         // **Short on purpose.** The old first step carried a helper, a note
         // and a struck-through example in front of a one-word answer.
-        expect(slot.helper.length, lessThan(70), reason: slot.helper);
+        expect(helper, isNotEmpty, reason: slot.label);
+        expect(helper.length, lessThan(70), reason: helper);
       }
     });
 
@@ -566,7 +577,7 @@ void main() {
       // gone. If a helper starts arguing about the pronoun again, the order
       // of the builder has probably drifted back.
       final String all = <String>[
-        ...SwapDrillScript.slots.map((SwapSlot s) => s.helper),
+        ...SwapDrillScript.slots.map((SwapSlot s) => s.helper ?? ''),
         ...SwapDrillScript.slots.map((SwapSlot s) => s.label),
       ].join(' ').toLowerCase();
 
@@ -579,7 +590,8 @@ void main() {
     test('invites the reader to say it, and warns it feels strange', () {
       expect(SwapDrillScript.finishedTitle, 'Here it is.');
       expect(SwapDrillScript.finishedHelper, contains('out loud'));
-      expect(SwapDrillScript.finishedHelper, contains("That's normal"));
+      expect(SwapDrillScript.finishedHelper, contains('normal'));
+      expect(SwapDrillScript.finishedHelper, contains('strange'));
     });
 
     test('says nothing about how many parts make a good sentence', () {
@@ -621,13 +633,13 @@ void main() {
         kinds.where((SwapStepKind k) => k == SwapStepKind.situation).length,
         1,
       );
-      // **One builder step, not one per part.** The three parts are filled
-      // in on one word-bank screen since 24 September 2026 -- a part on its
-      // own is not a subject, and the teaching is that the three read down as
-      // one sentence. `SwapDrillScript.slots` holds the argument.
+      // **One builder step per part, since 25 September 2026.** The one
+      // word-bank screen was hard to finish. The whole sentence stays in the
+      // bubble on each page, so the shape is still read as one line.
+      // `SwapDrillScript.slots` holds the argument.
       expect(
         kinds.where((SwapStepKind k) => k == SwapStepKind.slot).length,
-        1,
+        SwapDrillScript.slots.length,
       );
     });
 
@@ -673,10 +685,23 @@ void main() {
         SwapDrillScript.steps.length,
         SwapDrillScript.introduction.length +
             SwapDrillScript.cards.length +
-            // fix, score, situation, shape, the one builder step
-            5 +
+            // fix, situation, shape
+            3 +
+            SwapDrillScript.slots.length +
             // finish, closing
             2,
+      );
+    });
+
+    test('the builder pages run in the order the sentence reads', () {
+      final List<int> slotIndices = SwapDrillScript.steps
+          .where((SwapStep s) => s.kind == SwapStepKind.slot)
+          .map((SwapStep s) => s.index)
+          .toList();
+
+      expect(
+        slotIndices,
+        List<int>.generate(SwapDrillScript.slots.length, (int i) => i),
       );
     });
 
@@ -690,7 +715,6 @@ void main() {
           case SwapStepKind.introduction:
             expect(step.index, lessThan(SwapDrillScript.introduction.length));
           case SwapStepKind.fixOne:
-          case SwapStepKind.score:
           case SwapStepKind.situation:
           case SwapStepKind.shape:
           case SwapStepKind.finished:
@@ -709,7 +733,6 @@ void main() {
         SwapDrillScript.pickOne,
         SwapDrillScript.nextSentence,
         SwapDrillScript.nowFixOne,
-        SwapDrillScript.howThatWent,
         SwapDrillScript.yourTurn,
         SwapDrillScript.next,
         SwapDrillScript.seeIt,
@@ -754,8 +777,7 @@ void main() {
             .expand((SwapIntroPage p) => p.blocks)
             .whereType<SwapIntroSaid>()
             .map((SwapIntroSaid b) => b.said),
-        SwapDrillScript.closingNote.heading,
-        SwapDrillScript.closingNote.text,
+        SwapDrillScript.closingSaid,
         SwapDrillScript.shapeTitle,
         SwapDrillScript.shapeLead,
         SwapDrillScript.introCriticismExample,
@@ -838,16 +860,16 @@ void main() {
     test('is the one note in the lesson, and it is on the last step', () {
       // It was introduction page one's third block until 23 September 2026.
       // Two subjects on the page that has to earn the next tap.
-      expect(SwapDrillScript.closingNote.heading, isNotEmpty);
+      expect(SwapDrillScript.closingSaid, isNotEmpty);
 
-      // Short. An aside long enough to be a paragraph is a paragraph in a
-      // box.
-      expect(SwapDrillScript.closingNote.text.split(' ').length, lessThan(40));
+      // Short. She says it in one bubble, and a bubble long enough to be a
+      // paragraph is a paragraph with a tail on it.
+      expect(SwapDrillScript.closingSaid.split(' ').length, lessThan(40));
 
       // **The claim is about saying it out loud, not about the
       // conversation.** Rule 9 bans the second kind, and this is the one the
       // clinical material makes itself.
-      expect(SwapDrillScript.closingNote.text, contains('anxiety'));
+      expect(SwapDrillScript.closingSaid, contains('anxiety'));
     });
 
     test('is not the last thing said', () {

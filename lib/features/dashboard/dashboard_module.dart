@@ -1,7 +1,10 @@
+import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:sidekick/app/core/app_constants.dart';
 import 'package:sidekick/app/core/feature_module.dart';
+import 'package:sidekick/app/core/logger_service.dart';
+import 'package:sidekick/features/dashboard/services/home_place_service.dart';
 import 'package:sidekick/features/dashboard/views/dashboard_view.dart';
 
 // The authenticated destination. It owns Routes.home because that is where the
@@ -12,6 +15,13 @@ class DashboardModule extends FeatureModule {
 
   @override
   String get name => 'dashboard';
+
+  @override
+  void registerServices(GetIt locator) {
+    locator.registerLazySingleton<HomePlaceService>(
+      () => HomePlaceService(loggerService: locator<LoggerService>()),
+    );
+  }
 
   @override
   List<RouteBase> get routes => <RouteBase>[

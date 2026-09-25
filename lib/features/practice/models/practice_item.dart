@@ -101,7 +101,7 @@ abstract final class PracticeCatalogue {
   // **It landed on the lesson's first page and moved again on 23 September
   // 2026**, to the closing step, where it is the reason to actually say the
   // thing rather than a reason to keep reading. See `SwapDrillScript.
-  // closingNote`.
+  // closingSaid`.
 
   // **One lesson, since 21 September 2026.** There were two: a five-chapter
   // reading lesson, "Saying it with 'I'", and the drill below it. They taught

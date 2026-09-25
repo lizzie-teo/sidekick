@@ -146,6 +146,46 @@ Eight, and each one has already cost a draft.
 8. **One prompt per day, not per open.** A prompt that changes when the
    reader comes back makes the first one a thing they missed.
 
+## Rewritten 25 September 2026: now, not later
+
+**The set below this section is replaced.** The live list is in
+`lib/data/models/noticing_prompts.dart`, and that file's header holds the
+rules. This section says why it changed.
+
+The user brought in a sheet of "Calm & Relax Cards" -- small things to do
+where you are sitting: wiggle your fingers, sit up, have a drink of water. The
+first set felt hard next to it, and the reason is one word: **later**. "Look
+for the moon tonight" and "Look for a dog today" are things to wait for, and
+things that might not turn up. That is homework, and homework is a thing to
+have failed at by bedtime.
+
+| | First set | This set |
+| --- | --- | --- |
+| When | Today, tonight | Now |
+| Where | Often outside, sometimes on the way somewhere | Where you are sitting |
+| What | Look at something in the world | Do one small thing with your body or your senses |
+| Can it fail to happen | Yes -- no bird, no moon, no sun | No |
+
+**Four cards on that sheet were not copied, and the reasons are rules here:**
+
+| Card | Why not |
+| --- | --- |
+| Three that say "take a deep breath" | The in-breath ban. It is the one rule in this app with a randomised trial behind it, and it holds in every string |
+| "Sit up straight and relax your shoulders" | "Relax" has no how. Written as "Let your shoulders drop, away from your ears" |
+| "Think of your favourite animal and smile" | A picture and a feeling on command. Both can come back empty |
+| "Imagine your favourite song in your head" | The same, and "favourite" is a search |
+
+**What this costs.** The evidence section above is about noticing nature, and
+this set is mostly not that. It is closer to grounding: small body-based steps
+that bring attention to the room. The honest claim is smaller: these are easy,
+they cannot fail, and they cannot hurt. The window and "furthest thing away"
+prompts keep a little of the outward look.
+
+**The label and the invitation no longer match.** Home says "Something to
+notice today" above the prompt and "Write down what you noticed" at the foot.
+"Wiggle your fingers slowly" is not something noticed. Both need new words.
+
+
 ## The prompts
 
 Twenty-two to start, in nine groups. The groups are how the set is kept

@@ -51,10 +51,9 @@ import 'package:sidekick/app/core/app_constants.dart';
 // already mark right and wrong, in green and red, and they are better at it
 // than a face is.
 //
-// **`AnswerPose` came back on 22 September 2026, and it did not come back
-// here.** It fires once, on the score step, after the last graded question.
-// Nothing on a sorting step reacts to the mark, and that is not a decision
-// this file reopens. See `answer_pose.dart`.
+// **`AnswerPose` is the teacher's, and it did not come back here.** Nothing
+// this enum drives reacts to the mark, and that is not a decision this file
+// reopens. See `answer_pose.dart`.
 //
 // **The quiz half stopped using this enum on 23 September 2026, and only the
 // introduction pages still do.** Tapping an answer used to put the sentence's

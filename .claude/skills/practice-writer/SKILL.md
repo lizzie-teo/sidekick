@@ -1,12 +1,17 @@
 ---
 name: practice-writer
-description: Write or edit a lesson that teaches a psychology skill — assertiveness, saying no, handling criticism, self-compassion drills, anything under lib/features/practice/. Load before drafting or changing a screen where the reader is being taught something they will later do with a real person. Not for the meditation scripts (that is meditation-writer) and not for the affirmation lines or any app-voice copy (that is _docs/kind-writing-style.md).
+description: Voice, sentence style and structure for any Sidekick lesson that teaches psychology — assertiveness, saying no, handling criticism, self-compassion, anxiety or panic explained, anything under lib/features/practice/. Covers lesson screens, course intros, quiz questions and their feedback, reflection prompts and explainer copy. Load before writing, rewriting, editing or reviewing any of it, even when the request is only "write the next lesson" or "make this clearer". Not for the meditation scripts (that is meditation-writer), not for the breathing screen's script (that is _docs/affirmation-flow.md), and not for the affirmation lines or any app-voice copy (that is _docs/kind-writing-style.md).
 ---
 
 # Writing a practice lesson
 
 The reader opened this screen on purpose, to be taught something. That one
 fact changes every rule the rest of the app runs on.
+
+They are an intelligent adult who is not a psychologist. They may be anxious
+or tired, and they read in short bursts on a phone. The goal is writing that
+feels warm and human, explains an idea so clearly it seems obvious afterwards,
+and leaves them with something small they can actually do.
 
 Worked example: `_docs/briefs/assertiveness-practice.md` and
 `lib/features/practice/`. Most rules below were found by building that screen
@@ -111,6 +116,26 @@ not fake it. Do not score a thing you did not observe. What stands in its
 place is the source's own self-review: look at what went differently, decide
 what you would change, go again.
 
+### The screens, in order
+
+The four stages become a short run of screens, one idea on each. Aim for 40
+to 90 words a screen and three to five minutes a lesson. A topic that needs
+more is two lessons, not fuller screens. How the screens are laid out -- what
+steps, what scrolls, what goes behind a tap -- is `/lesson-design`'s job.
+
+| Screen | Does | Stage |
+| --- | --- | --- |
+| What | Opens on a situation the reader recognises, then names the idea | Instruct |
+| Why | Explains why it happens, using how minds and bodies work | Instruct |
+| How | The worked example, then one to three small actions, each with its reason | Model, rehearse |
+| Check | One to three quiz questions (section 9a) | Feedback, as far as an app can give it |
+| Reflect | One optional prompt (section 9a). Leave it out more often than not | -- |
+
+**How is where a lesson most often stops early.** "Try noticing when you do
+this" is an action, and it is still only half of one. If the skill is
+something said to a person, How has the reader say it out loud (section 6).
+A How screen with nothing to do today is a Why screen with the wrong title.
+
 ---
 
 ## 4. Teach the whole frame, then give the get-out
@@ -134,8 +159,8 @@ A fact nobody has to care about, versus the same fact with a cost attached.
 A four-step frame reads as a form to fill in, and somebody who cannot manage
 all four says nothing at all. Say the floor out loud.
 
-> You don't need all four every time. Two of them is a proper sentence. Four
-> is the strongest one.
+> You don't need all four every time, because two of them already make a
+> proper sentence and all four make the strongest one.
 
 ### And say to keep it short
 
@@ -172,7 +197,7 @@ The app-wide ban on instructions does not apply here, and hedging the one that
 matters is worse than plain. Say it once, and never repeat it on the same
 screen.
 
-> Say the second line out loud -- actually out loud, not in your head.
+> Say the second line out loud, actually out loud and not in your head.
 
 ### Say that it feels ridiculous
 
@@ -262,6 +287,12 @@ Phrase the last one about the attempt, never about the reader.
 | --- | --- |
 | Don't be hard on yourself if it doesn't work. | The first go probably won't come out how you planned it. That isn't you being bad at this. |
 
+**"That isn't you being bad at this" is not a claim about the reader.** It
+refuses a verdict rather than giving one, and it is about the attempt.
+Section 9's "never tell them how they feel" and the house rule against claims
+about the reader are protecting against a *verdict*. There is none here.
+Decided 25 September 2026, after the checker flagged it.
+
 ---
 
 ## 9. Claims a lesson may not make
@@ -271,6 +302,11 @@ Phrase the last one about the attempt, never about the reader.
 No streak, no tally, no "you've completed 3 of 5". A count turns a quiet week
 into a failed test, and this is one of the rules that survives the move from
 the house voice.
+
+The rule is about a tally **over time**. The swap drill's "5 of 7" is seven
+questions in one sitting, shown once and never stored, and `CLAUDE.md` holds
+that decision. It is the only count in the app, so a second one is a fresh
+decision for the user, not a precedent to copy.
 
 ### Never claim the conversation will go well
 
@@ -285,6 +321,12 @@ usually skips, and it belongs in the lesson:
 An app that teaches saying no, and never says it can cost something, is wrong
 the first time it costs somebody something.
 
+**The same goes for a bad outcome.** "They'll dig in" is as much a claim about
+a conversation the app cannot see as "they'll listen". Hedge a prediction
+either way: "they're likely to", "it tends to". A statement about what a
+*sentence* says or contains is not a prediction and needs no hedge. Decided 25
+September 2026.
+
 ### The one promise allowed
 
 **"It gets easier with practice."** It is a claim about repetition, not about
@@ -298,6 +340,58 @@ Nothing else. Not "you'll feel better", not "they'll respect you for it".
 The rule that survives intact from the house voice. A model line saying "I'm
 fed up" is a claim the app cannot check, and unsayable by somebody who is not
 fed up. Offer the feeling as a choice, and make no-choice a finished sentence.
+
+### Only claim what the evidence supports
+
+Say what was found and how sure anybody can be, in plain words. No "studies
+show". No statistic nobody handed you, and no named study unless the user
+supplied it -- and even then its name goes in the brief, not on the screen
+(section 11).
+
+**Sidekick is not therapy and does not diagnose.** When a lesson touches
+something that may need more help -- low mood that has lasted, trauma,
+thoughts of self harm -- it carries one calm sentence suggesting a GP, a
+psychologist or somebody they trust. One sentence, once, and never as a
+disclaimer paragraph.
+
+### A lesson about panic explains it in general
+
+Describe how panic works, not what it feels like, symptom by symptom.
+Pointing attention at the body can turn the sensations up for some readers.
+Favour general reassurance and a "don't fight it" framing.
+
+This is scoped to **teaching** panic to somebody who is not in one. The
+breathing screen names one sensation on purpose -- the one the reader just
+tapped -- and answers it in the next line. That is a different screen with
+its own rules in `_docs/affirmation-flow.md`, and this rule does not reach it.
+
+---
+
+## 9a. Quiz questions and reflection prompts
+
+### A quiz is there to teach, not to test
+
+- **Ask about a situation, not a definition.** "Your friend says this. Which
+  kind is it?" beats "What is an I-statement?"
+- **Two or three answers.** Two when the lesson sorts things into two kinds,
+  as the swap drill does. Three when there are three believable mistakes.
+  Never pad to three with a silly one: an answer nobody would pick teaches
+  nothing and tells the reader the quiz is not serious.
+- **Wrong answers are common, believable mistakes**, the thing a sensible
+  person would actually think.
+- **Every answer gets feedback.** The right one gets its reason in one
+  sentence. A wrong one gets the mistake explained, kindly, about the
+  sentence and never about the reader.
+
+### Reflection is light, optional, and never a blank
+
+One open question the reader could answer in a sentence or two, about
+something recent, and marked as optional. Never ask anybody to dig into a
+painful memory in detail.
+
+**Section 6 still holds here.** An open box is a blank, and a blank reads as
+failing. Give a starting phrase they can finish -- "Last week, I went quiet
+when..." -- rather than a question and an empty field.
 
 ---
 
@@ -320,6 +414,111 @@ Four things do most of it:
 
 Read it to an imaginary person across a table. If it sounds like a leaflet,
 it is still the wrong file's voice.
+
+### Two teachers to borrow from
+
+- **Steven Pinker's classic style.** The writer is a guide pointing at
+  something real so the reader can see it too, and treats the reader as an
+  equal, not a student.
+- **Catherine Sanderson's practical warmth.** Research turned into small
+  things to do, checks that help somebody apply an idea to their own life,
+  and a steady message that change comes with practice.
+
+**Not her anecdotes.** The copy never talks about the writer's own life.
+Neither name reaches the reader (section 11).
+
+### Sentences
+
+Sentences are complete and lead into each other. Each one carries one idea
+and joins the next with a word that shows the logic: because, so, which
+means, but, when, that is why.
+
+| | |
+| --- | --- |
+| Most sentences | About 12 to 25 words |
+| A short sentence (under 8 words) | Fine for weight. **Never more than two in a row** -- a run of them reads as choppy and slightly alarming |
+| A long sentence | Nothing over about 35 words. It loses somebody on a small screen |
+| A fragment as a style device | Never |
+| Three things in a row for rhythm | Never |
+
+| Choppy | Flowing |
+| --- | --- |
+| Panic is scary. Your body reacts. It feels real. But you are safe. | Panic can feel frightening because your body reacts as if you are in danger, even though nothing around you is actually threatening you. |
+
+**Scope.** These rules are for **explaining** prose. A short guide works as
+a label and may be a fragment: a helper under a part's name ("One thing that
+happened, not what they're like."), or a lead-in ending in a colon ("The same
+dinner, said two ways:"). The checker treats both as labels. The lines the reader
+rehearses are speech and stay as short as speech is (section 12). The house
+voice's twelve-word ceiling in `_docs/kind-writing-style.md` is for a lock
+screen read at a glance, and it does not reach a lesson somebody chose to open.
+
+### Endings
+
+End every sentence and every paragraph on the point, then stop. The last
+words are what the reader remembers, so they carry the idea or the action.
+
+**"It gets easier with practice" may be the last line.** It is the one
+promise a lesson may make (section 9), and ending on it is ending on the
+point, not a soft landing.
+
+Cut the soft landing: a trailing clause that restates or softens, a wistful
+wind-down, a tagline, a rhetorical question, a moral about being kind to
+yourself. Watch for "and that's okay", "one step at a time", "in many ways",
+"at the end of the day", "and that's the real lesson".
+
+| Meandering | Clean |
+| --- | --- |
+| Over time, this can help you feel a little calmer, and in many ways that is really what it is all about, learning to be gentle with yourself one breath at a time. | Over time, letting the feeling rise and fall without fighting it teaches your body that the alarm was never a real emergency. |
+
+### No hyphens or dashes in the copy
+
+No hyphen, en dash or em dash anywhere a reader sees. Rewrite the phrase;
+do not just delete the mark.
+
+| Instead of | Write |
+| --- | --- |
+| self-compassion | kindness toward yourself, being kind to yourself |
+| self-talk | the way you talk to yourself |
+| fight-or-flight | your body's alarm system |
+| well-being | wellbeing |
+| long-term | over time, in the long run |
+| day-to-day | daily, everyday |
+| step-by-step | in order |
+| an aside set off by dashes | commas, brackets, or a new sentence |
+| 5–10 minutes | 5 to 10 minutes |
+
+Hyphens slip into compound words, so check those last. The rule is about
+**copy**. Briefs, code comments and this file use dashes freely.
+
+### Make it clear
+
+- **Beat the curse of knowledge.** You know the material, so it is easy to
+  skip a step or the example that makes it click. Write for somebody meeting
+  the idea for the first time.
+- **Concrete before abstract.** "You leave a meeting replaying one awkward
+  comment for hours" comes before "rumination".
+- **Define a term once, plainly**, with an everyday example, then use it the
+  same way every time. If a plain phrase does the job, skip the term.
+- **Verbs, not buried nouns.** "When you avoid the feeling", not "avoidance
+  behaviours". "People recover", not "recovery occurs".
+- **Hedge only when the doubt is real.** Cut "somewhat", "arguably", "to some
+  extent". Where the science is genuinely mixed, say so once.
+- **Make the logic visible.** Each paragraph answers a question the one before
+  it raised.
+
+### Warm, not sweet
+
+Warmth comes from respect and clarity. Say "you", normalise an experience
+without shrinking it, and explain why it happens so the reader feels
+understood rather than diagnosed.
+
+| Keep out | Examples |
+| --- | --- |
+| Corporate words | leverage, unlock, empower, journey, space, holistic |
+| Wellness clichés | self care routine, show up for yourself, hold space, lean in, your best self, radical acceptance as a slogan |
+| Exclamation marks | Any. The handout's "And then have another go!" is quoted above for its register, not its punctuation |
+| "Should" | Offer what tends to help and why, and leave the choice with them |
 
 ### Easy to understand is a rule, not a preference
 
@@ -385,6 +584,10 @@ somebody a shop.
   not test for exact sentences -- those should be free to improve.
 - Every screen keeps a way out that costs nothing and does not read as
   quitting. "That's enough for now", never "Skip".
+- **Australian English**: behaviour, recognise, centre, practise (the verb).
+- **Sentence case** for screen titles.
+- **No bullet points on an explaining screen.** Short numbered steps only on a
+  How screen, and only where the order matters.
 - **Write the rules into the brief, next to the content, with the rejected
   version kept.** A rule without its wrong example gets undone by the next
   person, including you in a month.
@@ -392,6 +595,22 @@ somebody a shop.
 ---
 
 ## Before handing it over
+
+Run the checker first. It does the mechanical items below in code, and asks
+TypeSafe's Jev model the judgment calls, one yes/no question per rule:
+
+```
+dart run tool/lesson_style/check.dart
+```
+
+It needs `TYPESAFE_API_KEY` in the shell for the Jev half, and `--no-jev`
+runs the code half alone. The report lands in `build/lesson_style_report.md`.
+Its "not sure" band is the useful part while these rules are still settling:
+a line Jev cannot call usually means the rule is worded loosely. When a rule
+changes here, change its question in `tool/lesson_style/jev.dart` too.
+
+Then read it yourself. The checker sees one line at a time, so it cannot
+answer 1 to 13.
 
 1. Could they do this tomorrow, with a real person?
 2. Does the first screenful name the subject and say what it is for?
@@ -409,3 +628,15 @@ somebody a shop.
 13. Read it aloud. Leaflet, or person?
 14. Is any sentence readable only on the second go? Is any design word on the
     screen that belongs in the brief?
+15. Any hyphen, en dash or em dash in the copy?
+16. More than two short sentences in a row? Any fragment? Anything over 35
+    words?
+17. Does every paragraph end on its point -- no soft landing, tagline or
+    rhetorical question?
+18. Any story from the writer's own life?
+19. Is every technical term defined plainly, or replaced?
+20. Any corporate word, wellness cliché or exclamation mark?
+21. Does every How screen give one small thing to do today?
+22. Does every claim match the evidence? Does a panic lesson stay general
+    rather than narrating symptoms?
+23. Does every quiz answer, right and wrong, get its own feedback?

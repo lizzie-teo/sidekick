@@ -59,7 +59,7 @@ Pressed instead of waiting. Nothing may be put in front of relief.
 | --- | --- | --- | --- | --- |
 | 1. Lead-in | 11.0s | "I'm here." (3.0s) / "Let's breathe together." (3.5s) / "Small breaths. Not deep ones." (4.5s) | No | No |
 | 2. The counted set | 2 breaths, 20s | "In through your nose." / "And slowly out." | "Breath n of 2" | "That's enough for now" |
-| 3. The affirmations | As long as the reader takes | 10 lines, one at a time | No | Next, then "I'm alright now" — plus "That's enough for now" throughout |
+| 3. The affirmations | About 3 minutes -- 2 breaths per line | 10 lines, one at a time | No | Plays by itself; Next moves on early. Then "I'm alright now" — plus "That's enough for now" throughout |
 
 ### Its rules
 
@@ -211,10 +211,18 @@ editor -- which ships in the export while every opacity read still says 100.
    fixed height, or she takes a fixed share of the screen. She is the thing
    the user is breathing with; one that slides has moved while they were
    trying to match her.
-5. **Nothing advances on a timer once the words start.** The reader taps Next,
-   so a slow reader never loses a line. When voice arrives the lines follow
-   the audio and Next goes away -- same sequence either way, which is why it
-   lives in the model rather than the view.
+5. **The words play by themselves, on the breath, never on a timer.**
+   Changed 25 September 2026 after testers asked for the script to run
+   without Next. A line moves on every `BreathingViewModel.breathsPerLine`
+   (2) in-breaths -- about 20 seconds, from the same Rive events that move
+   her, so there is still one clock. The longest recording is about 11
+   seconds, so a spoken line always finishes first. Next stays as a way to
+   move on early, and the new line gets its own two breaths from the tap.
+   The last line never moves on by itself: the reader picks "I'm alright
+   now" or "Keep breathing with me". It used to be "the reader taps Next, so
+   a slow reader never loses a line"; 20 seconds per line is the answer to
+   that worry, and a slow reader can still read at their own pace in the
+   extension.
 6. **No streaks, no scores, no comparison.** Not here and not in the recap. A
    quiet session must never read as a failed one.
 

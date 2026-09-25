@@ -127,6 +127,27 @@ the pair clears 4.5:1.
 **Gaps are nested, never equal.** The gap inside a group must be smaller than
 the gap around it, or a page of six blocks reads as six unrelated notes.
 
+**A heading over a list takes the list's own gap.** `SkLayout.listGap`, 8,
+read by both use sites so they cannot drift. A heading belongs to the whole
+list, not to its first point, so it must not sit closer to point one than the
+points sit to each other.
+
+- **A list is set tighter than prose, in both directions.** `SkLayout.listGap`
+  8 between the items, `SkText.lessonPoint` 16/1.35 inside one. A point is one
+  line or two with a dot in front of it, so prose leading puts its air between
+  the items instead of inside them, and the list reads as spread out.
+- **It came down from 12 on 25 September 2026**, with the leading, because the
+  introduction's three-line chain was reported as too loose. The old rule said
+  a point wants a clearer step than a paragraph marker's 8 -- that was about
+  *ranking two gaps*, and it was answered by pushing the list open rather than
+  by asking what the list needed. The two are equal now.
+- The nesting is one level out: 8 inside a section, 24 between two sections.
+  Inside a section the heading and its points are one flat group. That `xxl`
+  is what tells one group from the next, so it is the number to protect.
+- **A list of points, not a list of controls.** Cards, tiles and chips have
+  edges and are governed by rule 7. The test is what the reader does with it:
+  points are read, controls are chosen from.
+
 A gap that is not a multiple of four is a decision somebody made in a hurry.
 
 ---

@@ -118,6 +118,39 @@ flutter:
           weight: 400
           style: italic
 
+    # Shantell Sans, SIL Open Font License 1.1 --
+    # assets/fonts/OFL-ShantellSans.txt. The app's second family, and the
+    # face all quoted speech in a practice lesson is set in.
+    #
+    # **It replaced Edu SA Beginner on 25 September 2026, after that face was
+    # reported as small, loose and hard to read** -- all three of which it
+    # measurably was. The reasoning, the numbers behind it and the rule about
+    # where this family may appear are on `SkText.quoted`; this note covers
+    # only the file.
+    #
+    # **The file is subset and pinned, so it is not the one Google ships.**
+    # The original is 1.25MB and carries four axes and every script under the
+    # sun. What is here is Latin-1 plus curly quotes and dashes, with the
+    # BNCE (bounce), INFM (informality) and SPAC (spacing) axes pinned at 0
+    # and only `wght` left live, 300 to 800, defaulting to 400. Pinning the
+    # quirk axes is a legibility decision as much as a size one: at their
+    # defaults the face bounces off the baseline, which is charming in a
+    # headline and tiring in a sentence somebody is being asked to judge.
+    #
+    # The OFL permits this -- the copyright line carries no Reserved Font
+    # Name, so a modified copy may keep the name -- and requires the licence
+    # to ship beside it, which is what the `.txt` above is for. Re-cut it with
+    # `fontTools` if the coverage is ever short; do not swap in the upstream
+    # file, or the axes come back at their defaults.
+    #
+    # **A weight needs `fontVariations` as well as `fontWeight`**, because
+    # this is one variable file rather than a cut per weight.
+    # `test/quote_font_test.dart` fails if either goes missing.
+    - family: Shantell Sans
+      fonts:
+        - asset: assets/fonts/ShantellSans-Latin.ttf
+          weight: 400
+
   assets:
     - assets/images/
     - assets/rive/

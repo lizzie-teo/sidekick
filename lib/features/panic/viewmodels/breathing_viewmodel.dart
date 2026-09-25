@@ -172,6 +172,24 @@ class BreathingViewModel extends ViewModel<BreathingState> {
   // can be failed. See _docs/affirmation-flow.md, decision 1.
   static const int countedBreaths = 2;
 
+  // How many breaths each script line stays up for before the next one takes
+  // its place.
+  //
+  // **The words play by themselves, from 25 September 2026, at the user's
+  // request.** Testers asked for the script to run without Next. A reader in
+  // panic has poor attention, and a button to press is one more task.
+  //
+  // **The clock is the breath, not a timer.** A line moves on at an in-breath,
+  // counted here from the same Rive events that move her, so the words and her
+  // body cannot drift apart -- the one-clock rule holds. Two breaths is about
+  // twenty seconds, and the longest recording is about eleven, so a spoken line
+  // always finishes before the next one arrives.
+  //
+  // Next still works. It moves on early, and the new line gets its own two
+  // breaths from there. The last line never moves on by itself: it is where the
+  // reader chooses between "I'm alright now" and "Keep breathing with me".
+  static const int breathsPerLine = 2;
+
   static const String inhaleCue = 'In through your nose.';
 
   // **This was shortened to "Out through your mouth." on 19 September 2026 and
@@ -317,10 +335,20 @@ class BreathingViewModel extends ViewModel<BreathingState> {
     // only ever be one.
     final bool opensWords = current.lines.isEmpty && breaths >= countedBreaths;
 
+    // A line already on screen moves on once it has had its breaths -- see
+    // breathsPerLine. Not the last line, and not after the reader handed the
+    // band back to the cue.
+    final bool movesOn = current.showsWords &&
+        !current.isLastLine &&
+        current.breathsOnLine + 1 >= breathsPerLine;
+    final int index = movesOn ? current.lineIndex + 1 : current.lineIndex;
+
     emit(current.copyWith(
       cue: inhaleCue,
       breathCount: breaths,
       lines: opensWords ? _script : null,
+      lineIndex: index,
+      breathsOnLine: opensWords || movesOn ? 0 : current.breathsOnLine + 1,
     ));
 
     // The words take the band on this very breath, so they take the voice with
@@ -328,6 +356,8 @@ class BreathingViewModel extends ViewModel<BreathingState> {
     // thing this screen never does: two things at once.
     if (opensWords) {
       _say(_clips.first);
+    } else if (movesOn) {
+      _sayLine(index);
     } else {
       _sayCue(inhaleClip);
     }
@@ -356,16 +386,21 @@ class BreathingViewModel extends ViewModel<BreathingState> {
 
   List<String> get _clips => BreathingScript.clipsForSensation(sensation);
 
-  // Next. Advances one line and stops at the last one -- the script ends by
+  void _sayLine(int index) {
+    final List<String> clips = _clips;
+    if (index < clips.length) _say(clips[index]);
+  }
+
+  // Next. The lines move on by themselves (see breathsPerLine); this moves on
+  // early. Advances one line and stops at the last one -- the script ends by
   // running out, not by throwing the user somewhere.
   void next() {
     if (current.isLastLine) return;
 
     final int index = current.lineIndex + 1;
-    emit(current.copyWith(lineIndex: index));
-
-    final List<String> clips = _clips;
-    if (index < clips.length) _say(clips[index]);
+    // The new line gets its own full breaths, counted from this tap.
+    emit(current.copyWith(lineIndex: index, breathsOnLine: 0));
+    _sayLine(index);
   }
 
   // "Keep breathing with me", offered on the last line only. The closing
@@ -421,6 +456,10 @@ class BreathingState {
   final List<String> lines;
   final int lineIndex;
 
+  // In-breaths since the current line went up. At breathsPerLine the next
+  // line takes its place.
+  final int breathsOnLine;
+
   // True once the reader chose to keep breathing past the last line. The
   // lines stay in the state -- the script was read, not unread -- but the
   // band hands back to the cue.
@@ -443,6 +482,7 @@ class BreathingState {
     this.hasInhaled = false,
     this.lines = const <String>[],
     this.lineIndex = 0,
+    this.breathsOnLine = 0,
     this.isExtended = false,
     this.isVoiceOn = true,
   });
@@ -494,6 +534,7 @@ class BreathingState {
     bool? hasInhaled,
     List<String>? lines,
     int? lineIndex,
+    int? breathsOnLine,
     bool? isExtended,
     bool? isVoiceOn,
   }) {
@@ -509,6 +550,7 @@ class BreathingState {
       hasInhaled: hasInhaled ?? this.hasInhaled,
       lines: lines ?? this.lines,
       lineIndex: lineIndex ?? this.lineIndex,
+      breathsOnLine: breathsOnLine ?? this.breathsOnLine,
       isExtended: isExtended ?? this.isExtended,
       isVoiceOn: isVoiceOn ?? this.isVoiceOn,
     );

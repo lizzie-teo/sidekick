@@ -43,9 +43,9 @@ void main() {
     });
 
     test('marks with two triggers, one per outcome', () {
-      // **The mark is hers alone.** Your sidekick reacts to you once, on the
-      // score step, and never to a single answer -- that was deleted on 21
-      // September 2026 for being a friend scoring you, seven times a sitting.
+      // **The mark is hers alone.** Your sidekick never reacts to an answer
+      // -- that was deleted on 21 September 2026 for being a friend scoring
+      // you, seven times a sitting.
       expect(Teacher.explainRight, isNotEmpty);
       expect(Teacher.explainWrong, isNotEmpty);
       expect(Teacher.explainRight, isNot(Teacher.explainWrong));

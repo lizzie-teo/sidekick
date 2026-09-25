@@ -1,5 +1,4 @@
 import 'package:sidekick/app/core/view_model.dart';
-import 'package:sidekick/features/practice/models/answer_pose.dart';
 import 'package:sidekick/features/practice/models/lesson_face.dart';
 import 'package:sidekick/features/practice/models/swap_drill_script.dart';
 import 'package:sidekick/features/practice/models/teacher.dart';
@@ -11,15 +10,6 @@ import 'package:sidekick/features/practice/models/teacher.dart';
 // **Nothing is saved.** No record that the drill was opened and no score kept
 // anywhere. The view builds this object and disposes it, so closing the screen
 // is what resets the sentence -- there is nowhere else for it to live.
-//
-// **One thing is counted, on purpose, since 22 September 2026.** [rightCount]
-// adds up the seven graded answers for the score step. Rule 15 bans a tally of
-// the *user over time* -- a streak, a total, this month against last -- because
-// that turns a quiet week into a failed test, and it is the rule that took the
-// breath counter off the breathing screen. Seven questions inside one sitting
-// is not that: it never leaves this object, and there is nothing for it to
-// accumulate into. It is still the only count in the app, so a second one is a
-// decision rather than a precedent.
 //
 // **Answers are kept when the reader goes back.** Going back to look at a
 // sentence again and finding the explanation gone is the screen undoing the
@@ -54,6 +44,15 @@ class SwapDrillViewModel extends ViewModel<SwapDrillState> {
   // The last step has no next: its forward control leaves the screen instead,
   // so this is never called there and does nothing if it is.
   void carryOn() {
+    // **A graded step with a pick on it is checked rather than left.** The
+    // forward control says "Check" there, so this is the same button doing
+    // the thing its label promises -- see [check].
+    if (current.needsCheck) {
+      check();
+
+      return;
+    }
+
     if (current.hasMoreBeats) {
       final Map<int, int> shown = Map<int, int>.of(current.beatsShown);
       shown[current.step.index] = current.beatsShownHere + 1;
@@ -66,6 +65,51 @@ class SwapDrillViewModel extends ViewModel<SwapDrillState> {
     if (current.isLast) return;
 
     emit(_leavingStep(current.stepIndex + 1));
+  }
+
+  // Marks the picked card on a graded step.
+  //
+  // **It is the moment the answer exists**, and until 25 September 2026 there
+  // was no such moment: tapping a card wrote straight into `answers`, so the
+  // tick, the cross, the explanation and the teacher's face all arrived on the
+  // touch that picked it. A finger that landed on the wrong card was a wrong
+  // answer, and a reader who wanted to look at the sentence again had already
+  // been told.
+  //
+  // The tap is a pick now -- neutral, and changeable -- and this is what turns
+  // it into an answer.
+  //
+  // **It refuses when there is nothing picked, and when the step is already
+  // answered.** The forward control is disabled in the first case and says
+  // something else in the second, so neither is reachable from the screen;
+  // the guards are what keep that true if a second caller appears.
+  void check() {
+    if (!current.needsCheck) return;
+
+    switch (current.step.kind) {
+      case SwapStepKind.card:
+        final SwapKind? picked = current.pendingKind;
+        if (picked == null) return;
+
+        final Map<int, SwapKind> next = Map<int, SwapKind>.of(current.answers);
+        next[current.step.index] = picked;
+
+        emit(current.copyWith(answers: next, clearPending: true));
+
+      case SwapStepKind.fixOne:
+        emit(current.copyWith(
+          fixPick: current.pendingFix,
+          clearPending: true,
+        ));
+
+      case SwapStepKind.introduction:
+      case SwapStepKind.situation:
+      case SwapStepKind.shape:
+      case SwapStepKind.slot:
+      case SwapStepKind.finished:
+      case SwapStepKind.beforeYouTry:
+        return;
+    }
   }
 
   // The step before. The first has none and the control is not drawn.
@@ -101,8 +145,7 @@ class SwapDrillViewModel extends ViewModel<SwapDrillState> {
   // Moving to another step, with her face set for the one arriving.
   //
   // **An expression holds until something clears it**, which is the whole
-  // point of the triggers -- the score step's pose is still on her while the
-  // number is being read -- so leaving the step is the thing that has to
+  // point of the triggers -- so leaving the step is the thing that has to
   // clear it.
   //
   // It fires on every step change, answered or not. Firing on a face that is
@@ -127,32 +170,25 @@ class SwapDrillViewModel extends ViewModel<SwapDrillState> {
   // is a different product.
   SwapDrillState _leavingStep(int index) => current.copyWith(
         stepIndex: index,
-        pose: _poseFor(SwapDrillScript.steps[index], current),
+        pose: _poseFor(SwapDrillScript.steps[index]),
         poseSerial: current.poseSerial + 1,
         // The explanation belongs to the question it explains. Carrying it
         // across would put the answer to the next sentence on screen before
         // the sentence.
         isExplaining: false,
+        // **An unchecked pick does not travel.** It belongs to the question
+        // it was made on, and only an answered step can be left forwards --
+        // so the only way here with a pick on it is Back, where carrying it
+        // would put a selected card on a question nobody has read yet.
+        clearPending: true,
       );
 
   // What she does as [step] arrives, before anything is tapped on it.
-  //
-  // **It takes the whole state, not just the step, and the score step is the
-  // only reason.** Every other step's pose is decided by what kind of step it
-  // is; that one is decided by how the seven graded answers went, which is
-  // spread across `answers` and `fixPick`.
-  static String _poseFor(SwapStep step, SwapDrillState state) {
+  static String _poseFor(SwapStep step) {
     switch (step.kind) {
       case SwapStepKind.card:
       case SwapStepKind.fixOne:
         return LessonFace.neutral.trigger;
-
-      // **The one pose in the drill that is about the reader rather than
-      // about a sentence**, and it fires once, on a step the reader pressed
-      // "See how that went" to reach. See `answer_pose.dart` for why that is
-      // the difference between this and the per-answer bob that was deleted.
-      case SwapStepKind.score:
-        return AnswerPose.forScore(state.didWell).trigger;
 
       case SwapStepKind.introduction:
       case SwapStepKind.situation:
@@ -183,13 +219,19 @@ class SwapDrillViewModel extends ViewModel<SwapDrillState> {
   // Those are claims about **this** sentence in **this** lesson, which is all
   // anything here can honestly claim. She stays on [LessonFace.neutral], set
   // when the step arrived: the sentence has been heard, and nothing more.
+  // **It picks rather than answers, since 25 September 2026.** The mark
+  // arrives on [check]. Tapping the card already picked clears it, the way
+  // [chooseSituation] does: a mis-tap must not be something the reader is
+  // stuck with, and on a question that is the whole reason the button exists.
   void answer(int card, SwapKind kind) {
     if (current.answers.containsKey(card)) return;
 
-    final Map<int, SwapKind> next = Map<int, SwapKind>.of(current.answers);
-    next[card] = kind;
+    final bool clearing = current.pendingKind == kind;
 
-    emit(current.copyWith(answers: next));
+    emit(current.copyWith(
+      pendingKind: clearing ? null : kind,
+      clearPending: clearing,
+    ));
   }
 
   // Picks one of the three ways of fixing the sentence. Also once only, and
@@ -203,7 +245,12 @@ class SwapDrillViewModel extends ViewModel<SwapDrillState> {
   void fix(int index) {
     if (current.fixPick != null) return;
 
-    emit(current.copyWith(fixPick: index));
+    final bool clearing = current.pendingFix == index;
+
+    emit(current.copyWith(
+      pendingFix: clearing ? null : index,
+      clearPending: clearing,
+    ));
   }
 
   // Picks one of the offered situations.
@@ -238,6 +285,27 @@ class SwapDrillViewModel extends ViewModel<SwapDrillState> {
       parts.remove(part);
     } else {
       parts[part] = line;
+    }
+
+    // **Picking a line on the first two parts moves on to the next part, from
+    // 25 September 2026, at the user's request.** The reader tapped a line
+    // and then had to tap Continue to say the same thing again. The view
+    // slides the next part's lines up, so the move is seen rather than
+    // sudden. Clearing a pick stays put, and the last part waits for "See
+    // the whole thing", because there is no next set of lines to show.
+    //
+    // `/lesson-design` rule 2 bans auto-advance. That rule is about a timer
+    // moving the lesson on without the reader. Here the reader's own tap
+    // moves it, and Back still returns to the part with its pick on it.
+    final SwapStep step = current.step;
+    final bool advancing = !clearing &&
+        step.kind == SwapStepKind.slot &&
+        step.index < SwapDrillScript.slots.length - 1;
+
+    if (advancing) {
+      emit(_leavingStep(current.stepIndex + 1).copyWith(parts: parts));
+
+      return;
     }
 
     emit(current.copyWith(parts: parts));
@@ -291,6 +359,26 @@ class SwapDrillState {
   // Which of the three fixes was tapped, or null before the tap.
   final int? fixPick;
 
+  // The card picked on a sorting step and not checked yet, or null when
+  // nothing is picked.
+  //
+  // **It is the pick, and `answers` is the answer.** The two are separate so
+  // that the screen can show which card the finger is on without showing
+  // whether it is the right one -- see [SwapDrillViewModel.check] for why
+  // there was no gap between them until 25 September 2026.
+  //
+  // It never survives a step change, and checking clears it: an answered
+  // question reads its mark off `answers`, so a pick left lying here would be
+  // a second, staler copy of the same fact.
+  final SwapKind? pendingKind;
+
+  // The same thing on the fix step: the card picked and not checked yet.
+  //
+  // **Two fields rather than one, because the two steps pick different
+  // things** -- a kind and an index -- and one field holding either would be
+  // an `Object?` that every reader has to cast.
+  final int? pendingFix;
+
   // Which offered situation was picked, or null when none was.
   final int? situationPick;
 
@@ -310,9 +398,8 @@ class SwapDrillState {
   // with everything else.
   //
   // **Nothing a reader taps writes to it any more.** It is set on arrival at
-  // a step and nowhere else -- [LessonFace.neutral] on a graded step, the
-  // score step's own [AnswerPose], and [LessonFace.resetTrigger] everywhere
-  // else. See [answer] for the reaction that used to live on the tap.
+  // a step and nowhere else -- [LessonFace.neutral] on a graded step and
+  // [LessonFace.resetTrigger] everywhere else. See [answer] for the reaction that used to live on the tap.
   final String? pose;
 
   // Bumped every time [pose] should fire, including when it is the same pose
@@ -364,6 +451,8 @@ class SwapDrillState {
     this.stepIndex = 0,
     this.answers = const <int, SwapKind>{},
     this.fixPick,
+    this.pendingKind,
+    this.pendingFix,
     this.situationPick,
     this.parts = const <SwapPart, String>{},
     this.pose,
@@ -377,9 +466,8 @@ class SwapDrillState {
   // How many beats of this page are on screen, and how many it has. Both are
   // zero anywhere but an introduction page, which is what makes
   // [hasMoreBeats] false everywhere else without a second test for the kind.
-  int get beatsShownHere => step.kind == SwapStepKind.introduction
-      ? beatsShown[step.index] ?? 1
-      : 0;
+  int get beatsShownHere =>
+      step.kind == SwapStepKind.introduction ? beatsShown[step.index] ?? 1 : 0;
 
   int get beatsHere => step.kind == SwapStepKind.introduction
       ? SwapDrillScript.introduction[step.index].beats.length
@@ -389,6 +477,33 @@ class SwapDrillState {
   // it.
   bool get hasMoreBeats => beatsShownHere < beatsHere;
 
+  // Whether this step is holding a pick that has not been marked yet.
+  //
+  // **It is what makes the forward control mean two things on one step.** The
+  // same button says "Check" while this is true and "Next sentence" after it,
+  // and `SwapDrillViewModel.carryOn` reads it to decide which of the two it is
+  // doing.
+  //
+  // An answered step is never checking, whatever is pending -- checking clears
+  // the pick, and a step arrived at backwards has neither.
+  bool get needsCheck {
+    switch (step.kind) {
+      case SwapStepKind.card:
+        return !answers.containsKey(step.index) && pendingKind != null;
+
+      case SwapStepKind.fixOne:
+        return fixPick == null && pendingFix != null;
+
+      case SwapStepKind.introduction:
+      case SwapStepKind.situation:
+      case SwapStepKind.shape:
+      case SwapStepKind.slot:
+      case SwapStepKind.finished:
+      case SwapStepKind.beforeYouTry:
+        return false;
+    }
+  }
+
   bool get isFirst => stepIndex == 0;
   bool get isLast => stepIndex == SwapDrillScript.steps.length - 1;
 
@@ -396,35 +511,6 @@ class SwapDrillState {
   double get progress => stepIndex / (SwapDrillScript.steps.length - 1);
 
   SwapKind? answerFor(int card) => answers[card];
-
-  // How many of the seven graded answers matched what the lesson teaches.
-  //
-  // **Worked out on demand, never stored.** There is no `rightSoFar` field to
-  // keep in step with `answers`, and no way for the number on the score step
-  // to disagree with the marks on the steps behind it.
-  //
-  // An unanswered question counts as nothing rather than as wrong. The forward
-  // gate makes every graded step answerable-only-forwards, so by the time the
-  // score step is reachable there are none left -- but a partial state is
-  // reachable from a test, and scoring a question nobody was asked is a lie.
-  int get rightCount {
-    int right = 0;
-
-    for (final MapEntry<int, SwapKind> given in answers.entries) {
-      if (SwapDrillScript.cards[given.key].kind == given.value) right++;
-    }
-
-    final int? pick = fixPick;
-    if (pick != null && SwapDrillScript.fixes[pick].isRight) right++;
-
-    return right;
-  }
-
-  // Whether the run earns the bob rather than the wince.
-  //
-  // The threshold is `SwapDrillScript.passMark`, which is where the reasoning
-  // for 5 of 7 lives.
-  bool get didWell => rightCount >= SwapDrillScript.passMark;
 
   // The situation the reader is practising on, or null before they pick one.
   SwapSituation? get situation {
@@ -483,10 +569,6 @@ class SwapDrillState {
           body: fix.feedback,
         );
 
-      // **No sheet on the score step.** The sheet is green or red, and a
-      // whole panel of either around a number is the page marking the reader
-      // rather than a sentence. Her face carries it instead.
-      case SwapStepKind.score:
       case SwapStepKind.introduction:
       case SwapStepKind.situation:
       case SwapStepKind.shape:
@@ -545,21 +627,23 @@ class SwapDrillState {
             : SwapDrillScript.carryOn;
 
       case SwapStepKind.card:
+        // Three labels on one step, in order: nothing picked, picked and
+        // waiting to be marked, marked.
+        if (needsCheck) return SwapDrillScript.check;
         if (!answers.containsKey(step.index)) return SwapDrillScript.pickOne;
 
         return step.index == SwapDrillScript.cards.length - 1
             ? SwapDrillScript.nowFixOne
             : SwapDrillScript.nextSentence;
 
+      // The same three, for the same reason. It is the seventh graded
+      // question and must not behave like a different kind of screen.
       case SwapStepKind.fixOne:
+        if (needsCheck) return SwapDrillScript.check;
+
         return fixPick == null
             ? SwapDrillScript.pickOne
-            : SwapDrillScript.howThatWent;
-
-      // The score step is where "Your turn" moved to. It is the last thing
-      // said before the half of the lesson the reader writes.
-      case SwapStepKind.score:
-        return SwapDrillScript.yourTurn;
+            : SwapDrillScript.yourTurn;
 
       case SwapStepKind.situation:
         return hasSituation ? SwapDrillScript.next : SwapDrillScript.pickOne;
@@ -571,10 +655,18 @@ class SwapDrillState {
       case SwapStepKind.shape:
         return SwapDrillScript.next;
 
-      // One screen holds all three parts now, so there is no "next part" for
-      // this label to promise. It goes straight to the whole sentence.
+      // A page per part, since 25 September 2026. The first two carry on to
+      // the next part; the last goes to the whole sentence.
+      //
+      // **"Pick one" until the part is filled**, the way a graded step says
+      // it. A picked line moves on by itself, so "Continue" is only seen on a
+      // page reached with Back.
       case SwapStepKind.slot:
-        return SwapDrillScript.seeIt;
+        if (!canGoForward) return SwapDrillScript.pickOne;
+
+        return step.index == SwapDrillScript.slots.length - 1
+            ? SwapDrillScript.seeIt
+            : SwapDrillScript.carryOn;
 
       case SwapStepKind.finished:
         return SwapDrillScript.oneLastThing;
@@ -591,7 +683,6 @@ class SwapDrillState {
   bool get canGoForward {
     switch (step.kind) {
       case SwapStepKind.introduction:
-      case SwapStepKind.score:
       // Nothing is asked on the shape step. It shows the reader what they are
       // about to fill in, and the next tap fills the first part of it.
       case SwapStepKind.shape:
@@ -599,25 +690,25 @@ class SwapDrillState {
       case SwapStepKind.beforeYouTry:
         return true;
 
+      // **A pick is enough to press it**, because pressing it is what marks
+      // the pick. The gate is still closed on a step with nothing on it at
+      // all: there is nothing to check and nothing to carry forward.
       case SwapStepKind.card:
-        return answers.containsKey(step.index);
+        return answers.containsKey(step.index) || pendingKind != null;
 
       case SwapStepKind.fixOne:
-        return fixPick != null;
+        return fixPick != null || pendingFix != null;
 
       case SwapStepKind.situation:
         return hasSituation;
 
-      // **All three, not just one.** The builder is one screen, so the gate
-      // that used to hold each step until its own part was filled now holds
-      // the screen until the sentence is whole. The finish screen still never
-      // sees a hole in it.
+      // **Each page waits for its own part.** Three pages in a row that each
+      // hold until their part is filled means the finish screen never sees a
+      // hole in the sentence.
       case SwapStepKind.slot:
-        return SwapDrillScript.slots.every((SwapSlot slot) {
-          final String? value = parts[slot.part];
+        final String? value = parts[SwapDrillScript.slots[step.index].part];
 
-          return value != null && value.isNotEmpty;
-        });
+        return value != null && value.isNotEmpty;
     }
   }
 
@@ -628,6 +719,12 @@ class SwapDrillState {
     int? stepIndex,
     Map<int, SwapKind>? answers,
     int? fixPick,
+    SwapKind? pendingKind,
+    int? pendingFix,
+    // Both pending fields at once. Only one of them can be set on any step,
+    // and every caller that clears one is clearing "the pick on this step" --
+    // so one flag rather than two that must be kept in step with each other.
+    bool clearPending = false,
     int? situationPick,
     bool clearSituationPick = false,
     Map<SwapPart, String>? parts,
@@ -643,6 +740,8 @@ class SwapDrillState {
       stepIndex: stepIndex ?? this.stepIndex,
       answers: answers ?? this.answers,
       fixPick: fixPick ?? this.fixPick,
+      pendingKind: clearPending ? null : (pendingKind ?? this.pendingKind),
+      pendingFix: clearPending ? null : (pendingFix ?? this.pendingFix),
       situationPick:
           clearSituationPick ? null : (situationPick ?? this.situationPick),
       parts: parts ?? this.parts,

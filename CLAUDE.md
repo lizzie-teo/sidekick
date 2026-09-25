@@ -409,6 +409,27 @@ app runs with no session, and nothing can be saved.
 not in `AuthenticationModule`, because the router depends on `AuthStateService`
 whether or not the feature is in the registry.
 
+### Home's sky
+
+Home is a scene from 25 September 2026: a sky for the time of day, the date
+and one quote at the top, and her standing on a hill.
+
+| Fact | Where |
+| --- | --- |
+| Four skies -- morning, day, evening, night -- never a continuous blend | `DayPhase` |
+| The edges follow the **real sun**, worked out on the phone from the time zone's principal city. No location permission, no network | `SunTimes`, `HomePlaceService`, `zone_coordinates.dart` (generated from IANA `zone.tab`) |
+| Fixed hours only when the zone is unknown or the sun does not set | `DayPhase._byHour` |
+| **The clock picks what is in the sky; light or dark mode picks how bright.** Dark mode at noon is a deep day sky | `HomeSkyColors.of` |
+| **The scene is the time of day's colours, not the palette's.** Yellow-pink morning, blue day, violet-pink evening, navy night, from references the user brought. The land is the sky's own hue a step on, never green | `HomeSkyColors._scenes` |
+| Two layers of hills are what separate land from sky. The first hill was the canvas and measured 1.02:1 against the night sky | `test/home_sky_test.dart` |
+| The words on the sky are near-black or near-white per sky (`onSky`), not the palette's `ink` | same |
+| **Tap me and the tiles sit on a canvas panel, not on the land.** The palette's action fill measured as low as 1.02:1 on a violet hill | `DashboardView` |
+| One quote a day, the same all day. Every quote needs its source checked before release | `daily_quotes.dart` |
+
+The time zone, not the location, was the user's choice: a permission prompt
+in a wellbeing app to colour a sky is a big ask, and a "no" needs this
+fallback anyway.
+
 ### Good things
 
 The first feature with a real server table, and the shape every later one
@@ -1317,7 +1338,7 @@ choose between:
 | --- | --- |
 | Lead-in | The three beats |
 | The counted set | `inhaleCue` / `exhaleCue`, `countedBreaths` breaths |
-| After it | The script, one line per Next |
+| After it | The script, one line every `breathsPerLine` (2) breaths. Next moves on early |
 
 The words **take the cue's own line** rather than opening a block under her.
 Two things to read at the peak of a panic attack is one too many, and a block
@@ -1709,74 +1730,155 @@ one thing between them. The sheet itself has **no line along its top**: it is
 a wash running to three edges of the screen, and a stroke there reads as a
 seam rather than as the bottom of the page changing colour.
 
-**The swap drill ends its quiz half on a score, and it is the only count in
-the app.** Added 22 September 2026, at the user's request, over the standing
-no-counting rule -- which was raised first and reaffirmed.
+**A graded answer waits for a Check button, from 25 September 2026.** Tapping
+a card used to be the whole answer: the tick, the cross, the feedback sheet and
+the teacher's mark all arrived on the touch that picked it. A finger that landed
+on the wrong card was a wrong answer, and there was no moment between choosing
+and being told.
 
-| | |
-| --- | --- |
-| Where | `SwapStepKind.score`, between the fix step and the sentence builder |
-| What | "5 of 7", the six sorted sentences plus the fix |
-| Pass mark | `SwapDrillScript.passMark`, 5 |
-| Above it | `AnswerPose.bob` -- a small pleased bob |
-| Below it | `AnswerPose.wince` -- shoulders **up**, never down |
+| Stage | The cards | The forward control |
+| --- | --- | --- |
+| Nothing picked | Both plain, both live | "Pick one", disabled |
+| Picked | `SkOptionState.picked` -- neutral | "Check", enabled |
+| Checked | Marked right/wrong/dimmed, all dead | "Next sentence" and the sheet |
 
-**Rule 15 bans a tally of the user over time**, because a streak or a total or
-this month against last turns a quiet week into a failed test. This is seven
-questions inside one sitting: `rightCount` is worked out from the answers on
-demand, nothing stores it, and closing the drill forgets it. There is nothing
-for it to accumulate into and nothing to compare it against. It is still the
-only count in the app, so a **second** one is a fresh decision rather than a
-precedent this one set.
+**The picked card is neutral, and that is the whole reason it is not
+`SkOptionState.chosen`.** `chosen` is the builder's green, and on a screen that
+marks answers green already means *you were right* -- so a green card under the
+finger would mark the answer before the reader asked. `picked` is the page's own
+ink: a heavier edge, a bolder label and a filled dot. It is not said in colour
+alone, so a reader who cannot see the edge still sees which card is picked.
 
-**A perfect run was rejected as the pass mark.** The giveaway words are
-deliberately quiet and most readers get one or two wrong first time, so at 7 of
-7 the wince becomes the ordinary ending -- the app wincing at nearly everybody,
-on a lesson about being criticised.
+**All seven graded questions, the fix step included.** The fix is the seventh
+question and must not read as a different kind of screen.
 
-**The page is neutral: no tint, no tick, no tone, and the number is `ink`.**
-Green and red mean "you were right" and "you were not" everywhere else in this
-drill, and those are verdicts on **a sentence**. A page washed green or red, or
-a "3 of 7" set in red, is a verdict on the reader. Her face carries it instead,
-which is what `AnswerPose` exists for.
+**The pick is changeable and the answer is not.** Tapping the other card moves
+the pick; tapping the picked one clears it, the way the situation step does. The
+cards stop taking taps at the mark, which is where the old "the first tap is the
+only one that counts" rule now lives. An unchecked pick never travels to another
+step.
 
-**The teacher wears the score pose, and the reader's own character is down to
+**Nothing reacts before Check** -- not the sheet, not "Explain my answer", not
+the teacher's face. `SwapDrillState.needsCheck` is what the label and
+`carryOn()` both read, so the button always does the thing its label promises.
+
+**There is no score step, from 25 September 2026, at the user's request.**
+It sat between the fix and the builder from 22 September 2026 and showed
+"5 of 7" with a bob or a wince. It was the only count in the app. The fix step
+now leads straight to "What would you like to practise?" with "Your turn". A
+new count anywhere is a fresh decision, not a thing to restore.
+
+**The teacher runs the second half, and the reader's own character was down to
 one step.** Changed 24 September 2026, at the user's request. The whole second
 half of the drill -- "What would you like to practise?", "Three parts", the
 builder and the closing page -- now carries the same full-size
 teacher with its heading in a speech bubble, the shape the graded steps and
-introduction page one already used. The score step is hers too. That reverses
+introduction page one already used. That reverses
 `_Quiet`'s old note, which banned a bubble on those steps: the rule was about
 *whose* mouth the app's words come out of, and a teacher asking what the reader
 would like to practise is the job she exists for. `_Asked` in
-`swap_drill_view.dart` holds it. The reader's own character is left on
-`_Finished`, where the sentence in the bubble is theirs.
+`swap_drill_view.dart` holds it.
 
-**The reader's own sentence is built on one screen out of a bank of tiles, not
-three screens with two cards each.** Changed 24 September 2026, at the user's
-request, from a Duolingo word bank. The whole sentence stands at the top with a
-placeholder in every part it is still missing, every line the chosen situation
-offers is a tile underneath, and tapping a tile drops it into its own part.
+**And on 25 September 2026 the last step went with them.** "Here it is." --
+the finished sentence -- carried the reader's own character, kept on the
+argument that the sentence in the bubble is theirs and the figure above it is
+the one being spoken to. Two facts closed it, at the user's request: the
+builder directly before it now holds the same half-built sentence in the
+**teacher's** bubble, so the words changed character between two screens
+showing them; and one teacher end to end is the whole reason the reader's half
+was handed over in the first place. **The reader's own sidekick is now on no
+step of this drill**, and `_SwapDrillViewState` keeps one `GlobalKey` rather
+than two. Their own character is waiting on Home.
 
-| | Was | Is |
+**"What would you like to practise?" is four topic cards in a 2x2 grid, from
+25 September 2026, at the user's request.** They were `SkOptionCard`s -- the
+same full-width card the six sorting sentences wear -- and the shape was
+saying the wrong thing. In this drill a full-width card with a sentence in it
+is the shape of an answer: it gets marked, its neighbour dims, and it stops
+taking taps. Nothing on this step can be wrong, so wearing that shape made a
+branch read as a seventh question.
+
+`SkTopicCard` (`lib/app/widgets/`) is the door version. It is told apart from
+an option card by the things a reader notices without being told:
+
+| | Option card | Topic card |
 | --- | --- | --- |
-| Steps | Three, one per part | One |
-| On screen at once | One label, one helper, two cards | The sentence, and all seven lines |
-| The forward gate | Held each step until its own part landed | Holds the screen until the sentence is whole |
-| The three helpers | One per step, beside the part they describe | On the shape step, under the labels |
+| What it holds | A sentence to judge | The name of a subject |
+| The words | `caption` 16/400 -- something to read | `cardTitle` 18/600 -- something to choose |
+| The shape | Full width, stacked | A tile, sat beside its neighbour |
+| The words sit | Left, where a line of prose starts | Centred in the tile |
+| After the tap | Marked, and dead | Chosen, and still changeable |
 
-**The reason is `/lesson-design` rule 3, and its own worked example is this
-drill.** A part on its own is not a subject -- "I feel disappointed" teaches
-nothing without "when plans change on the day" beside it. The teaching *is*
-that the three read down as one sentence, and one part at a time behind a Next
-button is the single arrangement in which that is invisible. The skill already
-says a four-part frame belongs on one page for exactly this reason.
+**A grid is what a pick from a short list looks like; a stack is what a list
+of answers looks like.** Side by side the four are compared at a glance,
+which is the job of this step, and the arrangement is the second signal --
+after the centred title -- that these are not the six sorting cards.
 
-**Nothing in the bank can be wrong, and that is where it parts company with
-Duolingo.** Duolingo's bank marks the answer and seeds it with distractors.
-Every line here belongs to exactly one part, the app puts it there, and the
-reader is never asked which blank it goes in -- so there is nothing to mark.
-What the shape buys is that the sentence is *visible while it is being made*.
+**The icons lasted one day, and the argument against them is worth keeping.**
+Each card carried a picture naming its subject -- a clock on "Someone's often
+late" -- on the rule that a picture is a second way to tell cards apart. Two
+things were wrong with it here. A *situation* has no picture of itself, so
+every icon was a nearby object standing in for one, which is decoded rather
+than recognised. And a picture at the front of a tile pushes the words into a
+narrow column beside it, on the one step where the words are the whole card.
+**Do not re-add one without a drawing that names the situation itself.**
+
+**The grid is why there are four, and the count must stay even.** Three tiles
+two abreast leave a hole in the corner, and a hole reads as a card that
+failed to load. `test/swap_drill_script_test.dart` pins the evenness with the
+reason beside it. The fourth is "I'm asked to do too much" -- the common
+assertiveness situation the other three did not cover, and the only one of
+the four set at work.
+
+**At 200% text the grid is put away and the tiles stack.** Half the gutter
+width is about 133 points, and a title breaks into six or seven lines in it.
+It is `SkLayout.isLargeText`, the same helper and the same answer as the
+feeling dial's own fallback: changing shape is honest, shrinking the words is
+not.
+
+**There is no tick on a chosen card, and the title sits in the middle of the
+tile.** The tick came off with the icons, the same day and for the same
+reason: a mark is what an *answer* wears, and `SkStatusStyle.iconOf` draws
+the same circled tick a right answer wears two steps earlier. Chosen is still
+said twice over -- the edge goes from a hairline to 2.5, which is visible
+without seeing its colour, and `SkPressable(selected:)` announces it -- so
+the "nothing in colour alone" rule holds. Losing the mark also means a card
+is the same height picked and unpicked, so nothing in the grid moves under
+the finger that just tapped it.
+
+**The chosen card keeps the green, and that was argued rather than inherited.**
+Green means *you were right* on a screen that grades answers, and this screen
+grades nothing -- so here it means "this is the one you picked", the job it
+already does on the builder's tiles. It is not said in colour alone: the edge
+thickens and the card is announced as selected.
+
+**The reader's own sentence is built on three pages, one per part, with the
+whole sentence in her bubble on each.** Changed 25 September 2026, from user
+feedback. It was one word-bank screen from 24 September -- the sentence at the
+top, all seven lines underneath -- and readers found it hard to finish: seven
+tiles in three unlabelled runs, with no clear sense of which tile went where or
+when the screen was done.
+
+| | 24 September (one screen) | 25 September (a page per part) |
+| --- | --- | --- |
+| Steps | One | Three: "I feel...", "When...", "I'd like..." |
+| On screen at once | The sentence, and all seven lines | The sentence, this part's helper, and this part's lines |
+| The forward gate | Held the screen until the sentence was whole | Holds each page until its own part lands. "Continue", then "See the whole thing" |
+| The three helpers | On the shape step, under the labels | On each part's own page. The shape step has labels only |
+
+**`/lesson-design` rule 3 argued for one screen, and it is kept by the bubble
+rather than by the layout.** Its point was that a part alone is not a subject
+-- the teaching is that the three read down as one sentence. The old
+three-step build (before 24 September) lost that because it showed no
+sentence. This one shows the whole sentence on every page, filling in as the
+reader goes, so the shape never leaves the screen; only the choosing is split.
+**Do not merge the pages back into one without new feedback saying the split
+hides the shape.**
+
+**Nothing on these pages can be wrong, and that is where it parts company with
+Duolingo.** Every line belongs to exactly one part, the app puts it there, and
+the reader is never asked which blank it goes in -- so there is nothing to
+mark.
 
 **The bank is never shuffled.** Duolingo shuffles because finding the tile is
 the exercise. Here the tile cannot be wrong, so a shuffle would only make the
@@ -1787,9 +1889,33 @@ against it.
 **The sentence is a picture, not a control.** Nothing in it takes a tap. An
 inline blank inside a run of text cannot be 48 points tall without wrecking
 the line it sits in, and the tile that filled it is already a full control a
-few points below -- so tapping a used tile is the way back out, and it is the
-only way. `SwapDrillScript.builderLead` says so out loud, because a reader who
-thinks a tap is final stops tapping.
+few points below -- so tapping a used tile is the way back out, and tapping
+another tile swaps it.
+
+**The step is laid out exactly like a sorting step, from 25 September 2026, at
+the user's request.** It had "Your sentence" inside the bubble and the
+sentence itself in a tinted box under her. Now the title is the page heading
+and the **sentence** is in the bubble, which is the shape every graded step
+already runs: a title at the top of the type ladder, then her holding up the
+sentence it is about. The box was a third ground on a page that already had a
+page and a bank, and it left the one thing the reader is building as the only
+thing in the lesson with nobody behind it. The sentence takes
+`SkText.lessonSpoken` there, in step with her six, rather than `cardTitle`.
+
+**The blanks are drawn rules, not words.** They were "how you feel", "what
+happened" and "what you'd like" in the caption colour. Three instructions
+inside the one sentence the reader is trying to read meant the sentence had to
+be read past before it could be read -- fourteen words on the opening frame,
+six of them the sentence. **The joining words carry the teaching on their
+own:** "I feel ... when ... I'd like ..." names all three parts and the order
+they go in, which is what the shape step two screens earlier taught. A blank
+only has to say *something goes here*.
+
+**`SwapSlot.blank` still exists, and it is now an accessibility label.** A
+drawn rule is nothing at all to a screen reader, so `_SentenceSoFar` relabels
+the whole line: VoiceOver reads "I feel how you feel when what happened." The
+rule's own length is that word's length, capped at 14, so shortening the copy
+shortens the rule with it.
 
 **A used tile stays where it is, dimmed, with its words still on it.** Duolingo
 empties the tile and leaves a grey hole. That is the better picture of "it
@@ -1804,13 +1930,13 @@ to answer. There is no question on this screen -- the sentence *is* the
 question. That is the `CLAUDE.md` scope rule again: the rule was about a
 sentence competing with a question, and there is no longer a question.
 
-**The screen scrolls on an iPhone SE, and that is not a bug.** The teacher, the
-sentence and seven lines do not fit 667 points. Everything that can grow is
+**A part's page may scroll on an iPhone SE at 200% text, and that is not a
+bug.** Everything that can grow is
 inside the scroll view, the forward pill is not, and
 `test/swap_drill_view_test.dart` walks every tile at 200% text on that surface.
 
 **`AnswerPose` is not `LessonFace`, and the two are not to be merged.**
-`AnswerPose` fires once, on the score step.
+`AnswerPose` is the teacher's reaction to a marked answer.
 `LessonFace` reacts to a sentence, and since 23 September 2026 it does that on
 the **introduction pages only**. The per-answer bob and wince deleted on 21
 September 2026 are **not** coming back:
@@ -1840,8 +1966,7 @@ cards against both guesses and all three fixes, asserting the pose and the
 serial both stand still.
 
 **There is no "go again".** Every answered sentence is still reachable with
-Back, with its explanation open and its cards locked, and the score copy points
-there. A restart would have to decide whether a second run counts, which is the
+Back, with its explanation open and its cards locked. A restart would have to decide whether a second run counts, which is the
 question rule 15 is actually about.
 
 **The headings are "Correct" and "Incorrect".** They were "That's it." and
@@ -1944,6 +2069,14 @@ When a prompt contains one of these tokens on its own (e.g. "ra fix the blink",
 
 **NEVER use triple forward slashes for comments. Use `//`, not `///`.**
 
+## When to stop and ask
+
+When a step does not need my input, keep going. Put status notes in the same
+message as your next action. Stop and ask only when you cannot continue
+without me, or before anything destructive: deleting data, force-pushing,
+discarding working-tree changes (`git checkout --`, `git restore`, a
+repo-wide `dart format`), or changing anything outside this repository.
+
 ## Plan Presentation Guidelines
 
 When presenting implementation plans, **do not show code examples**. Use tables,
@@ -2000,7 +2133,7 @@ explicitly chosen the version that got softened.
 | No instructions | The app talking to somebody who did not ask -- a lock screen line, an empty state | A script or a lesson the reader chose to open. There the instruction **is** the content |
 | No naming a technique | Same: somebody who did not ask | A screen the reader opened to learn or do the thing. A name is something to recognise next time |
 | No "we" | A brochure claiming closeness the app has not earned | A teacher's "today we're going to..." |
-| Nothing counts | Tallies of the user **over time** — scores kept, streaks, this month against last | "One hand" is a body part. "A few" is not a count. Seven questions inside one sitting, shown once and never stored — see the swap drill's score step |
+| Nothing counts | Tallies of the user **over time** — scores kept, streaks, this month against last | "One hand" is a body part. "A few" is not a count |
 | Length is the failure mode | Panic and low mood, where attention is measurably impaired | A meditation somebody calm sat down for |
 | The theme stops at the edge of an exercise | The **palette**. Six grounds making six promises about one lesson | Light and dark. That is the room the reader is in, not decoration -- and holding a page off-white in the dark is a bug, not consistency |
 | The forward pill is `ink` | A **third colour** on a page that already marks answers in green and red | How bright it is. A dimmed ink is still the ink's colour, and a full-width slab at text brightness is a lamp in the dark |

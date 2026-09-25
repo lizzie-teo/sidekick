@@ -214,6 +214,12 @@ class _FeelingPickerViewState extends State<FeelingPickerView> {
     final bool asCards = SkLayout.isLargeText(context);
 
     return Scaffold(
+      // **The page does not answer in colour, and three attempts say why.**
+      // A wash across the middle dulled her, ribbons at the screen edges were
+      // wallpaper, and a pool of light in the floor of the bowl -- `MoodPool`,
+      // built and removed on 25 September 2026 -- was reported as not working
+      // either. Her face is the answer. Anything else on this page is a second
+      // thing saying the same thing, more faintly.
       body: SafeArea(
         child: Padding(
           padding: EdgeInsets.fromLTRB(

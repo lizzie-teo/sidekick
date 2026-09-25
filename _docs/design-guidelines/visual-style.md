@@ -462,6 +462,82 @@ the gap around it, or a page of six blocks reads as six unrelated notes. The
 explanation sheet is the worked example: 20 between two parts sharing a card,
 16 plus two card edges between the cards.
 
+### A heading over a list takes the list's own gap
+
+Set 25 September 2026, at the user's request, from the closing step of the
+swap drill.
+
+**A heading and the points under it take one number, and it is the number the
+points take between themselves.** `SkLayout.listGap`, 8. Both use sites read
+that constant rather than holding a copy, because the whole rule is that they
+agree.
+
+The closing step had 8 under the heading and 12 between the points. That is
+two different groupings on one short block: the heading read as glued to point
+one, while the points read as separate from each other, so the eye could not
+tell whether it was looking at one group or two. Equal is the honest answer —
+the heading belongs to the whole list, not to its first point.
+
+**This is not the nesting rule being broken.** The nesting is one level out:
+8 inside a section, 24 between two sections. Inside a section the heading and
+its points are one flat group, and a flat group has one gap. The `xxl` between
+two sections is what carries the nesting now, so it is the number to protect.
+
+### The number came down to 8 the same day, and a list is set tighter than prose
+
+Later on 25 September 2026, at the user's request: the introduction's chain —
+"It sounds like blame." over three one-line consequences — was reported as too
+loosely spaced.
+
+**Two things were adding air to the same place.** Each point sat in a line box
+of prose leading, 16 at 1.5, and then 12 points of gap were laid on top of
+that between one point and the next. A paragraph earns 1.5 because the eye has
+to find its way back to the start of the next line several times running; a
+point is one line, or two, with a dot in front of it and a gap under it, so
+the same leading lands *between* the items rather than inside them. The list
+read as spread out rather than as spacious.
+
+So both halves moved together, and they are one decision:
+
+| | Was | Is |
+| --- | --- | --- |
+| Between two points | `SkLayout.listGap` 12 | `SkLayout.listGap` 8 |
+| Inside one point | `lessonBody` 16/1.5 | `SkText.lessonPoint` 16/1.35 |
+
+**The size did not move**, which keeps the decision of the morning: the rule
+against a nested list reading as a footnote is about rank, and the dots and
+the indent already say this is a list.
+
+**It was `markerGap`'s argument that put it at 12, and that argument was
+narrower than it read.** `SkLayout.markerGap` is 8, over a *paragraph*, where
+the marker really is the first line of the text it names. The case for 12 was
+that a bulleted list is blocks the eye lands on one at a time, so it wants the
+*clearer* step of the two — which is a statement about **ranking two gaps**,
+not about what a list needs. It was answered by pushing the list open rather
+than by measuring it. The two numbers are equal now; what tells a list from a
+paragraph is the dot and the indent, which neither gap can take away.
+
+**Both bulleted lists in the swap drill are on it**, swept 25 September 2026:
+the closing step's three sections, and the introduction's chain of three
+consequences. The chain already had its lead-in and its lines at one number --
+8 -- so it obeyed the equality half of the rule while disagreeing with the
+other list in the same lesson about what the number was. **That is the drift
+the constant exists to stop**, and it is why the number lives in `SkLayout`
+rather than at either use site.
+
+**Four other lists in the lesson are deliberately not on it**, and each one is
+a list of *controls* rather than a list of points:
+
+| List | Why it is out |
+| --- | --- |
+| The two answer cards, and the three fixes | Cards with edges. Rule 7 governs the gap, and a bubble sits between them and the heading |
+| The four topic cards | Same, and they are a two-abreast grid rather than a column |
+| The three parts on the shape page | Bordered tiles. The line above is not the head of the group, and says so |
+| The builder's bank of lines | A wrap of chips in three runs. "The list's own gap" has two answers inside it -- 8 within a run, 16 between runs -- so the rule has nothing to point at |
+
+**The test is what the reader does with it.** A list of points is read; a list
+of controls is chosen from. The rule is about the first.
+
 ---
 
 ## 7. Responsive

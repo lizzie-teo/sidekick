@@ -1,25 +1,30 @@
-// The prompts Home shows instead of an affirmation line. One small thing,
-// named, that the reader can go and look at today.
+// The prompts Home shows instead of an affirmation line. One small thing the
+// reader can do with their body, right now, where they are sitting.
 //
-// The reasoning behind every prompt -- and every prompt that was rejected --
-// is in `_docs/briefs/noticing-prompts.md`. Eight rules from that file decide
-// whether a new prompt belongs here, and each has cost a draft:
+// **Rewritten 25 September 2026, at the user's request.** The first set named
+// things to go and look at later -- the moon tonight, a dog on a walk, a bird
+// -- and it read as homework: a thing to wait for, and a thing that might not
+// turn up. This set is modelled on a sheet of calm cards the user brought in.
+// Every prompt can be done in the next ten seconds, on a sofa, in any weather.
 //
-// - Name the thing. Never ask the reader to find a category. "Notice
-//   something good" is work; "there is a tree near you" is not. A search is
-//   the exact thing low mood is bad at.
-// - No test, no record, no count. Nothing marks a prompt done. A task has a
-//   done and a not-done, and a reader on a hard evening does not need a small
-//   failure they did not ask for.
-// - Reachable indoors, in any weather, in any season. A window, a mug, a
-//   sound. No more than one in three may need the reader to leave the house.
-// - Never promise it will be nice. "Look for the brightest colour", never
-//   "look for a colour that will cheer you up".
-// - Never ask for a feeling. A feeling cannot be produced on command, so
-//   asking for one hands the reader something to fail. The prompt names the
-//   thing and stops.
-// - Today or now. Never tomorrow. A promise about tomorrow is one the app
-//   cannot keep.
+// The reasoning behind both sets is in `_docs/briefs/noticing-prompts.md`.
+// The rules a new prompt has to pass:
+//
+// - Now, and here. No "today", no "tonight", nothing to wait for. If the
+//   reader cannot do it without standing up, it does not belong.
+// - One small thing with the body or the senses. A hand, a foot, the jaw, a
+//   sound, a sip.
+// - Nothing about the breath. Not "a deep breath", not "breathe slowly". The
+//   stretched in-breath is the one ban in this app with a randomised trial
+//   behind it, and the sheet the set was modelled on broke it three times.
+// - Never "relax". It has no how, so the reader invents one. Name the
+//   direction instead: "let your shoulders drop".
+// - Nothing to imagine and nothing to feel. No favourite song, no smile. A
+//   picture or a feeling cannot be produced on command, and asking hands the
+//   reader something to fail.
+// - Closing the eyes always offers looking down. Shut eyes are not safe for
+//   everybody who is anxious.
+// - No test, no record, no count. Nothing marks a prompt done.
 // - Twelve words. Reading age seven.
 // - One prompt per day, not per open. A prompt that changes when the reader
 //   comes back makes the first one a thing they missed.
@@ -32,59 +37,50 @@
 //
 // This list lives in `lib/data/` rather than in the dashboard feature because
 // a second reader is a plausible thing to want -- a morning alert carrying a
-// prompt is the version with the evidence behind it -- and a feature-owned
-// list would put the app's core back inside a feature.
+// prompt -- and a feature-owned list would put the app's core back inside a
+// feature.
 abstract class NoticingPrompts {
   // Grouped in reading order, the same order as the brief. The groups are
   // comments rather than separate lists: nothing picks by group, and one flat
   // list is what the reader walks.
   //
-  // The groups are how the set is kept honest. A set that drifts into all-sky
-  // or all-outdoors is caught by looking at the group sizes.
+  // The groups are how the set is kept honest. A set that drifts into
+  // all-hands or all-stretching is caught by looking at the group sizes.
   static const List<String> all = <String>[
-    // 1. Sky and light
-    'Look at the sky when you pass a window.',
-    'See what the light is doing this afternoon.',
-    'Look for the moon tonight. It is often up early.',
+    // 1. Where you are sitting
+    'Press both feet flat on the floor.',
+    'Sit back and let the chair take your weight.',
+    'Rest your hands on your legs.',
 
-    // 2. Green things
-    'Notice a flower today.',
-    'There is a tree near you. Look at its top.',
-    'Look at a leaf up close, if one is near.',
+    // 2. Letting go of a held place
+    'Let your shoulders drop, away from your ears.',
+    'Let your teeth come apart. Your jaw can hang loose.',
+    'Let your forehead go smooth.',
 
-    // 3. Sound
-    'Stop for a moment and hear what is furthest away.',
-    'Listen for a bird today. One is usually about.',
+    // 3. Hands
+    'Wiggle your fingers slowly.',
+    'Rub your hands together until they are warm.',
+    'Stretch your fingers wide, then let them go.',
+    'Put a hand on your chest and leave it there.',
 
-    // 4. Warmth and touch
-    'Hold a warm mug with both hands today.',
-    'If the sun comes out, put your face in it.',
-    'Notice the moment you first sit down tonight.',
+    // 4. A small stretch
+    'Stretch your arms up over your head.',
+    'Roll your shoulders back slowly, three times.',
+    'Turn your head slowly to one side, then the other.',
 
-    // 5. Animals
-    // Outside.
-    'Look for a dog today. Somebody is always walking one.',
-    'Watch a bird for ten seconds.',
+    // 5. Eyes
+    'Close your eyes, or look down, and count to five.',
+    'Look at the thing furthest away from you.',
+    'Find one blue thing near you.',
+    'Look out of a window for a moment.',
 
-    // 6. People
-    'Listen for somebody laughing today.',
-    // Outside.
-    'Look for one person being kind to another.',
+    // 6. Sound and touch
+    'Listen for the quietest sound in the room.',
+    'Feel your sleeve between your finger and thumb.',
 
-    // 7. Smell and taste
-    'Find one good smell today. Coffee, rain, bread, soap.',
-    'Take the first mouthful slowly at some point today.',
-
-    // 8. Made things
-    // Outside.
-    'Look for the brightest colour on your way somewhere.',
-    'Notice one thing somebody made well today.',
-    // Outside.
-    'Look up at the tops of the buildings.',
-
-    // 9. The end of the day
-    'See what the sky is doing before you close the curtains.',
-    'Notice the moment the day goes quiet.',
+    // 7. Something warm, something to drink
+    'Have a drink of water. Take the first sip slowly.',
+    'Hold something warm in both hands, if something is near.',
   ];
 
   // The next prompt along, so two days never show the same one.

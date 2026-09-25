@@ -209,8 +209,8 @@ class _FeelingDialState extends State<FeelingDial>
             child: Stack(
               alignment: Alignment.topCenter,
               children: <Widget>[
-                // Under everything, so the arc's ends cross in front of her
-                // feet and the bowl reads as holding her.
+                // Under the arc, so its ends cross in front of her feet and
+                // the bowl reads as holding her.
                 //
                 // She takes no touches: a tap reaction here would compete with
                 // the knob for the same finger, and the knob is what the

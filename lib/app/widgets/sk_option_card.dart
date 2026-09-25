@@ -17,6 +17,20 @@ enum SkOptionState {
   // those steps for it to be confused with.
   chosen,
 
+  // Chosen on a step that has a right answer, and not checked yet.
+  //
+  // **It is neutral on purpose, and that is the whole reason it is not
+  // [chosen].** On a graded step green already means *you were right*, so a
+  // green card the moment a finger lands would mark the answer before the
+  // reader has asked for it -- which is the thing the Check button was added
+  // to stop. This is the page's own ink: a heavier edge, a bolder label and a
+  // filled dot, saying "this one" and claiming nothing about it.
+  //
+  // **It is not said in colour alone.** The edge doubles in weight, the label
+  // goes to 600 and the dot appears, so a reader who cannot see the edge
+  // colour still sees which card is picked.
+  picked,
+
   // The right answer, after a guess.
   right,
 
@@ -62,6 +76,10 @@ class SkOptionCard extends StatelessWidget {
 
   static const double _markSize = 26;
 
+  // A picked card's edge, against the 1.5 every other card carries. Weight is
+  // the non-colour half of the signal.
+  static const double _pickedEdge = 2.5;
+
   @override
   Widget build(BuildContext context) {
     final SkExerciseColors ex = context.exercise;
@@ -75,7 +93,7 @@ class SkOptionCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: skin.fill,
         borderRadius: BorderRadius.circular(SkLayout.lg),
-        border: Border.all(color: skin.edge, width: 1.5),
+        border: Border.all(color: skin.edge, width: skin.edgeWidth),
       ),
       child: Row(
         children: <Widget>[
@@ -138,6 +156,19 @@ class SkOptionCard extends StatelessWidget {
           ink: ex.ink,
         );
 
+      // The picked-but-unchecked card. Everything here is the page's own
+      // neutral set -- `sk_exercise_colors.dart` -- so nothing about it can
+      // be read as a mark.
+      case SkOptionState.picked:
+        return _CardSkin(
+          fill: ex.surface,
+          edge: ex.ink,
+          ink: ex.ink,
+          mark: Icons.radio_button_checked,
+          bold: true,
+          edgeWidth: _pickedEdge,
+        );
+
       case SkOptionState.chosen:
       case SkOptionState.right:
         return _CardSkin.of(SkTone.success, ex);
@@ -155,12 +186,16 @@ class _CardSkin {
   final IconData? mark;
   final bool bold;
 
+  // How heavy the edge is. Every card but a picked one carries the hairline.
+  final double edgeWidth;
+
   const _CardSkin({
     required this.fill,
     required this.edge,
     required this.ink,
     this.mark,
     this.bold = false,
+    this.edgeWidth = 1.5,
   });
 
   // A marked card, in one of the app's status tones.

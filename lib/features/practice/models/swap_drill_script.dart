@@ -141,22 +141,26 @@ class SwapSlot {
   // inside a sentence rather than remembered as a rule.
   final String label;
 
+  // The heading of this part's own builder step. The label in sentence case,
+  // because "when..." is lower case on purpose inside a sentence and a
+  // heading is not inside one.
+  final String title;
+
   // One line. **Short on purpose** -- the old build had a helper, a note and
   // a struck-through example on the first step, which is a page of reading in
   // front of a one-word answer.
   //
-  // **It moved onto the shape step on 24 September 2026**, under this part's
-  // own label. It had a step of its own until then -- one part, one helper,
-  // two cards -- and the three steps became one word-bank screen, where three
-  // helpers over a bank of tiles is three instructions on a screen that is
-  // asking for taps.
+  // **It is back on this part's own step, since 25 September 2026.** It sat
+  // on the shape step from 24 September, because the builder was one
+  // word-bank screen then and three helpers over one bank of tiles was three
+  // instructions competing for one tap. User feedback split the builder back
+  // into a page per part, so each helper is read on the page that asks for
+  // its part -- the moment it is followed.
   //
-  // The shape step already carries the three labels, it is the screen
-  // immediately before, and it is now the only place the instruction can be
-  // read at all. `_Parts` in the view holds the argument -- it used to ban
-  // exactly this, and the ban was written when the builder still had a step
-  // per part to say it on.
-  final String helper;
+  // **Null on the first part, since 25 September 2026, at the user's
+  // request.** "One word is enough." was a rule about a list of one-word
+  // tiles, which says it on its own.
+  final String? helper;
 
   // What stands in the sentence until this part is filled.
   final String blank;
@@ -164,7 +168,8 @@ class SwapSlot {
   const SwapSlot({
     required this.part,
     required this.label,
-    required this.helper,
+    required this.title,
+    this.helper,
     required this.blank,
   });
 }
@@ -181,6 +186,13 @@ class SwapSituation {
   // What the card says. A situation, never a verdict on the reader or on
   // whoever they are talking about.
   final String title;
+
+  // **There is deliberately no picture here.** One was added on 25 September
+  // 2026 and taken out the same day, at the user's request. A situation --
+  // "someone's often late", "I'm left out of decisions" -- has no picture of
+  // itself, so every icon was a nearby object standing in for one, which is
+  // something to decode rather than something to recognise. `SkTopicCard`
+  // holds the rest of the argument and the condition for reopening it.
 
   final List<String> feel;
   final List<String> when;
@@ -297,42 +309,6 @@ class SwapIntroText extends SwapIntroBlock {
   final String? emphasis;
 
   const SwapIntroText(this.text, {this.quiet = false, this.emphasis});
-}
-
-// A short note the reader can take away: something worth knowing, with no
-// verdict attached to it.
-//
-// **It is the `info` tone, and that is the whole reason it has a type.** The
-// three other status tones say how something went -- right, wrong, be careful
-// -- and this hands down no verdict. `info` is the one tone in
-// `sk_status.dart` that does not, which is exactly what a takeaway is: the one
-// line the reader keeps if they keep nothing else.
-//
-// **It lives on the closing step, not on an introduction page, and it moved
-// there on 23 September 2026.** It was the third thing on page one, where the
-// page was already saying what the lesson is -- two subjects on the screen
-// that has to earn the next tap. At the end it sits beside "start somewhere
-// easy", where the reader is deciding whether to say this to a person, and it
-// is the reason to actually do it.
-//
-// The trade is written down rather than rediscovered: on page one it was a
-// reason to carry on reading. That job is lost. The job it has now is the
-// better one.
-//
-// **It is never folded into an accordion or put behind an info icon.**
-// Everybody should read it, and collapsed text cannot be scanned --
-// `/lesson-design` rule 6.
-//
-// **One per lesson.** The box works by being the only thing on its page with
-// an edge round it.
-class SwapNote {
-  final String heading;
-
-  // One or two sentences. Anything longer is prose, and a paragraph inside a
-  // tinted box reads as shouting.
-  final String text;
-
-  const SwapNote({required this.heading, required this.text});
 }
 
 // A line she says out loud: her drawn full size, a speech bubble beside her,
@@ -559,10 +535,6 @@ enum SwapStepKind {
   // The one sentence to fix, three ways offered.
   fixOne,
 
-  // How the seven graded answers went, as a number and one of her two
-  // answer poses. The last step of the quiz half.
-  score,
-
   // Which situation the reader wants to practise.
   situation,
 
@@ -570,7 +542,8 @@ enum SwapStepKind {
   // builder asks for them one at a time.
   shape,
 
-  // One of the three builder steps.
+  // One of the three builder steps, one part each. `SwapStep.index` is the
+  // index into `slots`.
   slot,
 
   // The sentence the reader built, and the invitation to say it.
@@ -737,7 +710,7 @@ abstract final class SwapDrillScript {
         // **"Saying how you feel out loud takes the edge off the anxiety"
         // was the third thing on this page and is now the closing step's
         // note.** It is the one line here that was not the lesson, and the
-        // page was carrying two subjects because of it. See `SwapNote`.
+        // page was carrying two subjects because of it. See `closingSaid`.
 
         // **"It's a skill rather than a personality" was added here and taken
         // out the same day.** The clinical material opens on it, and
@@ -1002,8 +975,8 @@ abstract final class SwapDrillScript {
       kind: SwapKind.criticism,
       tell: 'always',
       why: 'Once you say "always", you\'re talking about what they\'re like, '
-          "not about tonight. So that's what they'll dig in about, and the "
-          'hour you sat there waiting never comes up.',
+          "not about tonight. So that's what they're likely to dig in about, "
+          'and the hour you sat there waiting may never come up.',
     ),
     SwapCard(
       said: "I've been sitting here an hour and I've had to cancel my evening.",
@@ -1013,24 +986,24 @@ abstract final class SwapDrillScript {
       // other person would feel. What is left is a claim about the sentence,
       // which is all a screen can honestly make.
       why: 'This one says what happened, and what it cost you. Most people '
-          "skip the cost bit — which is a shame, because it's the one thing "
+          "skip the cost bit, which is a shame, because it's the one thing "
           'the other person has no way of knowing.',
     ),
     SwapCard(
       said: "I feel like you're being selfish.",
       kind: SwapKind.criticism,
       tell: 'selfish',
-      why: 'This one catches nearly everybody. It starts with "I", true — '
-          'but "selfish" is still a word about them, so it lands as a '
-          'criticism anyway.',
+      why: 'This one catches nearly everybody. It does start with "I", but '
+          '"selfish" is still a word about them, so it lands as a criticism '
+          'anyway.',
     ),
     SwapCard(
       said: 'You never tell me anything.',
       kind: SwapKind.criticism,
       tell: 'never',
       why: '"Never" works the same way as "always". One quiet week turns '
-          "into who they are, and that's the bit they'll push back on, not "
-          'the thing that actually bothered you.',
+          "into who they are, and that's the bit they're likely to push back "
+          'on, not the thing that actually bothered you.',
     ),
     SwapCard(
       said: "I didn't know that was coming, so I had no answer in front of "
@@ -1042,15 +1015,15 @@ abstract final class SwapDrillScript {
       // line, so the test the reader was taught is the test they are marked
       // against.
       why: "That's just your side of it, so there's nothing there to argue "
-          "with. It doesn't ask for anything yet, mind — that's the next "
-          'one.',
+          "with. It doesn't ask for anything yet, though. That comes in the "
+          'next one.',
     ),
     SwapCard(
       said: "I'd rather you asked me first.",
       kind: SwapKind.expressing,
       why: "Short, and it's the half most people skip. Asking is what gives "
           'them something to do differently next time. It does say "you", '
-          "and that's fine here — it's about what happens next, not about "
+          "and that's fine here, because it's about what happens next, not about "
           "what they're like.",
     ),
   ];
@@ -1089,13 +1062,13 @@ abstract final class SwapDrillScript {
       said: "I feel like you don't care about my time.",
       isRight: false,
       feedback: 'Close. It starts with "I feel", but "don\'t care about my '
-          'time" is about what they\'re like — so it\'s still a criticism.',
+          'time" is about what they\'re like, so it\'s still a criticism.',
     ),
     SwapFix(
       said: "It's fine, don't worry about it.",
       isRight: false,
       feedback: 'This keeps the peace tonight. But they won\'t know anything '
-          'was wrong, so nothing changes.',
+          'was wrong, so nothing is likely to change.',
     ),
   ];
 
@@ -1129,7 +1102,7 @@ abstract final class SwapDrillScript {
         'I find out at the last minute',
       ],
       want: <String>[
-        'a heads-up the night before',
+        'to be told the night before',
         'to rearrange it together',
       ],
     ),
@@ -1145,22 +1118,32 @@ abstract final class SwapDrillScript {
         'to talk it through together',
       ],
     ),
+    SwapSituation(
+      title: "I'm asked to do too much",
+      feel: <String>['overloaded', 'stressed', 'worn out'],
+      when: <String>[
+        "more gets added after I've started",
+        "I'm asked at the last minute",
+      ],
+      want: <String>[
+        'to agree what comes off the list',
+        'a bit more notice',
+      ],
+    ),
   ];
 
-  // The three parts of the sentence, filled in on one screen.
+  // The three parts of the sentence, one page each.
   //
-  // **They were three steps until 24 September 2026, and they are now one.**
-  // Each step showed one part's label, its helper and two cards. The screen
-  // is a word bank now: the whole sentence stands at the top with three
-  // blanks in it, and every one of the situation's lines is a tile
-  // underneath. Tapping a tile drops it into its own blank.
+  // **Three pages, then one, then three again.** They were three steps until
+  // 24 September 2026, then one word-bank screen with every line on it, on
+  // `/lesson-design` rule 3: the teaching is that the three parts read down
+  // as one sentence, and one part at a time hides that.
   //
-  // **The reason is the one in `/lesson-design` rule 3.** A part on its own
-  // is not a subject -- "I feel disappointed" teaches nothing without "when
-  // plans change on the day" beside it. The teaching *is* that the three read
-  // down as one sentence, and one part at a time behind a Next button is the
-  // single arrangement in which that is invisible. It is the same call the
-  // four-part frame made, and the skill uses that page as its worked example.
+  // **User feedback on 25 September 2026 split them back**, because the
+  // one screen was hard to finish. Rule 3 is kept by the bubble rather than
+  // by the layout: the whole sentence is on every page, filling in as the
+  // reader goes, so the shape never leaves the screen. What the old three
+  // steps lacked was exactly that sentence.
   //
   // **A tile can never land in the wrong blank.** Every line belongs to
   // exactly one part, and the app puts it there -- the reader is not being
@@ -1175,18 +1158,20 @@ abstract final class SwapDrillScript {
     SwapSlot(
       part: SwapPart.feel,
       label: 'I feel...',
-      helper: 'One word is enough.',
+      title: 'I feel...',
       blank: 'how you feel',
     ),
     SwapSlot(
       part: SwapPart.when,
       label: 'when...',
+      title: 'When...',
       helper: "One thing that happened, not what they're like.",
       blank: 'what happened',
     ),
     SwapSlot(
       part: SwapPart.want,
       label: "I'd like...",
+      title: "I'd like...",
       helper: 'Something small and specific they could actually do.',
       blank: "what you'd like",
     ),
@@ -1212,21 +1197,13 @@ abstract final class SwapDrillScript {
   static const String joinWant = ". I'd like ";
   static const String joinEnd = '.';
 
-  // ---- The builder screen ------------------------------------------------
+  // ---- The builder steps ----------------------------------------------
 
-  // Its heading. **It names whose sentence it is**, which is the one thing
-  // that changes when the drill stops being about her six sentences and
-  // starts being about the reader's evening.
-  static const String builderTitle = 'Your sentence';
-
-  // The one line under it.
-  //
-  // **It says how to undo before the reader needs to undo.** A tile that goes
-  // in and cannot obviously come out again is a decision somebody is stuck
-  // with, on the one screen in the lesson where nothing can be wrong -- and a
-  // reader who thinks they are stuck stops tapping.
-  static const String builderLead =
-      'Tap a line to put it in. Tap it again to take it back out.';
+  // `builderTitle` ("Your sentence") and `builderLead` ("Tap a line to put it
+  // in. Tap it again to take it back out.") were here until 25 September
+  // 2026, for the one-screen word bank. Each part has its own page now, headed
+  // by `SwapSlot.title` and led by `SwapSlot.helper`, and with only one
+  // part's lines on the page there is no question of where a tile goes.
 
   // The step between picking a situation and building the sentence, added 23
   // September 2026 with the shape it shows.
@@ -1235,30 +1212,45 @@ abstract final class SwapDrillScript {
   // in.** The shape used to sit on the last page of the introduction, three
   // screens and a six-question drill before anything was done with it.
   //
-  // The heading is the count of the parts rather than a name for the frame.
-  // "The three-part shape" is the brief's word for it, and a design word on a
-  // screen is `/practice-writer` rule 10's own failure case.
-  static const String shapeTitle = 'Three parts';
+  // **The heading names what the reader is about to do.** It was "Three
+  // parts" until 25 September 2026, and user feedback was that it said
+  // nothing: a count is not a subject, and `/practice-writer` rule 2 asks
+  // every screen to name its own. "The three-part shape" is still out -- the
+  // brief's word for the frame is a design word, rule 10's own failure case.
+  static const String shapeTitle = 'How to build your sentence';
 
-  // **It says the order out loud**, because the order is the teaching -- how
-  // you feel, then what happened, then what you would like. The three tiles
-  // below it are the builder's own labels, read off `slots`, so this screen
-  // cannot promise a shape the steps do not ask for.
-  static const String shapeLead =
-      "Here's the shape, and the order the parts go in.";
+  // What she says in her bubble, over the empty sentence.
+  //
+  // **Short, since 25 September 2026, at the user's request.** It used to
+  // explain the three parts and point at three tiles under it. The tiles are
+  // gone: the empty sentence under this line shows the three parts and their
+  // order, so the line only has to say what happens next.
+  static const String shapeLead = "Now let's build a sentence.";
 
-  // The note the reader leaves with, on the closing step. Moved off
-  // introduction page one on 23 September 2026 -- `SwapNote` holds why.
+  // The line she says on the closing step, and the reason the three sections
+  // under it are worth doing.
   //
   // **The claim is about saying things out loud, never about how the
   // conversation goes.** `/practice-writer` rule 9 bans the second kind, and
   // the clinical handout's own wording for this one is "the immediate effect
   // of the self disclosure is to reduce your anxiety".
-  static const SwapNote closingNote = SwapNote(
-    heading: 'Worth knowing',
-    text: 'Saying how you feel out loud takes the edge off the anxiety. '
-        "It's holding it in that keeps it going round.",
-  );
+  //
+  // **It was a tinted `info` block with a "Worth knowing" heading on it until
+  // 25 September 2026, and it is a spoken line now**, at the user's request,
+  // so the closing step is built the way every other page of the lesson is: a
+  // heading across the top, and the teacher saying one line under it. The
+  // heading went with the box. A bubble already says who is talking, so a
+  // label above the words inside one is furniture, and the `SwapNote` type
+  // had exactly this one instance -- it went with the box rather than sitting
+  // in the file with nothing in it.
+  //
+  // **The three sections stay out of her mouth.** They are the app giving
+  // advice about a conversation it cannot see; this line is a fact about
+  // saying things out loud, which is the lesson she has been teaching for six
+  // minutes.
+  static const String closingSaid =
+      'Saying how you feel out loud takes the edge off the anxiety. '
+      "It's holding it in that keeps it going round.";
 
   // The last step.
   //
@@ -1272,8 +1264,8 @@ abstract final class SwapDrillScript {
   // whole lesson said in a layout.
   static const String finishedTitle = 'Here it is.';
   static const String finishedHelper =
-      'Try saying it out loud. It might feel strange the first time. '
-      "That's normal.";
+      "It's normal for this to feel strange the first time, so try saying "
+      'it out loud.';
 
   // The last step, added 21 September 2026 when the reading lesson beside
   // this one was deleted and took its fifth chapter with it.
@@ -1339,8 +1331,8 @@ abstract final class SwapDrillScript {
     SwapClosingSection(
       heading: 'Start somewhere easy',
       points: <String>[
-        "Pick something small, where you're not already upset. Not the "
-            "conversation you've been dreading for a month.",
+        "Pick something small, where you're not already upset, rather than "
+            "the conversation you've been dreading for a month.",
         'The words are hard enough on their own the first time.',
       ],
       emphasis: "something small, where you're not already upset",
@@ -1395,6 +1387,22 @@ abstract final class SwapDrillScript {
 
   static const String start = 'Start';
   static const String pickOne = 'Pick one';
+
+  // What the forward control says on a graded step once a card is picked and
+  // before the mark is shown.
+  //
+  // **The mark waits for it, and that is the point.** Tapping a card used to
+  // be the answer: the tick, the cross, the explanation panel and her face all
+  // arrived on the same touch, so a mis-tap was a wrong answer and a reader
+  // who wanted to think again had nowhere to think. The tap is now a pick --
+  // changeable, and neutral on the card -- and this button is what asks the
+  // question.
+  //
+  // **"Check", not "Answer" or "Submit".** Submit is a form. Answer says the
+  // reader has not answered yet, and they have -- the card is picked. Check is
+  // what they are asking the screen to do.
+  static const String check = 'Check';
+
   static const String nextSentence = 'Next sentence';
 
   // The outline button that opens the explanation, on a graded step once an
@@ -1427,67 +1435,6 @@ abstract final class SwapDrillScript {
   // how the lesson went.
   static const String done = 'Done';
 
-  // ---- The score step ----------------------------------------------------
-
-  // How many questions are marked: the six sentences to sort, then the one
-  // fix to pick.
-  //
-  // **Derived rather than typed.** A literal 7 here would be a second copy of
-  // a fact `cards` already holds, free to disagree with it the day a seventh
-  // sentence is written.
-  static int get graded => cards.length + 1;
-
-  // How many of them earn the bob rather than the wince.
-  //
-  // **5 of 7, and a perfect run was rejected.** Three of the six sentences
-  // are criticisms and three are not, and the giveaway words are deliberately
-  // quiet -- most readers get one or two wrong on a first pass. At 7 of 7 the
-  // wince becomes the ordinary ending of the lesson, which makes the app
-  // wince at nearly everybody on a lesson about being criticised. At 5 the
-  // bob is the normal outcome and the wince means the difference genuinely
-  // has not landed yet.
-  static const int passMark = 5;
-
-  // The score step's heading.
-  //
-  // **It names the step and claims nothing.** "How that went" is the same
-  // sentence whether the run was 7 or 2, so the heading is not the thing
-  // delivering the news -- the number and her face are, and they are the two
-  // things the reader looked at anyway.
-  static const String scoreTitle = 'How that went';
-
-  // The number, as "5 of 7".
-  //
-  // **This is the one count in the app, and it is deliberate.** Rule 15 bans
-  // scores because a tally of the *user over time* turns a quiet week into a
-  // failed test -- streaks, totals, this month against last. This is a count
-  // of seven questions inside one sitting, it is never stored, and closing
-  // the drill forgets it along with everything else. There is nothing for it
-  // to accumulate into and nothing to compare it against.
-  static String scoreLine(int right) => '$right of $graded';
-
-  // What is said under the number.
-  //
-  // **Neither line praises and neither line scolds.** They both talk about
-  // the sentences, the way every other piece of feedback in this drill does.
-  // "Well done" is banned and so is its opposite.
-  static const String scoreWell =
-      'You can hear the difference between minding something and saying it. '
-      "That's the part that travels into a real conversation.";
-
-  // **It points at Back rather than at a restart, because Back is what
-  // exists.** Every answered sentence is still on its own step with its
-  // explanation open, and going back to read one again is not a second guess:
-  // the cards stay locked. Promising "try again" with nothing to press would
-  // be the screen offering something it does not have.
-  static const String scoreNotYet =
-      'The difference between the two is a quiet one, and it takes a few '
-      'goes to hear. The sentences are still back there if you want another '
-      'look.';
-
-  // The fix step's forward label, now that the score sits after it.
-  static const String howThatWent = 'See how that went';
-
   // The steps, in order. One list, so the progress bar is one number and the
   // screen has no notion of a section to reset at.
   //
@@ -1499,10 +1446,9 @@ abstract final class SwapDrillScript {
       SwapStep(SwapStepKind.introduction, i),
     for (int i = 0; i < cards.length; i++) SwapStep(SwapStepKind.card, i),
     const SwapStep(SwapStepKind.fixOne),
-    const SwapStep(SwapStepKind.score),
     const SwapStep(SwapStepKind.situation),
     const SwapStep(SwapStepKind.shape),
-    const SwapStep(SwapStepKind.slot),
+    for (int i = 0; i < slots.length; i++) SwapStep(SwapStepKind.slot, i),
     const SwapStep(SwapStepKind.finished),
     const SwapStep(SwapStepKind.beforeYouTry),
   ];

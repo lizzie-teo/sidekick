@@ -215,7 +215,9 @@ void main() {
       breathe();
       breathe();
 
-      expect(state().lineIndex, read,
+      // Two breaths move the line on by itself (see breathsPerLine), so the
+      // test is that it only ever goes forward.
+      expect(state().lineIndex, greaterThanOrEqualTo(read),
           reason: 'a later breath must not send the reader back to line one');
     });
   });
@@ -283,6 +285,53 @@ void main() {
 
       viewModel.next();
       expect(state().line, lines[1]);
+    });
+
+    // Testers asked for the words to run without Next. The breath is the
+    // clock, so a line moves on at an in-breath and never on a timer.
+    test('moves on by itself after breathsPerLine breaths', () {
+      final List<String> lines = BreathingScript.forSensation(null);
+
+      for (int i = 0; i < BreathingViewModel.breathsPerLine - 1; i++) {
+        breathe();
+      }
+      expect(state().line, lines[0], reason: 'one breath is not enough');
+
+      breathe();
+      expect(state().line, lines[1]);
+    });
+
+    test('an out-breath never moves a line', () {
+      for (int i = 0; i < 5; i++) {
+        viewModel.onExhale();
+      }
+      expect(state().lineIndex, 0);
+    });
+
+    test('Next gives the new line its own full breaths', () {
+      final List<String> lines = BreathingScript.forSensation(null);
+
+      breathe();
+      viewModel.next();
+      expect(state().line, lines[1]);
+
+      breathe();
+      expect(state().line, lines[1],
+          reason: 'the breath before the tap must not count for this line');
+      breathe();
+      expect(state().line, lines[2]);
+    });
+
+    test('plays through to the last line and waits there', () {
+      final int count = BreathingScript.forSensation(null).length;
+
+      for (int i = 0; i < (count + 3) * BreathingViewModel.breathsPerLine; i++) {
+        breathe();
+      }
+
+      expect(state().lineIndex, count - 1);
+      expect(state().isLastLine, isTrue,
+          reason: 'the reader chooses what happens after the last line');
     });
 
     test('stops at the last line rather than running off the end', () {

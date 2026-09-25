@@ -13,6 +13,7 @@ import 'package:sidekick/app/widgets/sk_palettes.dart';
 import 'package:sidekick/app/widgets/sk_progress_bar.dart';
 import 'package:sidekick/app/widgets/sk_rive_face.dart';
 import 'package:sidekick/app/widgets/sk_speech_bubble.dart';
+import 'package:sidekick/app/widgets/sk_topic_card.dart';
 import 'package:sidekick/app/widgets/theme.dart';
 import 'package:sidekick/features/practice/models/lesson_face.dart';
 import 'package:sidekick/features/practice/models/swap_drill_script.dart';
@@ -44,16 +45,36 @@ void main() {
 
   setUpAll(loadPoppins);
 
-  Future<void> open(WidgetTester tester, {Size size = smallPhone}) async {
+  Future<void> open(
+    WidgetTester tester, {
+    Size size = smallPhone,
+    TextScaler textScaler = TextScaler.noScaling,
+  }) async {
     await tester.binding.setSurfaceSize(size);
     addTearDown(() => tester.binding.setSurfaceSize(null));
 
-    await pumpApp(tester, location: Routes.swapDrill);
+    await pumpApp(
+      tester,
+      location: Routes.swapDrill,
+      textScaler: textScaler,
+    );
   }
 
   Future<void> press(WidgetTester tester, String label) async {
     await tester.tap(find.text(label));
     await tester.pumpAndSettle();
+  }
+
+  // Answers a graded question the way the reader does: pick a card, then
+  // press Check.
+  //
+  // **The two are one step to every test that is not about the picking.** A
+  // tap was the whole answer until 25 September 2026; the mark now waits for
+  // the button, and only the tests below that are about that gap press the
+  // two separately.
+  Future<void> answerWith(WidgetTester tester, String label) async {
+    await press(tester, label);
+    await press(tester, SwapDrillScript.check);
   }
 
   // Taps a line in the builder's bank.
@@ -112,7 +133,7 @@ void main() {
     await readIntroduction(tester);
 
     for (int i = 0; i < SwapDrillScript.cards.length; i++) {
-      await press(tester, SwapDrillScript.criticismLabel);
+      await answerWith(tester, SwapDrillScript.criticismLabel);
       await press(
         tester,
         i == SwapDrillScript.cards.length - 1
@@ -305,7 +326,7 @@ void main() {
     final double top = her.top;
 
     for (int i = 0; i < 3; i++) {
-      await press(tester, SwapDrillScript.criticismLabel);
+      await answerWith(tester, SwapDrillScript.criticismLabel);
       await press(tester, SwapDrillScript.nextSentence);
 
       expect(
@@ -367,8 +388,7 @@ void main() {
     // Every step after the fix, in order. `sortAll` covers everything up to
     // it.
     Future<void> finishTheRest(WidgetTester tester) async {
-      await press(tester, SwapDrillScript.fixes.first.said);
-      await press(tester, SwapDrillScript.howThatWent);
+      await answerWith(tester, SwapDrillScript.fixes.first.said);
       await press(tester, SwapDrillScript.yourTurn);
 
       final SwapSituation situation = SwapDrillScript.situations.first;
@@ -379,8 +399,8 @@ void main() {
       // shown whole, on the screen before the first one is asked for.
       await press(tester, SwapDrillScript.next);
 
-      // **One builder screen, three taps, one press on.** It was a step per
-      // part until 24 September 2026.
+      // **A page per part, one tap and one press on each**, since 25
+      // September 2026.
       for (final SwapSlot slot in SwapDrillScript.slots) {
         await tapLine(tester, situation.chipsFor(slot.part).first);
       }
@@ -442,7 +462,7 @@ void main() {
       for (int i = 0; i < SwapDrillScript.cards.length; i++) {
         expect(find.byType(SkCharacter), findsOneWidget, reason: 'card $i');
 
-        await press(tester, SwapDrillScript.criticismLabel);
+        await answerWith(tester, SwapDrillScript.criticismLabel);
         await press(
           tester,
           i == SwapDrillScript.cards.length - 1
@@ -516,7 +536,7 @@ void main() {
       // about whose mouth the question comes out of: the teacher asks it, and
       // asking is what she is for. `_Asked` holds the argument.
       for (int i = 0; i < SwapDrillScript.cards.length; i++) {
-        await press(tester, SwapDrillScript.criticismLabel);
+        await answerWith(tester, SwapDrillScript.criticismLabel);
         await press(
           tester,
           i == SwapDrillScript.cards.length - 1
@@ -524,8 +544,7 @@ void main() {
               : SwapDrillScript.nextSentence,
         );
       }
-      await press(tester, SwapDrillScript.fixes.first.said);
-      await press(tester, SwapDrillScript.howThatWent);
+      await answerWith(tester, SwapDrillScript.fixes.first.said);
       await press(tester, SwapDrillScript.yourTurn);
 
       expect(find.text(SwapDrillScript.situationQuestion), findsOneWidget);
@@ -609,7 +628,7 @@ void main() {
       await press(tester, SwapDrillScript.start);
 
       for (int i = 0; i < SwapDrillScript.cards.length; i++) {
-        await press(tester, SwapDrillScript.criticismLabel);
+        await answerWith(tester, SwapDrillScript.criticismLabel);
         await press(
           tester,
           i == SwapDrillScript.cards.length - 1
@@ -618,8 +637,7 @@ void main() {
         );
       }
 
-      await press(tester, SwapDrillScript.fixes.first.said);
-      await press(tester, SwapDrillScript.howThatWent);
+      await answerWith(tester, SwapDrillScript.fixes.first.said);
       await press(tester, SwapDrillScript.yourTurn);
 
       // The situation question: the first step she is quiet on, and the one
@@ -629,30 +647,44 @@ void main() {
       final SwapSituation situation = SwapDrillScript.situations.first;
       await press(tester, situation.title);
 
-      // The shape step, between the situation and the builder. It is quiet
-      // too -- she stands beside its heading with nothing to say, the same as
-      // the four steps around it.
+      // **The shape step and the builder are measured against each other,
+      // not against the quiet steps, since 25 September 2026.** Both put the
+      // heading at the top of the page and a sentence in her bubble, so she
+      // starts one heading lower than on the situation step. That is a
+      // different screen, not her moving.
+      //
+      // **What the rule is actually about is a character shifting under
+      // somebody who is reading her**, so the tests that matter are below:
+      // she stands still from the shape step into the builder, and the
+      // sentence in her bubble grows as it fills without her following it.
       await press(tester, SwapDrillScript.next);
 
-      expect(
-        tester.getRect(find.byType(SkCharacter)),
-        quiet,
-        reason: 'the shape step moved her',
-      );
+      final Rect building = tester.getRect(find.byType(SkCharacter));
 
-      // The builder is one step now, so she is measured once on it -- and
-      // then again after all three taps, because the sentence above the bank
-      // grows as it fills and she sits above the sentence.
       await press(tester, SwapDrillScript.next);
-
       expect(
         tester.getRect(find.byType(SkCharacter)),
-        quiet,
-        reason: 'the builder moved her',
+        building,
+        reason: 'going from the shape step to the builder moved her',
       );
 
+      // **A page per part since 25 September 2026.** Each page has the same
+      // one-line heading, so she stands in the same place on all three.
       for (final SwapSlot slot in SwapDrillScript.slots) {
         await tapLine(tester, situation.chipsFor(slot.part).first);
+
+        if (slot != SwapDrillScript.slots.last) {
+          await tester.drag(
+            find.byType(Scrollable).first,
+            const Offset(0, 2000),
+          );
+          await tester.pumpAndSettle();
+          expect(
+            tester.getRect(find.byType(SkCharacter)),
+            building,
+            reason: 'filling ${slot.label} moved her',
+          );
+        }
       }
 
       // **Back to the top before measuring.** Reaching the last tile scrolled
@@ -663,17 +695,27 @@ void main() {
 
       expect(
         tester.getRect(find.byType(SkCharacter)),
-        quiet,
+        building,
         reason: 'filling the sentence moved her',
       );
 
       await press(tester, SwapDrillScript.seeIt);
       await press(tester, SwapDrillScript.oneLastThing);
 
+      // **The closing is not measured against the quiet steps, and that is a
+      // change of 25 September 2026.** It used to wear its heading inside her
+      // bubble; the heading is a heading across the top of the page now and
+      // her line is in the bubble, which is introduction page one's own
+      // shape. She therefore starts below a heading, the same as the builder
+      // -- a different screen, not her moving. Its title is two lines wide on
+      // this surface, so the number is its own rather than the builder's.
+      final Rect closing = tester.getRect(find.byType(SkCharacter));
+
+      expect(closing.size, quiet.size, reason: 'the closing resized her');
       expect(
-        tester.getRect(find.byType(SkCharacter)),
-        quiet,
-        reason: 'the closing moved her',
+        closing.top,
+        greaterThan(quiet.top),
+        reason: 'the closing put her above its own heading',
       );
     });
   });
@@ -683,7 +725,7 @@ void main() {
   ) async {
     await open(tester);
     await readIntroduction(tester);
-    await press(tester, SwapDrillScript.criticismLabel);
+    await answerWith(tester, SwapDrillScript.criticismLabel);
 
     final List<SkOptionCard> cards =
         tester.widgetList<SkOptionCard>(find.byType(SkOptionCard)).toList();
@@ -707,6 +749,113 @@ void main() {
     await openExplanation(tester);
 
     expect(find.text(SwapDrillScript.cards.first.why), findsOneWidget);
+  });
+
+  // **The mark waits for Check, since 25 September 2026.** Tapping a card used
+  // to be the whole answer: the tick, the cross, the sheet and the teacher's
+  // face all arrived on the touch that picked it, so a finger on the wrong
+  // card was a wrong answer and there was no moment between choosing and being
+  // told.
+  group('a pick is not an answer until Check', () {
+    testWidgets('the picked card is neutral and nothing is marked', (
+      WidgetTester tester,
+    ) async {
+      await open(tester);
+      await readIntroduction(tester);
+
+      await press(tester, SwapDrillScript.criticismLabel);
+
+      final List<SkOptionCard> cards =
+          tester.widgetList<SkOptionCard>(find.byType(SkOptionCard)).toList();
+
+      final SkOptionCard picked = cards.firstWhere(
+        (SkOptionCard c) => c.label == SwapDrillScript.criticismLabel,
+      );
+      final SkOptionCard other = cards.firstWhere(
+        (SkOptionCard c) => c.label == SwapDrillScript.expressingLabel,
+      );
+
+      // **Picked, never right or wrong.** `SkOptionState.picked` is the
+      // page's own neutral set: on a graded step green already means "you
+      // were right", so a green card here would mark the answer before the
+      // reader asked for it.
+      expect(picked.state, SkOptionState.picked);
+      expect(other.state, SkOptionState.plain);
+
+      // Both are still live, so the pick can move.
+      expect(picked.onPressed, isNotNull);
+      expect(other.onPressed, isNotNull);
+
+      // Nothing on the screen says how it went.
+      expect(find.text(SwapDrillScript.correct), findsNothing);
+      expect(find.text(SwapDrillScript.incorrect), findsNothing);
+      expect(find.text(SwapDrillScript.explainAnswer), findsNothing);
+
+      // The forward control asks the question instead of carrying on.
+      expect(find.text(SwapDrillScript.check), findsOneWidget);
+      expect(find.text(SwapDrillScript.nextSentence), findsNothing);
+    });
+
+    testWidgets('the pick can be moved to the other card', (
+      WidgetTester tester,
+    ) async {
+      await open(tester);
+      await readIntroduction(tester);
+
+      await press(tester, SwapDrillScript.criticismLabel);
+      await press(tester, SwapDrillScript.expressingLabel);
+
+      final List<SkOptionCard> cards =
+          tester.widgetList<SkOptionCard>(find.byType(SkOptionCard)).toList();
+
+      expect(
+        cards
+            .firstWhere(
+              (SkOptionCard c) => c.label == SwapDrillScript.expressingLabel,
+            )
+            .state,
+        SkOptionState.picked,
+      );
+      expect(
+        cards
+            .firstWhere(
+              (SkOptionCard c) => c.label == SwapDrillScript.criticismLabel,
+            )
+            .state,
+        SkOptionState.plain,
+      );
+    });
+
+    testWidgets('Check is what marks it', (WidgetTester tester) async {
+      await open(tester);
+      await readIntroduction(tester);
+
+      await press(tester, SwapDrillScript.criticismLabel);
+      await press(tester, SwapDrillScript.check);
+
+      expect(find.text(SwapDrillScript.correct), findsOneWidget);
+      expect(find.text(SwapDrillScript.check), findsNothing);
+      expect(find.text(SwapDrillScript.nextSentence), findsOneWidget);
+    });
+
+    // The fix step is the seventh graded question and must not behave like a
+    // different kind of screen.
+    testWidgets('the fix step waits for Check too', (
+      WidgetTester tester,
+    ) async {
+      await open(tester);
+      await sortAll(tester);
+
+      await press(tester, SwapDrillScript.fixes.first.said);
+
+      expect(find.text(SwapDrillScript.check), findsOneWidget);
+      expect(find.text(SwapDrillScript.correct), findsNothing);
+      expect(find.text(SwapDrillScript.incorrect), findsNothing);
+
+      await press(tester, SwapDrillScript.check);
+
+      expect(find.text(SwapDrillScript.yourTurn), findsOneWidget);
+    });
   });
 
   // **Green and red mean one thing each on this screen: right and wrong.**
@@ -986,7 +1135,7 @@ void main() {
       await readIntroduction(tester);
 
       // Card one is a criticism, so this is the right answer.
-      await press(tester, SwapDrillScript.criticismLabel);
+      await answerWith(tester, SwapDrillScript.criticismLabel);
 
       expect(
         pillColour(tester),
@@ -1000,7 +1149,7 @@ void main() {
       await open(tester);
       await readIntroduction(tester);
 
-      await press(tester, SwapDrillScript.expressingLabel);
+      await answerWith(tester, SwapDrillScript.expressingLabel);
 
       expect(
         pillColour(tester),
@@ -1054,7 +1203,7 @@ void main() {
     ) async {
       await open(tester);
       await readIntroduction(tester);
-      await press(tester, SwapDrillScript.criticismLabel);
+      await answerWith(tester, SwapDrillScript.criticismLabel);
 
       // **One panel, not two things at two ends of the screen.** The way on
       // used to sit in a band of its own under the sheet, which put the
@@ -1100,7 +1249,7 @@ void main() {
     ) async {
       await open(tester);
       await readIntroduction(tester);
-      await press(tester, SwapDrillScript.criticismLabel);
+      await answerWith(tester, SwapDrillScript.criticismLabel);
       await openExplanation(tester);
 
       // The explanation, the giveaway word, and the outcome said once.
@@ -1123,7 +1272,7 @@ void main() {
     ) async {
       await open(tester);
       await readIntroduction(tester);
-      await press(tester, SwapDrillScript.criticismLabel);
+      await answerWith(tester, SwapDrillScript.criticismLabel);
       await openExplanation(tester);
 
       await tester.tap(find.byIcon(Icons.arrow_back));
@@ -1147,7 +1296,7 @@ void main() {
     ) async {
       await open(tester);
       await readIntroduction(tester);
-      await press(tester, SwapDrillScript.criticismLabel);
+      await answerWith(tester, SwapDrillScript.criticismLabel);
       await openExplanation(tester);
 
       // Carrying on from the page lands on the next sentence, not on the
@@ -1164,7 +1313,7 @@ void main() {
     ) async {
       await open(tester);
       await readIntroduction(tester);
-      await press(tester, SwapDrillScript.criticismLabel);
+      await answerWith(tester, SwapDrillScript.criticismLabel);
 
       final double before =
           tester.widget<SkProgressBar>(find.byType(SkProgressBar)).value;
@@ -1185,7 +1334,7 @@ void main() {
     ) async {
       await open(tester);
       await readIntroduction(tester);
-      await press(tester, SwapDrillScript.criticismLabel);
+      await answerWith(tester, SwapDrillScript.criticismLabel);
 
       // It is part of the page rather than a modal: no barrier, and the
       // reader can still see which card they tapped while they read why.
@@ -1201,7 +1350,7 @@ void main() {
       await readIntroduction(tester);
 
       // Card one is a criticism, so this is wrong.
-      await press(tester, SwapDrillScript.expressingLabel);
+      await answerWith(tester, SwapDrillScript.expressingLabel);
 
       expect(
         tester.widget<SkFeedbackSheet>(find.byType(SkFeedbackSheet)).isRight,
@@ -1224,7 +1373,7 @@ void main() {
     ) async {
       await open(tester);
       await readIntroduction(tester);
-      await press(tester, SwapDrillScript.criticismLabel);
+      await answerWith(tester, SwapDrillScript.criticismLabel);
 
       // A tinted panel with a strip of page showing either side of it reads
       // as a card that failed to fit, so the page gutter is applied per row
@@ -1252,7 +1401,7 @@ void main() {
       // longer quite do.
       await tester.ensureVisible(find.text(wrong.said));
       await tester.pumpAndSettle();
-      await press(tester, wrong.said);
+      await answerWith(tester, wrong.said);
 
       final Finder sheet = find.byType(SkFeedbackSheet);
 
@@ -1274,7 +1423,7 @@ void main() {
     ) async {
       await open(tester);
       await sortAll(tester);
-      await press(tester, SwapDrillScript.fixes.first.said);
+      await answerWith(tester, SwapDrillScript.fixes.first.said);
       await openExplanation(tester);
 
       // The heading states the outcome. A feedback line opening with another
@@ -1298,8 +1447,7 @@ void main() {
     ) async {
       await open(tester);
       await sortAll(tester);
-      await press(tester, SwapDrillScript.fixes.first.said);
-      await press(tester, SwapDrillScript.howThatWent);
+      await answerWith(tester, SwapDrillScript.fixes.first.said);
       await press(tester, SwapDrillScript.yourTurn);
 
       // The situation question and the three builder steps have no right
@@ -1320,7 +1468,7 @@ void main() {
   ) async {
     await open(tester);
     await readIntroduction(tester);
-    await press(tester, SwapDrillScript.criticismLabel);
+    await answerWith(tester, SwapDrillScript.criticismLabel);
     await openExplanation(tester);
 
     expect(find.textContaining(SwapDrillScript.tellLead), findsOneWidget);
@@ -1339,10 +1487,10 @@ void main() {
     // The middle one is wrong, and its feedback is its own rather than a
     // shared "not this one".
     final SwapFix wrong = SwapDrillScript.fixes[1];
-    await press(tester, wrong.said);
+    await answerWith(tester, wrong.said);
 
     expect(find.text(SwapDrillScript.incorrect), findsOneWidget);
-    expect(find.text(SwapDrillScript.howThatWent), findsOneWidget);
+    expect(find.text(SwapDrillScript.yourTurn), findsOneWidget);
 
     final List<SkOptionCard> cards =
         tester.widgetList<SkOptionCard>(find.byType(SkOptionCard)).toList();
@@ -1375,8 +1523,7 @@ void main() {
   ) async {
     await open(tester);
     await sortAll(tester);
-    await press(tester, SwapDrillScript.fixes.first.said);
-    await press(tester, SwapDrillScript.howThatWent);
+    await answerWith(tester, SwapDrillScript.fixes.first.said);
     await press(tester, SwapDrillScript.yourTurn);
 
     expect(find.text(SwapDrillScript.situationQuestion), findsOneWidget);
@@ -1393,13 +1540,156 @@ void main() {
     expect(find.text(SwapDrillScript.next), findsOneWidget);
   });
 
-  testWidgets('the shape step carries the three labels and their helpers', (
+  testWidgets('each topic is a card, and the pick stays changeable', (
     WidgetTester tester,
   ) async {
     await open(tester);
     await sortAll(tester);
-    await press(tester, SwapDrillScript.fixes.first.said);
-    await press(tester, SwapDrillScript.howThatWent);
+    await answerWith(tester, SwapDrillScript.fixes.first.said);
+    await press(tester, SwapDrillScript.yourTurn);
+
+    List<SkTopicCard> cards() =>
+        tester.widgetList<SkTopicCard>(find.byType(SkTopicCard)).toList();
+
+    expect(cards().length, SwapDrillScript.situations.length);
+
+    // **Every card carries its own situation's words, in order**, so a tile
+    // cannot drift away from the lines it hands the builder.
+    for (int i = 0; i < SwapDrillScript.situations.length; i++) {
+      expect(cards()[i].title, SwapDrillScript.situations[i].title);
+    }
+
+    // **No two topics share a title.** The words are the only thing telling
+    // the tiles apart -- the picture came off on 25 September 2026 -- so two
+    // the same is two cards the reader cannot choose between.
+    expect(
+      <String>{
+        for (final SwapSituation situation in SwapDrillScript.situations)
+          situation.title,
+      }.length,
+      SwapDrillScript.situations.length,
+    );
+
+    // **The grid is even, so no slot is left empty.** Three tiles two abreast
+    // leave a hole in the corner, and a hole reads as a card that failed to
+    // load. `_Situation` holds the reasoning.
+    expect(SwapDrillScript.situations.length.isEven, isTrue);
+
+    // Nothing is picked when the step opens, and the pick stays changeable --
+    // this step has no right answer and never marks one.
+    expect(cards().where((SkTopicCard c) => c.chosen), isEmpty);
+
+    await press(tester, SwapDrillScript.situations[1].title);
+
+    expect(cards()[1].chosen, isTrue);
+    expect(cards()[0].chosen, isFalse);
+
+    // The cards still take taps after one is chosen, which is what separates
+    // a topic from an answer.
+    for (final SkTopicCard card in cards()) {
+      expect(card.onPressed, isNotNull);
+    }
+
+    await press(tester, SwapDrillScript.situations[0].title);
+
+    expect(cards()[0].chosen, isTrue);
+    expect(cards()[1].chosen, isFalse);
+  });
+
+  testWidgets('the topics sit two abreast, and stack at 200% text', (
+    WidgetTester tester,
+  ) async {
+    // **The grid is the second thing saying these are not answers.** The six
+    // sorting cards are a full-width stack; a pick from a short list is a
+    // grid, compared at a glance. `_Situation` holds the argument.
+    await open(tester);
+    await sortAll(tester);
+    await answerWith(tester, SwapDrillScript.fixes.first.said);
+    await press(tester, SwapDrillScript.yourTurn);
+
+    List<Rect> tiles() => tester
+        .widgetList<SkTopicCard>(find.byType(SkTopicCard))
+        .map((SkTopicCard card) =>
+            tester.getRect(find.byWidget(card, skipOffstage: false)))
+        .toList();
+
+    final List<Rect> grid = tiles();
+
+    // The first two share a row, the next two are the row under it.
+    expect(grid[0].top, grid[1].top);
+    expect(grid[2].top, grid[3].top);
+    expect(grid[2].top, greaterThan(grid[0].bottom));
+    expect(grid[1].left, greaterThan(grid[0].right));
+
+    // **The two tiles in a row are the same height**, so a one-line title
+    // beside a two-line one does not leave a short card in a tall gap.
+    expect(grid[0].height, grid[1].height);
+    expect(grid[2].height, grid[3].height);
+
+    // **Nothing is double width.** An odd list would leave the last slot
+    // empty rather than stretch a tile across the row -- a different shape in
+    // a grid of equals reads as the important one.
+    expect(grid[0].width, closeTo(grid[1].width, 0.5));
+    expect(grid[0].width, closeTo(grid[2].width, 0.5));
+
+    // At 200% on the smallest phone the grid is put away. Half the gutter
+    // width is about 133 points, which breaks a title into six or seven
+    // lines; a column is the honest answer, and shrinking the words is not.
+    await open(tester, textScaler: const TextScaler.linear(2));
+
+    // At this scale most controls start below the fold, so every press has
+    // to scroll to its target first -- the page scrolling, not overflowing.
+    Future<void> far(String label) async {
+      final Finder target = find.text(label);
+
+      await tester.ensureVisible(target);
+      await tester.pumpAndSettle();
+      await tester.tap(target);
+      await tester.pumpAndSettle();
+    }
+
+    for (final SwapIntroPage page in SwapDrillScript.introduction) {
+      for (int b = 1; b < page.beats.length; b++) {
+        await far(SwapDrillScript.carryOn);
+      }
+
+      await far(
+        page == SwapDrillScript.introduction.last
+            ? SwapDrillScript.start
+            : SwapDrillScript.carryOn,
+      );
+    }
+
+    for (int i = 0; i < SwapDrillScript.cards.length; i++) {
+      await far(SwapDrillScript.criticismLabel);
+      await far(SwapDrillScript.check);
+      await far(
+        i == SwapDrillScript.cards.length - 1
+            ? SwapDrillScript.nowFixOne
+            : SwapDrillScript.nextSentence,
+      );
+    }
+
+    await far(SwapDrillScript.fixes.first.said);
+    await far(SwapDrillScript.check);
+    await far(SwapDrillScript.yourTurn);
+
+    expect(tester.takeException(), isNull);
+
+    final List<Rect> stacked = tiles();
+
+    for (int i = 1; i < stacked.length; i++) {
+      expect(stacked[i].top, greaterThanOrEqualTo(stacked[i - 1].bottom));
+      expect(stacked[i].left, closeTo(stacked[0].left, 0.5));
+    }
+  });
+
+  testWidgets('the shape step holds up the empty sentence', (
+    WidgetTester tester,
+  ) async {
+    await open(tester);
+    await sortAll(tester);
+    await answerWith(tester, SwapDrillScript.fixes.first.said);
     await press(tester, SwapDrillScript.yourTurn);
     await press(tester, SwapDrillScript.situations.first.title);
     await press(tester, SwapDrillScript.next);
@@ -1407,85 +1697,90 @@ void main() {
     expect(find.text(SwapDrillScript.shapeTitle), findsOneWidget);
     expect(find.text(SwapDrillScript.shapeLead), findsOneWidget);
 
-    // **The helpers are here and nowhere else, since 24 September 2026.** They
-    // had a builder step each until the three became one word-bank screen, and
-    // three instructions over a bank of tiles is three things to obey on a
-    // screen asking for taps. `_Parts` holds the argument and the ban it
-    // replaced.
+    // **The empty sentence, not three label tiles, since 25 September
+    // 2026.** Its blanks are drawn rules, so the assertion is on what a
+    // screen reader hears. No part name and no helper yet: those are on each
+    // part's own page.
     for (final SwapSlot slot in SwapDrillScript.slots) {
-      await tester.ensureVisible(find.text(slot.label));
-      await tester.pumpAndSettle();
-
-      expect(find.text(slot.label), findsOneWidget, reason: slot.label);
-      expect(find.text(slot.helper), findsOneWidget, reason: slot.helper);
+      expect(
+        find.bySemanticsLabel(RegExp(RegExp.escape(slot.blank))),
+        findsOneWidget,
+        reason: slot.blank,
+      );
+      expect(find.text(slot.title), findsNothing, reason: slot.title);
+      final String? helper = slot.helper;
+      if (helper != null) {
+        expect(find.text(helper), findsNothing, reason: helper);
+      }
     }
 
     await press(tester, SwapDrillScript.next);
 
-    for (final SwapSlot slot in SwapDrillScript.slots) {
-      expect(find.text(slot.helper), findsNothing, reason: slot.helper);
-    }
+    // The first part's name, over its lines, and the page heading stays.
+    expect(find.text(SwapDrillScript.shapeTitle), findsOneWidget);
+    expect(find.text(SwapDrillScript.slots.first.title), findsOneWidget);
   });
 
-  testWidgets('the builder is one screen holding the whole sentence', (
+  testWidgets('the builder is a page per part, each holding the whole sentence', (
     WidgetTester tester,
   ) async {
     await open(tester);
     await sortAll(tester);
-    await press(tester, SwapDrillScript.fixes.first.said);
-    await press(tester, SwapDrillScript.howThatWent);
+    await answerWith(tester, SwapDrillScript.fixes.first.said);
     await press(tester, SwapDrillScript.yourTurn);
     await press(tester, SwapDrillScript.situations.first.title);
     await press(tester, SwapDrillScript.next);
-    // Past the shape step, which sits between the situation and the builder
-    // since 23 September 2026 and asks for nothing.
+    // Past the shape step, which asks for nothing.
     await press(tester, SwapDrillScript.next);
 
     final SwapSituation situation = SwapDrillScript.situations.first;
 
-    // **One heading, not three labels.** The three parts had a step each
-    // until 24 September 2026; the labels live on the shape step now, with
-    // their helpers, and this screen carries the sentence they describe.
-    expect(find.text(SwapDrillScript.builderTitle), findsOneWidget);
-    expect(find.text(SwapDrillScript.builderLead), findsOneWidget);
-
-    // **Every line the situation offers is on the screen at once**, which is
-    // the whole point of a bank: the reader sees the size of every piece
-    // before placing any of them.
-    for (final SwapSlot slot in SwapDrillScript.slots) {
-      for (final String line in situation.chipsFor(slot.part)) {
-        expect(find.text(line), findsOneWidget, reason: line);
-      }
-    }
-
-    // **The sentence opens with a placeholder in every part**, so the shape
-    // is visible before anything is tapped. It used to be kept off the
-    // builder entirely -- see `_Frame` for why it can be here now.
+    // **The sentence opens with a blank in every part**, so the shape is
+    // visible before anything is tapped. The blanks are drawn rules, so the
+    // assertion is on what a screen reader hears.
     for (final SwapSlot slot in SwapDrillScript.slots) {
       expect(
-        find.textContaining(slot.blank, findRichText: true),
+        find.bySemanticsLabel(RegExp(RegExp.escape(slot.blank))),
         findsOneWidget,
         reason: slot.blank,
       );
     }
 
-    // **The forward control never says "Pick one" here.** Nothing on this
-    // screen can be wrong, so there is nothing to be told to pick.
-    expect(find.text(SwapDrillScript.pickOne), findsNothing);
-
-    // Filling a part takes its placeholder out of the sentence, one at a
-    // time, and nothing else moves.
     for (final SwapSlot slot in SwapDrillScript.slots) {
-      await tapLine(tester, situation.chipsFor(slot.part).first);
+      // **One part per page, since 25 September 2026.** Its title, its
+      // helper, and only its own lines.
+      expect(find.text(slot.title), findsOneWidget, reason: slot.title);
+      final String? helper = slot.helper;
+      if (helper != null) {
+        expect(find.text(helper), findsOneWidget, reason: helper);
+      }
 
+      for (final SwapSlot other in SwapDrillScript.slots) {
+        for (final String line in situation.chipsFor(other.part)) {
+          expect(
+            find.text(line),
+            other == slot ? findsOneWidget : findsNothing,
+            reason: line,
+          );
+        }
+      }
+
+      // **"Pick one" until the part is in**, the way a graded step says it.
+      expect(find.text(SwapDrillScript.pickOne), findsOneWidget);
+
+      // Filling the part takes its blank out of the sentence.
+      await tapLine(tester, situation.chipsFor(slot.part).first);
       expect(
-        find.textContaining(slot.blank, findRichText: true),
+        find.bySemanticsLabel(RegExp(RegExp.escape(slot.blank))),
         findsNothing,
         reason: slot.blank,
       );
-    }
 
-    await press(tester, SwapDrillScript.seeIt);
+      // A pick moves on to the next part by itself. Only the last waits.
+      if (slot == SwapDrillScript.slots.last) {
+        await press(tester, SwapDrillScript.seeIt);
+      }
+    }
 
     expect(find.text(SwapDrillScript.finishedTitle), findsOneWidget);
   });
@@ -1495,8 +1790,7 @@ void main() {
   ) async {
     await open(tester);
     await sortAll(tester);
-    await press(tester, SwapDrillScript.fixes.first.said);
-    await press(tester, SwapDrillScript.howThatWent);
+    await answerWith(tester, SwapDrillScript.fixes.first.said);
     await press(tester, SwapDrillScript.yourTurn);
     await press(tester, SwapDrillScript.situations.first.title);
     await press(tester, SwapDrillScript.next);
@@ -1504,18 +1798,15 @@ void main() {
     // since 23 September 2026 and asks for nothing.
     await press(tester, SwapDrillScript.next);
 
-    // **All three, not one.** Pressing the way on with a part still empty
+    // **Each page waits for its own part.** Pressing on with the part empty
     // must leave the reader where they are: the pill is disabled, so the tap
-    // does nothing at all, and the sentence is what proves they stayed.
-    final SwapSituation situation = SwapDrillScript.situations.first;
+    // does nothing at all.
+    final SwapSlot first = SwapDrillScript.slots.first;
+    final SwapSlot second = SwapDrillScript.slots[1];
 
-    for (final SwapSlot slot in SwapDrillScript.slots.take(2)) {
-      await tapLine(tester, situation.chipsFor(slot.part).first);
-    }
-
-    await press(tester, SwapDrillScript.seeIt);
-    expect(find.text(SwapDrillScript.builderTitle), findsOneWidget);
-    expect(find.text(SwapDrillScript.finishedTitle), findsNothing);
+    await press(tester, SwapDrillScript.pickOne);
+    expect(find.text(first.title), findsOneWidget);
+    expect(find.text(second.title), findsNothing);
   });
 
   testWidgets('nothing in the drill is typed -- there is no field anywhere', (
@@ -1532,14 +1823,18 @@ void main() {
     await sortAll(tester);
     expect(find.byType(TextField), findsNothing);
 
-    await press(tester, SwapDrillScript.fixes.first.said);
-    await press(tester, SwapDrillScript.howThatWent);
+    await answerWith(tester, SwapDrillScript.fixes.first.said);
     await press(tester, SwapDrillScript.yourTurn);
 
-    // The situation step: three cards, and no fourth way to answer.
+    // The situation step: the topic cards, and no way to type one in.
+    //
+    // **They are `SkTopicCard`s, not `SkOptionCard`s.** Nothing on this step
+    // can be wrong, so it must not wear the shape the six graded sentences
+    // wear. See `_Situation`.
     expect(find.byType(TextField), findsNothing);
+    expect(find.byType(SkOptionCard), findsNothing);
     expect(
-      find.byType(SkOptionCard),
+      find.byType(SkTopicCard),
       findsNWidgets(SwapDrillScript.situations.length),
     );
 
@@ -1569,9 +1864,13 @@ void main() {
       }
 
       await tapLine(tester, lines.first);
-    }
+      expect(find.byType(TextField), findsNothing);
 
-    await press(tester, SwapDrillScript.seeIt);
+      // A pick moves on to the next part by itself. Only the last waits.
+      if (slot == SwapDrillScript.slots.last) {
+        await press(tester, SwapDrillScript.seeIt);
+      }
+    }
 
     expect(find.byType(TextField), findsNothing);
   });
@@ -1581,8 +1880,7 @@ void main() {
   ) async {
     await open(tester);
     await sortAll(tester);
-    await press(tester, SwapDrillScript.fixes.first.said);
-    await press(tester, SwapDrillScript.howThatWent);
+    await answerWith(tester, SwapDrillScript.fixes.first.said);
     await press(tester, SwapDrillScript.yourTurn);
     await press(tester, SwapDrillScript.situations.first.title);
     await press(tester, SwapDrillScript.next);
@@ -1593,21 +1891,20 @@ void main() {
     final SwapSituation situation = SwapDrillScript.situations.first;
     final String feel = situation.chipsFor(SwapPart.feel).first;
 
+    // The pick moves on to the next part by itself. Then back: coming back
+    // and finding the part emptied is the screen undoing the reader's work.
     await tapLine(tester, feel);
+    expect(find.text(SwapDrillScript.slots[1].title), findsOneWidget);
 
-    // Back onto the shape step and forward again. The builder is one step
-    // now, so this is the move that used to be made between two of them.
     await tester.tap(find.byIcon(Icons.arrow_back));
     await tester.pumpAndSettle();
-    expect(find.text(SwapDrillScript.shapeTitle), findsOneWidget);
 
-    await press(tester, SwapDrillScript.next);
-
-    // Coming back and finding the sentence emptied is the screen undoing the
-    // reader's work. The line is still in it, and its placeholder is gone.
-    expect(find.text(SwapDrillScript.builderTitle), findsOneWidget);
+    // The line is still in it, and its blank is gone.
+    expect(find.text(SwapDrillScript.slots.first.title), findsOneWidget);
     expect(
-      find.textContaining(SwapDrillScript.slots.first.blank, findRichText: true),
+      find.bySemanticsLabel(
+        RegExp(RegExp.escape(SwapDrillScript.slots.first.blank)),
+      ),
       findsNothing,
     );
   });
@@ -1617,8 +1914,7 @@ void main() {
   ) async {
     await open(tester);
     await sortAll(tester);
-    await press(tester, SwapDrillScript.fixes.first.said);
-    await press(tester, SwapDrillScript.howThatWent);
+    await answerWith(tester, SwapDrillScript.fixes.first.said);
     await press(tester, SwapDrillScript.yourTurn);
     await press(tester, SwapDrillScript.situations.first.title);
     await press(tester, SwapDrillScript.next);
@@ -1652,9 +1948,14 @@ void main() {
       SkBubbleTail.up,
     );
 
-    // No placeholder survives, because all three parts were required.
+    // No blank survives, because all three parts were required.
     for (final SwapSlot slot in SwapDrillScript.slots) {
       expect(find.textContaining(slot.blank), findsNothing, reason: slot.blank);
+      expect(
+        find.bySemanticsLabel(RegExp(RegExp.escape(slot.blank))),
+        findsNothing,
+        reason: slot.blank,
+      );
     }
 
     // And the removed line stays removed.
@@ -1674,8 +1975,7 @@ void main() {
     // the bold phrase is the line of the section that must not be missed.
     await open(tester);
     await sortAll(tester);
-    await press(tester, SwapDrillScript.fixes.first.said);
-    await press(tester, SwapDrillScript.howThatWent);
+    await answerWith(tester, SwapDrillScript.fixes.first.said);
     await press(tester, SwapDrillScript.yourTurn);
     await press(tester, SwapDrillScript.situations.first.title);
     await press(tester, SwapDrillScript.next);
@@ -1841,11 +2141,7 @@ void main() {
   // running total.** Rule 15: a number in front of somebody reads as a target
   // whether or not it was meant as one, and the bar says how far along
   // without putting one there.
-  //
-  // **The score step is the one exception and it is deliberate**, which is
-  // why this walk stops at the fix. Seven questions inside one sitting, shown
-  // once, never stored. See `_Score` and `SwapDrillScript.scoreLine`.
-  testWidgets('nothing counts until the score step', (
+  testWidgets('nothing counts on the sorting steps', (
     WidgetTester tester,
   ) async {
     await open(tester);
@@ -1854,123 +2150,6 @@ void main() {
     for (final String counter in <String>['1/6', '2/6', '1 of 6', '6 of 6']) {
       expect(find.textContaining(counter), findsNothing, reason: counter);
     }
-  });
-
-  // The score step, added 22 September 2026.
-  //
-  // `sortAll` calls every sentence a criticism -- three of the six are -- and
-  // then picks the right fix, so this path is four of seven and lands on the
-  // wince every time.
-  group('the score step', () {
-    Future<void> reachScore(WidgetTester tester) async {
-      await sortAll(tester);
-      await press(tester, SwapDrillScript.fixes.first.said);
-      await press(tester, SwapDrillScript.howThatWent);
-    }
-
-    testWidgets('shows the number and the line that goes with it', (
-      WidgetTester tester,
-    ) async {
-      await open(tester);
-      await reachScore(tester);
-
-      expect(find.text(SwapDrillScript.scoreTitle), findsOneWidget);
-      expect(find.text(SwapDrillScript.scoreLine(4)), findsOneWidget);
-      expect(find.text(SwapDrillScript.scoreNotYet), findsOneWidget);
-      expect(find.text(SwapDrillScript.scoreWell), findsNothing);
-      expect(find.text(SwapDrillScript.yourTurn), findsOneWidget);
-    });
-
-    // **No sheet, no tick, no tone.** Green and red mark a sentence on every
-    // other step of this drill. A whole panel of either around a number marks
-    // the reader instead, on a lesson about criticism.
-    testWidgets('is not marked green or red', (WidgetTester tester) async {
-      await open(tester);
-      await reachScore(tester);
-
-      expect(find.byType(SkFeedbackSheet), findsNothing);
-      expect(find.text(SwapDrillScript.correct), findsNothing);
-      expect(find.text(SwapDrillScript.incorrect), findsNothing);
-    });
-
-    // The number is the largest thing on the page and the page's own ink, so
-    // it can be mistaken for neither answer state.
-    testWidgets('the number is the page ink, not a status colour', (
-      WidgetTester tester,
-    ) async {
-      await open(tester);
-      await reachScore(tester);
-
-      final Text number = tester.widget<Text>(
-        find.text(SwapDrillScript.scoreLine(4)),
-      );
-      final SkExerciseColors ex = SkExerciseColors.light;
-
-      expect(number.style?.color, ex.ink);
-      expect(number.style?.color, isNot(ex.statusOf(SkTone.success).text));
-      expect(number.style?.color, isNot(ex.statusOf(SkTone.destructive).text));
-    });
-
-    // The one test the style guide asks for.
-    //
-    // **On the smallest phone, since 24 September 2026.** It ran on a tall
-    // 1400-point surface until then, because reaching this step means
-    // answering the six sorting cards and at 200% on a 667-point screen
-    // `SkFeedbackSheet` was taller than the room under the nav row -- so the
-    // forward pill went off the bottom and the walk could not get here at
-    // all. The sheet now caps itself at `SkFeedbackSheet.maxHeightFraction`
-    // of the screen and scrolls its words inside that, so the pill keeps its
-    // place and this test can run where it was always meant to.
-    testWidgets('survives 200% text', (WidgetTester tester) async {
-      await tester.binding.setSurfaceSize(smallPhone);
-      addTearDown(() => tester.binding.setSurfaceSize(null));
-
-      await pumpApp(
-        tester,
-        location: Routes.swapDrill,
-        textScaler: TextScaler.linear(2),
-      );
-
-      // At this scale most controls start below the fold.
-      Future<void> reach(String label) async {
-        final Finder target = find.text(label);
-        await tester.ensureVisible(target);
-        await tester.pumpAndSettle();
-        await tester.tap(target);
-        await tester.pumpAndSettle();
-      }
-
-      // Every beat of every page, not one press per page. A page arrives a
-      // beat at a time -- see `SwapIntroHold`.
-      for (final SwapIntroPage page in SwapDrillScript.introduction) {
-        for (int b = 1; b < page.beats.length; b++) {
-          await reach(SwapDrillScript.carryOn);
-        }
-
-        await reach(
-          page == SwapDrillScript.introduction.last
-              ? SwapDrillScript.start
-              : SwapDrillScript.carryOn,
-        );
-      }
-
-      for (int i = 0; i < SwapDrillScript.cards.length; i++) {
-        await reach(SwapDrillScript.criticismLabel);
-        await reach(
-          i == SwapDrillScript.cards.length - 1
-              ? SwapDrillScript.nowFixOne
-              : SwapDrillScript.nextSentence,
-        );
-      }
-
-      await reach(SwapDrillScript.fixes.first.said);
-      await reach(SwapDrillScript.howThatWent);
-
-      expect(tester.takeException(), isNull);
-      expect(find.text(SwapDrillScript.scoreTitle), findsOneWidget);
-      expect(find.text(SwapDrillScript.scoreLine(4)), findsOneWidget);
-      expect(find.text(SwapDrillScript.yourTurn), findsOneWidget);
-    });
   });
 
   testWidgets('it survives 200% text on the smallest phone', (
@@ -2099,7 +2278,7 @@ void main() {
     ) async {
       await open(tester);
       await readIntroduction(tester);
-      await press(tester, SwapDrillScript.criticismLabel);
+      await answerWith(tester, SwapDrillScript.criticismLabel);
 
       final Finder sheet = find.byType(SkFeedbackSheet);
 
@@ -2136,6 +2315,14 @@ void main() {
               ? SwapDrillScript.criticismLabel
               : SwapDrillScript.expressingLabel);
 
+      // **She says nothing about a pick.** The mark is what she reacts to,
+      // and until Check there is no mark -- a nod on the touch that picked
+      // the card would tell the reader the answer before they asked.
+      expect(only(tester).pose, isNot(Teacher.explainRight));
+      expect(only(tester).pose, isNot(Teacher.explainWrong));
+
+      await press(tester, SwapDrillScript.check);
+
       expect(only(tester).pose, Teacher.explainRight);
 
       // The next sentence, answered the other way. **Her second mark has to
@@ -2150,7 +2337,7 @@ void main() {
 
       final int before = only(tester).poseSerial;
 
-      await press(
+      await answerWith(
         tester,
         SwapDrillScript.cards[1].kind == SwapKind.criticism
             ? SwapDrillScript.expressingLabel
@@ -2166,15 +2353,40 @@ void main() {
     ) async {
       await open(tester);
       await sortAll(tester);
-      await press(tester, SwapDrillScript.fixes.first.said);
-      await press(tester, SwapDrillScript.howThatWent);
+      await answerWith(tester, SwapDrillScript.fixes.first.said);
+      await press(tester, SwapDrillScript.yourTurn);
 
-      // **The score is the teacher's too, since 24 September 2026.** She
-      // asked all seven questions and marked every one of them, so the step
-      // that says how they went is the last mark in that run rather than the
-      // reader's own companion arriving to grade them. The reader's own
-      // character has one step left -- the finish, where the sentence in the
-      // bubble is theirs.
+      // The situation question is hers too. The reader's own character is on
+      // no step of this drill.
+      expect(only(tester).skin, teaches.skin);
+      expect(only(tester).skin, isNot(reader.skin));
+    });
+
+    testWidgets('holds up the finished sentence as well', (
+      WidgetTester tester,
+    ) async {
+      await open(tester);
+      await sortAll(tester);
+      await answerWith(tester, SwapDrillScript.fixes.first.said);
+      await press(tester, SwapDrillScript.yourTurn);
+      await press(tester, SwapDrillScript.situations.first.title);
+      await press(tester, SwapDrillScript.next);
+      await press(tester, SwapDrillScript.next);
+
+      final SwapSituation situation = SwapDrillScript.situations.first;
+
+      for (final SwapSlot slot in SwapDrillScript.slots) {
+        await tapLine(tester, situation.chipsFor(slot.part).first);
+      }
+
+      await press(tester, SwapDrillScript.seeIt);
+
+      // **The finish was the reader's own character until 25 September
+      // 2026, and it was the last step that was.** The builder directly
+      // before it already holds the same sentence in the teacher's bubble,
+      // so the words changed character between two screens showing them.
+      // The reader's own sidekick is now on no step of this drill.
+      expect(find.text(SwapDrillScript.finishedTitle), findsOneWidget);
       expect(only(tester).skin, teaches.skin);
       expect(only(tester).skin, isNot(reader.skin));
     });
@@ -2189,7 +2401,20 @@ void main() {
         textScaler: const TextScaler.linear(2),
       );
       await readIntroduction(tester);
-      await press(tester, SwapDrillScript.criticismLabel);
+
+      // **The cards are scrolled to rather than tapped where they sit, and
+      // that is the page scrolling rather than the page overflowing** -- the
+      // same call `tapLine` and `uncover` make, for the same reason. At 200%
+      // her bubble is three lines of 40-point text, so the answers below it
+      // start below the fold on any surface this test could pick. A reader
+      // scrolls to them; so does this.
+      //
+      // It began doing so on 25 September 2026, when the quoted styles were
+      // re-measured for Shantell Sans and went from 17 to 20. Nothing
+      // overflowed -- there is no `RenderFlex` error here, and the assertion
+      // below is what this test is actually about.
+      await tapLine(tester, SwapDrillScript.criticismLabel);
+      await tapLine(tester, SwapDrillScript.check);
 
       expect(find.byType(SkCharacter), findsOneWidget);
     });
@@ -2202,12 +2427,10 @@ void main() {
 
     // Page one says what the lesson is, and nothing else. The note was its
     // third block until 23 September 2026.
-    expect(find.text(SwapDrillScript.closingNote.heading), findsNothing);
-    expect(find.text(SwapDrillScript.closingNote.text), findsNothing);
+    expect(find.text(SwapDrillScript.closingSaid), findsNothing);
 
     await sortAll(tester);
-    await press(tester, SwapDrillScript.fixes.first.said);
-    await press(tester, SwapDrillScript.howThatWent);
+    await answerWith(tester, SwapDrillScript.fixes.first.said);
     await press(tester, SwapDrillScript.yourTurn);
     await press(tester, SwapDrillScript.situations.first.title);
     await press(tester, SwapDrillScript.next);
@@ -2222,14 +2445,35 @@ void main() {
 
     // On the last step, under the title, before the three sections. It is
     // why they are worth doing.
-    expect(find.text(SwapDrillScript.closingNote.heading), findsOneWidget);
-    expect(find.text(SwapDrillScript.closingNote.text), findsOneWidget);
+    expect(find.text(SwapDrillScript.closingSaid), findsOneWidget);
 
-    // **Not a verdict, and not folded away.** The tone is `info`, so it
-    // cannot be read as marking the reader, and every word of it is on the
-    // screen rather than behind a tap.
+    // **She says it**, which is the shape introduction page one already uses
+    // and the shape this step took on 25 September 2026. The title is a
+    // heading over her rather than a line inside her bubble.
+    expect(find.byType(SkSpeechBubble), findsOneWidget);
     expect(
-      tester.getRect(find.text(SwapDrillScript.closingNote.heading)).top,
+      find.descendant(
+        of: find.byType(SkSpeechBubble),
+        matching: find.text(SwapDrillScript.closingSaid),
+      ),
+      findsOneWidget,
+    );
+    expect(
+      find.descendant(
+        of: find.byType(SkSpeechBubble),
+        matching: find.text(SwapDrillScript.closingTitle),
+      ),
+      findsNothing,
+    );
+
+    // **Not folded away**, and above the three sections it is the reason for.
+    // Every word of it is on the screen rather than behind a tap.
+    expect(
+      tester.getRect(find.text(SwapDrillScript.closingTitle)).top,
+      lessThan(tester.getRect(find.text(SwapDrillScript.closingSaid)).top),
+    );
+    expect(
+      tester.getRect(find.text(SwapDrillScript.closingSaid)).top,
       lessThan(
         tester.getRect(find.text(SwapDrillScript.closing.first.heading)).top,
       ),
@@ -2286,6 +2530,7 @@ void main() {
 
     for (int i = 0; i < SwapDrillScript.cards.length; i++) {
       await reach(SwapDrillScript.criticismLabel);
+      await reach(SwapDrillScript.check);
       await reach(
         i == SwapDrillScript.cards.length - 1
             ? SwapDrillScript.nowFixOne
@@ -2294,25 +2539,23 @@ void main() {
     }
 
     await reach(SwapDrillScript.fixes.first.said);
-    await reach(SwapDrillScript.howThatWent);
+    await reach(SwapDrillScript.check);
     await reach(SwapDrillScript.yourTurn);
 
     final SwapSituation situation = SwapDrillScript.situations.first;
     await reach(situation.title);
     await reach(SwapDrillScript.next);
 
-    // The shape step, which at this scale is three tall tiles and a heading.
-    // It is walked through rather than skipped, so an overflow on it fails
-    // here rather than on somebody's phone.
-    for (final SwapSlot slot in SwapDrillScript.slots) {
-      await tester.ensureVisible(find.text(slot.label));
-      await tester.pumpAndSettle();
-
-      expect(tester.takeException(), isNull, reason: slot.label);
-    }
+    // The shape step, which at this scale is a heading and a tall bubble.
+    // It is checked rather than skipped, so an overflow on it fails here
+    // rather than on somebody's phone.
+    await tester.ensureVisible(find.text(SwapDrillScript.shapeLead));
+    await tester.pumpAndSettle();
+    expect(tester.takeException(), isNull, reason: 'the shape step');
     await reach(SwapDrillScript.next);
 
     for (final SwapSlot slot in SwapDrillScript.slots) {
+      // A pick moves on to the next part by itself.
       await reach(situation.chipsFor(slot.part).first);
     }
     await reach(SwapDrillScript.seeIt);

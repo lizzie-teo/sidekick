@@ -20,6 +20,7 @@ import 'package:sidekick/app/widgets/sk_rive_face.dart';
 import 'package:sidekick/app/widgets/sk_speech_bubble.dart';
 import 'package:sidekick/app/widgets/sk_status.dart';
 import 'package:sidekick/app/widgets/sk_text.dart';
+import 'package:sidekick/app/widgets/sk_topic_card.dart';
 import 'package:sidekick/features/practice/models/lesson_face.dart';
 import 'package:sidekick/features/practice/models/swap_drill_script.dart';
 import 'package:sidekick/features/practice/models/teacher.dart';
@@ -90,16 +91,14 @@ class _SwapDrillViewState extends State<SwapDrillView> {
 
   // The one character for the whole drill. See the note on `_Said`: the step
   // above her is keyed by index and thrown away on every Continue, so without
-  // a global key the Rive file is decoded again on each of the seven answers
-  // -- which a cat user sees as the girl appearing and then being swapped
-  // out. It lives here rather than inside a step because the steps are what
-  // get replaced.
-  final GlobalKey _characterKey = GlobalKey();
-
-  // The teacher's own, for the same reason the sidekick has one: the step is
-  // thrown away and rebuilt on every Continue, and without this her Rive file
-  // is decoded again each time -- which the reader sees as the teacher
-  // vanishing and reappearing between the seven questions.
+  // a global key her Rive file is decoded again on each of the seven answers
+  // -- which the reader sees as the teacher vanishing and reappearing between
+  // the questions. It lives here rather than inside a step because the steps
+  // are what get replaced.
+  //
+  // **There was a second one for the reader's own character until 25
+  // September 2026.** `_Finished` was the last step drawing it, and that step
+  // is the teacher's now -- see `_Finished` for the argument.
   final GlobalKey _teacherKey = GlobalKey();
 
   // The beat of the introduction that arrived last, so the screen can scroll
@@ -353,7 +352,6 @@ class _SwapDrillViewState extends State<SwapDrillView> {
                         child: _Step(
                           state: state,
                           viewModel: _viewModel,
-                          characterKey: _characterKey,
                           teacherKey: _teacherKey,
                           beatKey: _beatKey,
                         ),
@@ -739,11 +737,12 @@ class _Step extends StatelessWidget {
   final SwapDrillState state;
   final SwapDrillViewModel viewModel;
 
-  // Handed down to the steps that show her, so the same character
-  // survives the step change between them. See `_Said.characterKey`.
-  final GlobalKey characterKey;
-
-  // The same, for the teacher on the seven graded steps.
+  // Handed down to every step that shows her, so the same teacher survives
+  // the step change between them. See `_Said.characterKey`.
+  //
+  // **There is no second key, since 25 September 2026.** There was one for
+  // the reader's own character while `_Finished` carried it; that step is
+  // the teacher's now and nothing in the drill draws the reader's sidekick.
   final GlobalKey teacherKey;
 
   // Goes on whichever beat of the introduction arrived last. See
@@ -753,7 +752,6 @@ class _Step extends StatelessWidget {
   const _Step({
     required this.state,
     required this.viewModel,
-    required this.characterKey,
     required this.teacherKey,
     required this.beatKey,
   });
@@ -802,9 +800,10 @@ class _Step extends StatelessWidget {
       // the reader meets one teacher rather than two characters swapping over
       // halfway. See `_Asked`.
       //
-      // The reader's own character is left with one step: `_Finished`, where
-      // the sentence in the bubble is the reader's own and she is the one
-      // being spoken to.
+      // **Since 25 September 2026 that is every step, `_Finished` included.**
+      // It was the last one carrying the reader's own character; `_Finished`
+      // holds why it stopped. The reader's own sidekick is on no step of this
+      // drill now.
       case SwapStepKind.situation:
         return _Situation(
           state: state,
@@ -822,11 +821,8 @@ class _Step extends StatelessWidget {
           teacherKey: teacherKey,
         );
 
-      case SwapStepKind.score:
-        return _Score(state: state, teacherKey: teacherKey);
-
       case SwapStepKind.finished:
-        return _Finished(state: state, characterKey: characterKey);
+        return _Finished(state: state, teacherKey: teacherKey);
 
       case SwapStepKind.beforeYouTry:
         return _BeforeYouTry(state: state, teacherKey: teacherKey);
@@ -1027,13 +1023,15 @@ class _Introduction extends StatelessWidget {
     // around it. These two checks come first because a label can sit above an
     // example or a paragraph, and the rules below would otherwise push the
     // label away from the thing it names.
-    // **12 under and 32 over, since 24 September 2026.** It was 8 and 24,
-    // which was the right pair for a 13pt eyebrow. The marker is 20/400 now
-    // -- a line of text rather than a label -- so it needs its own space under
-    // it, and the space that starts a new section has to stay clearly bigger
-    // than it. The nesting still holds: 12 inside the group, 20 between
+    // **`SkLayout.markerGap` under and 32 over.** The gap under went 8 -> 12
+    // -> 8 across 24 and 25 September 2026: 12 was the right distance for the
+    // 13pt uppercase eyebrow, and the wrong one for the 20/400 line of text
+    // that replaced it, which is the top of the paragraph rather than a tag
+    // floating over it. The number is `SkLayout.markerGap` rather than a step
+    // named here because the closing step sets the same marker over the same
+    // kind of block. The nesting still holds: 8 inside the group, 20 between
     // paragraphs, 32 around the group.
-    if (above is SwapIntroBeat) return SkLayout.md;
+    if (above is SwapIntroBeat) return SkLayout.markerGap;
     if (below is SwapIntroBeat) return SkLayout.xxxl;
 
     // **Two examples in a row sit closer together than anything else on a
@@ -1055,9 +1053,23 @@ class _Introduction extends StatelessWidget {
     }
 
     // A lead-in and the list it introduces are one group. The chain is
-    // indented under the paragraph that ends "and then:", so pushing it away
-    // would break the one sentence that runs into it.
-    if (below is SwapIntroChain) return SkLayout.lg;
+    // indented under the line above it, so pushing it away would break the
+    // one sentence that runs into it.
+    //
+    // **`SkLayout.listGap`, and it is the same number the chain's own lines
+    // sit apart.** It went `lg` -> `sm` -> here across 25 September 2026. The
+    // first move was the one that mattered and the reason still stands: at 16
+    // "It sounds like blame." floated a clear step away from the three lines
+    // it introduces, so the lead-in read as a fourth paragraph rather than as
+    // the top of the list.
+    //
+    // **What changed is that the number is no longer written here.** The head
+    // of a list and the list's own items take one constant, so the two cannot
+    // drift -- which is what had already happened between this chain and the
+    // closing step's bulleted sections, one at 8 and one at 12 in the same
+    // lesson. That constant came down to 8 on 25 September 2026, when the
+    // chain was reported as too loose. See `SkLayout.listGap`.
+    if (below is SwapIntroChain) return SkLayout.listGap;
 
     // Anything with an edge round it -- an example tile, the three parts --
     // and anything after the chain.
@@ -1225,7 +1237,7 @@ SkTone _toneFor(String label) => label == SwapDrillScript.criticismLabel
 
 // The name of one beat of the page, over the group it belongs to.
 //
-// **`SkText.lessonBeat` -- 20/400, sentence case, in `ink`.** It was
+// **`SkText.lessonBeat` -- 20/500, sentence case, in `ink`.** It was
 // `sectionHeader` in the caption colour -- 13/600, uppercase, letter-spaced --
 // until 24 September 2026, and it was reported as not reading like a page of
 // a book. It was not one: that style is the iOS grouped-list header, app
@@ -1236,9 +1248,10 @@ SkTone _toneFor(String label) => label == SwapDrillScript.criticismLabel
 // **The old note said a label bigger than the body would be a second rank,
 // and that is exactly what this is now** -- deliberately. `/lesson-design`
 // rule 5 gives a page one *heading*, and the page still has one: the title, at
-// 24/600, the only bold thing on the screen. A 20/400 marker under it is a
+// 24/600, the only bold thing on the screen. An 18/500 marker under it is a
 // rank below the heading rather than a rival to it, which is the ladder a
-// printed page runs on.
+// printed page runs on: medium is the step between a paragraph and a
+// heading, and 600 stays the title's alone.
 //
 // **`context.exercise.ink`, not the caption colour.** The old style needed the
 // quiet colour because it was app furniture. This is part of the text, so it
@@ -1286,8 +1299,8 @@ class _Beat extends StatelessWidget {
 // top of a bubble that is two or three lines anyway.
 //
 // **What keeps it from reading as the first line of her speech**: it is 14/600
-// against the sentence's 18/600, and it is the only coloured text in the
-// bubble. If it ever does read as speech on a real screen, the next thing to
+// against the sentence's `lessonSpoken` 17/600, and it is the only coloured
+// text in the bubble. If it ever does read as speech on a real screen, the next thing to
 // try is `sectionHeader` uppercase -- the shape `_Beat` uses three blocks
 // above it -- and **not** putting it back outside.
 //
@@ -1490,10 +1503,7 @@ class _FaceExample extends StatelessWidget {
                 // coloured box.
                 Text(
                   '"$said"',
-                  style: SkText.cardTitle.copyWith(
-                    color: soft.body,
-                    height: 1.3,
-                  ),
+                  style: SkText.lessonSpoken.copyWith(color: soft.body),
                 ),
               ],
             ),
@@ -1506,7 +1516,7 @@ class _FaceExample extends StatelessWidget {
 
 // One paragraph of a reading page -- the introduction, or the closing step.
 //
-// **`SkText.lessonBody` -- 18/400 at 1.7 leading.** It was `caption` at 16
+// **`SkText.lessonBody` -- 16/400 at 1.5 leading.** It was `caption` at 16
 // until 21 September 2026, then `rowLabel` at 17 with the leading set here.
 // `caption` is the style for subtitles and metadata under a title; these are
 // paragraphs somebody reads, and a caption style on body text puts the page's
@@ -1536,11 +1546,22 @@ class _Paragraph extends StatelessWidget {
   // One phrase inside `text` to set in 600. See `SwapIntroText.emphasis`.
   final String? emphasis;
 
-  const _Paragraph(this.text, {this.quiet = false, this.emphasis});
+  // One point of a bulleted list rather than a paragraph. Same size, tighter
+  // leading -- see `SkText.lessonPoint` for why a list is set closer than
+  // prose.
+  final bool point;
+
+  const _Paragraph(
+    this.text, {
+    this.quiet = false,
+    this.point = false,
+    this.emphasis,
+  });
 
   @override
   Widget build(BuildContext context) {
-    final TextStyle style = SkText.lessonBody.copyWith(
+    final TextStyle style =
+        (point ? SkText.lessonPoint : SkText.lessonBody).copyWith(
       color: quiet ? context.exercise.caption : context.exercise.ink,
     );
 
@@ -1576,99 +1597,6 @@ class _Paragraph extends StatelessWidget {
   }
 }
 
-// A note on a reading page: worth knowing, with no verdict on it.
-//
-// **It is the `info` tone, drawn the way every status block in this app is
-// drawn** -- a wash of the tone at 12%, a hairline at 25%, an icon, a
-// heading, and the body in `ink`. The shape is `SkStatusBlock`'s on purpose,
-// so a note inside a lesson and a note anywhere else are the same object.
-//
-// **It is not `SkStatusBlock` itself, and it must not become one.** That
-// widget builds its colours from `SkStatusStyle.of`, which reads
-// `context.sk` -- the palette as well as the mode -- and an exercise page
-// ignores the palette. These come from `context.exercise.statusOf`, which
-// pairs the light tones with the light ground and the dark tones with the
-// dark one. Sharing the widget would strand a dark-mode blue on an off-white
-// page.
-//
-// **A wash and a hairline, never a filled block.** The forward pill is the
-// filled shape on this screen, and a filled box the reader might tap is a box
-// the reader will tap.
-class _Takeaway extends StatelessWidget {
-  final String heading;
-  final String text;
-
-  const _Takeaway({required this.heading, required this.text});
-
-  @override
-  Widget build(BuildContext context) {
-    final SkExerciseColors exercise = context.exercise;
-    final SkStatusStyle style = exercise.statusOf(SkTone.info);
-
-    // **The icon grows with the text, and stops growing before it takes the
-    // width.** A fixed 20pt mark beside 34pt type reads as a speck -- the
-    // fault `_Chain`'s dot was fixed for -- and one that doubled outright
-    // would leave the heading nowhere to go on an SE at 200%.
-    final double icon =
-        MediaQuery.textScalerOf(context).scale(20).clamp(20.0, 32.0).toDouble();
-
-    return Semantics(
-      container: true,
-      // The tone is said in words as well as in colour and in shape, because
-      // a screen reader is handed none of the three.
-      label: 'Note. $heading. $text',
-      excludeSemantics: true,
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.all(SkLayout.lg),
-        decoration: BoxDecoration(
-          color: style.fill,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: style.edge),
-        ),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            Icon(
-              SkStatusStyle.iconOf(SkTone.info),
-              size: icon,
-              color: style.text,
-            ),
-            const SizedBox(width: SkLayout.md),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: <Widget>[
-                  Text(
-                    heading,
-                    style: SkText.sheetHeading.copyWith(color: style.text),
-                  ),
-                  const SizedBox(height: SkLayout.xs),
-
-                  // **The body is the block's own darkest tint, not `ink`
-                  // and not the tone.** Changed 24 September 2026. It was
-                  // `ink`, guarding against a paragraph set in the tone
-                  // itself, which does read as shouting. `style.body` is the
-                  // same blue taken past that, to the contrast `ink` was
-                  // already carrying on this fill.
-                  Text(
-                    text,
-                    style: SkText.rowLabel.copyWith(
-                      color: style.body,
-                      height: 1.6,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
 // The shape of the sentence, on its own step, between picking a situation and
 // building it. Added 23 September 2026.
 //
@@ -1687,8 +1615,12 @@ class _Takeaway extends StatelessWidget {
 // and it says the same word the three builder steps say, because it is the
 // first of four screens about one sentence.
 //
-// **No bubble.** The half of the lesson that starts here belongs to the
-// reader, and a frame in her mouth would be her telling them how to say it.
+// **It is laid out like the builder pages, since 25 September 2026, at the
+// user's request.** The heading is across the top and the teacher holds up
+// the empty sentence -- "I feel ___ when ___. I'd like ___." -- which is the
+// same sentence the next three pages fill in. It replaced a paragraph and
+// three label tiles. The joining words already name the three parts and
+// their order, so the tiles said the same thing a second time.
 class _Shape extends StatelessWidget {
   final SwapDrillState state;
 
@@ -1702,99 +1634,27 @@ class _Shape extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
+        _Heading(SwapDrillScript.shapeTitle),
+        const SizedBox(height: SkLayout.lg),
         _Asked(
           characterKey: teacherKey,
           skin: _teacherSkin(),
           pose: state.pose,
           poseSerial: state.poseSerial,
-          child: _Heading(SwapDrillScript.shapeTitle),
-        ),
-        const SizedBox(height: SkLayout.lg),
-        _Paragraph(SwapDrillScript.shapeLead),
-
-        // The same gap the introduction put around anything with an edge on
-        // it. The three tiles are a group, and the line above is not in it.
-        const SizedBox(height: SkLayout.xxl),
-        const _Parts(),
-      ],
-    );
-  }
-}
-
-// The three parts of the sentence, in the order they are said.
-//
-// **The labels are the builder's own**, read straight off `slots`, so the page
-// that teaches the shape cannot promise something the steps do not ask for.
-//
-// **The one-line helper under each label came back on 24 September 2026, and
-// the ban that had been sitting here is why this needs writing down.** It was
-// removed on 21 September, on two arguments: three labels with three
-// explanations is six things to read on a page whose job is to show a shape,
-// and an instruction is only useful at the moment it is followed -- read
-// here it is a rule to remember for three screens' time, read on the step
-// that asks for the part it is the answer to the question in front of you.
-//
-// The second argument was the load-bearing one, and it rested on a fact that
-// stopped being true: **there is no step that asks for one part any more.**
-// The three builder steps became one word-bank screen, where three helpers
-// over a bank of tiles is three instructions competing on a screen that is
-// asking for taps. So the helper has nowhere else to be read, and this page
-// is the screen immediately before the doing -- which is the closest to "the
-// moment it is followed" that is left.
-//
-// The first argument is paid rather than dodged: the three lines are
-// captions, a step under the labels, so the page is still a shape with notes
-// on it rather than six things at one size.
-//
-// **Do not move them again without saying which of the two arguments has
-// changed.** This is the `CLAUDE.md` scope rule -- a rule is about a
-// situation, and this one's situation was a builder with a step per part.
-class _Parts extends StatelessWidget {
-  const _Parts();
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: <Widget>[
-        for (int i = 0; i < SwapDrillScript.slots.length; i++) ...<Widget>[
-          Container(
-            width: double.infinity,
-
-            // Shorter than a tile holding a paragraph, because it holds one
-            // phrase. `lg` all round left the three looking half empty.
-            padding: const EdgeInsets.symmetric(
-              horizontal: SkLayout.lg,
-              vertical: SkLayout.md,
-            ),
-            decoration: BoxDecoration(
-              color: context.exercise.surface,
-              border: Border.all(color: context.exercise.line),
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                Text(
-                  SwapDrillScript.slots[i].label,
-                  style: SkText.sheetHeading.copyWith(
-                    color: context.exercise.ink,
-                  ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              Text(
+                SwapDrillScript.shapeLead,
+                style: SkText.lessonSpoken.copyWith(
+                  color: context.exercise.ink,
                 ),
-                const SizedBox(height: SkLayout.xs),
-                Text(
-                  SwapDrillScript.slots[i].helper,
-                  style: SkText.caption.copyWith(
-                    color: context.exercise.caption,
-                    height: 1.4,
-                  ),
-                ),
-              ],
-            ),
+              ),
+              const SizedBox(height: SkLayout.md),
+              _SentenceSoFar(state),
+            ],
           ),
-          if (i != SwapDrillScript.slots.length - 1)
-            const SizedBox(height: SkLayout.sm),
-        ],
+        ),
       ],
     );
   }
@@ -1834,7 +1694,9 @@ class _Chain extends StatelessWidget {
         children: <Widget>[
           for (int i = 0; i < items.length; i++) ...<Widget>[
             _line(context, items[i], dot: dot, step: i, still: still),
-            if (i != items.length - 1) const SizedBox(height: SkLayout.sm),
+            // The same number the lead-in above the chain sits at. See
+            // `SkLayout.listGap`.
+            if (i != items.length - 1) const SizedBox(height: SkLayout.listGap),
           ],
         ],
       ),
@@ -1863,8 +1725,13 @@ class _Chain extends StatelessWidget {
         // words that matter.
         ExcludeSemantics(
           child: Padding(
+            // Half a point above the middle of the first line box, so the
+            // dot reads as level with the x-height rather than with the
+            // whole line. **Tuned to `SkText.lessonPoint`'s leading** -- it
+            // was 9 while the line ran at 1.5, and it moves whenever that
+            // style's height does.
             padding: EdgeInsets.only(
-              top: MediaQuery.textScalerOf(context).scale(9),
+              top: MediaQuery.textScalerOf(context).scale(8),
               right: SkLayout.md,
             ),
             child: Container(
@@ -1880,15 +1747,16 @@ class _Chain extends StatelessWidget {
         Expanded(
           child: Text(
             item,
-            // **`caption` 16, one step under the body.** It went to 17 for
-            // the afternoon `lessonBody` was 18, to keep that one step, and
-            // came back down with it. Two steps under the body would make a
-            // nested list read as a footnote rather than as the point of the
-            // page. The leading stays tighter than the body's: these are
-            // three one-line consequences, not paragraphs.
-            style: SkText.caption.copyWith(
+            // **`lessonPoint`: the body's size at the list's own leading.**
+            // It was `caption` with a 1.5 override written here, which is
+            // prose leading -- and these are three one-line consequences, not
+            // paragraphs, so that air landed between the lines rather than
+            // inside them. The size stays level with the body: the rule it
+            // runs on bans the chain reading as a *footnote*, and equal size
+            // is not that -- the dots and the indent are what say it is a
+            // list.
+            style: SkText.lessonPoint.copyWith(
               color: context.exercise.ink,
-              height: 1.5,
             ),
           ),
         ),
@@ -1913,13 +1781,14 @@ class _Chain extends StatelessWidget {
 // label is `_ExampleLabel` over the bubble. See `SwapIntroExample` for why a
 // page with a speaker on it should not print its speech in a box.
 //
-// The one thing that changed with it: the sentence is `cardTitle` in `ink`
-// rather than `SkText.quote` in `caption`, which is the style she speaks the
-// six sorting sentences in. That was always the rule -- `SkText.quote`'s own
-// note says 400 is for a quote in a tile and 600 is for a bubble, "where the
-// bubble already says who is talking". The quote marks came off for the same
-// reason. `ink` on a tone fill is a wider gap than the `caption` it replaces,
-// so nothing that passed before fails now.
+// The one thing that changed with it: the sentence is `SkText.lessonSpoken`
+// in `ink` rather than `SkText.quote` in `caption`. That was always the rule
+// -- `quote`'s own note says 400 is for a quote in a tile and 600 is for a
+// bubble, "where the bubble already says who is talking", and `lessonSpoken`
+// is that second half, named on 25 September 2026 after it spent a while
+// borrowing `cardTitle`. The quote marks came off for the same reason. `ink`
+// on a tone fill is a wider gap than the `caption` it replaces, so nothing
+// that passed before fails now.
 
 // Her, standing at the left edge of a step with something beside her.
 //
@@ -2245,10 +2114,7 @@ class _Said extends StatelessWidget {
       skin: skin,
       child: Text(
         quoted ? '“$said”' : said,
-        style: SkText.cardTitle.copyWith(
-          color: context.exercise.ink,
-          height: 1.3,
-        ),
+        style: SkText.lessonSpoken.copyWith(color: context.exercise.ink),
       ),
     );
   }
@@ -2437,9 +2303,10 @@ class _Heading extends StatelessWidget {
 // A heading over one section of the closing step, under that step's own
 // heading.
 //
-// **`SkText.lessonBeat` -- the same 20/400 the introduction's beat markers
+// **`SkText.lessonBeat` -- the same 20/500 the introduction's beat markers
 // take.** It was `cardTitle` 18/600, which was a real step over a 17pt body
-// and is no step at all over `lessonBody`'s 18. Rather than make it bolder,
+// and was no step at all over `lessonBody` the afternoon that style was 18.
+// Rather than make it bolder,
 // it takes the marker style the rest of the lesson now uses: a section marker
 // should look the same wherever in the lesson it appears, and the page keeps
 // one bold thing on it -- its own title, at 24/600.
@@ -2505,7 +2372,9 @@ class _Points extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
         for (int i = 0; i < points.length; i++) ...<Widget>[
-          if (i != 0) const SizedBox(height: SkLayout.md),
+          // The same number the heading above the list sits at. See
+          // `SkLayout.listGap`.
+          if (i != 0) const SizedBox(height: SkLayout.listGap),
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
@@ -2514,13 +2383,19 @@ class _Points extends StatelessWidget {
                   '\u2022',
                   style: SkText.rowLabel.copyWith(
                     color: context.exercise.caption,
-                    height: 1.6,
+                    // **Tuned to the point's own line box, not chosen.** The
+                    // dot has to sit on the first line's x-height, so its
+                    // line box runs a little taller than the words' -- it was
+                    // 1.6 against a 1.5 paragraph and came down with the list
+                    // to `SkText.lessonPoint`'s 1.35. Moving that style means
+                    // moving this.
+                    height: 1.45,
                   ),
                 ),
               ),
               const SizedBox(width: _indent),
               Expanded(
-                child: _Paragraph(points[i], emphasis: emphasis),
+                child: _Paragraph(points[i], point: true, emphasis: emphasis),
               ),
             ],
           ),
@@ -2551,7 +2426,7 @@ class _Points extends StatelessWidget {
 //
 // **No green or red wash on the page.** The verdict is one heading and one
 // mark; a whole page tinted by the outcome is a verdict on the reader rather
-// than on a sentence, which is the same rule the score step is built on.
+// than on a sentence.
 class _Explanation extends StatelessWidget {
   final SwapDrillState state;
   final GlobalKey teacherKey;
@@ -2628,8 +2503,7 @@ class _Explanation extends StatelessWidget {
 // inside the feedback sheet, which split one job across two characters: the
 // friend read the sentence out and a stranger marked it. It is one character
 // now, and she is the one whose job this is. The reader's own sidekick is
-// off the graded steps altogether -- she is back for the score, the builder
-// and the closing, which are the parts about the reader.
+// off the graded steps altogether.
 //
 // **The question is the first thing on the step, above her.** It was under
 // the bubble, which asked the reader to take in a sentence before being told
@@ -2694,7 +2568,16 @@ class _Sentence extends StatelessWidget {
         for (final SwapKind kind in SwapKind.values) ...<Widget>[
           SkOptionCard(
             label: _labelFor(kind),
-            state: _stateFor(kind: kind, answer: card.kind, given: given),
+            state: _stateFor(
+              kind: kind,
+              answer: card.kind,
+              given: given,
+              picked: state.pendingKind,
+            ),
+            // **Still tappable while the pick is unchecked**, so a finger
+            // that landed on the wrong card can move. It stops taking taps
+            // the moment Check marks it, which is the old rule in its new
+            // place.
             onPressed:
                 given == null ? () => viewModel.answer(index, kind) : null,
           ),
@@ -2726,8 +2609,15 @@ class _Sentence extends StatelessWidget {
     required SwapKind kind,
     required SwapKind answer,
     required SwapKind? given,
+    required SwapKind? picked,
   }) {
-    if (given == null) return SkOptionState.plain;
+    // **Before Check, the picked card is neutral and the other is plain.**
+    // Nothing on the step may say how it went until the reader asks --
+    // `SkOptionState.picked` holds the argument.
+    if (given == null) {
+      return kind == picked ? SkOptionState.picked : SkOptionState.plain;
+    }
+
     if (kind == answer) return SkOptionState.right;
     if (kind == given) return SkOptionState.wrong;
 
@@ -2781,7 +2671,12 @@ class _FixOne extends StatelessWidget {
         for (int i = 0; i < fixes.length; i++) ...<Widget>[
           SkOptionCard(
             label: fixes[i].said,
-            state: _stateFor(index: i, pick: pick, fixes: fixes),
+            state: _stateFor(
+              index: i,
+              pick: pick,
+              picked: state.pendingFix,
+              fixes: fixes,
+            ),
             onPressed: pick == null ? () => viewModel.fix(i) : null,
           ),
           if (i != fixes.length - 1) const SizedBox(height: SkLayout.md),
@@ -2796,9 +2691,14 @@ class _FixOne extends StatelessWidget {
   static SkOptionState _stateFor({
     required int index,
     required int? pick,
+    required int? picked,
     required List<SwapFix> fixes,
   }) {
-    if (pick == null) return SkOptionState.plain;
+    // The same two stages as a sorting step. See `_Sentence._stateFor`.
+    if (pick == null) {
+      return index == picked ? SkOptionState.picked : SkOptionState.plain;
+    }
+
     if (fixes[index].isRight) return SkOptionState.right;
     if (index == pick) return SkOptionState.wrong;
 
@@ -2813,10 +2713,35 @@ class _FixOne extends StatelessWidget {
 // would put the question in her mouth. Standing there does not. See `_Beside`
 // for why she stopped disappearing at this step.
 //
-// **It is a pick from three, and there is no field for a fourth.** See the
-// note on `_Builder`: the three parts that follow are only ever the chosen
-// situation's own lines, so a situation the app has no lines for is a
-// situation it cannot run the rest of the lesson on.
+// **It is a pick from a short list, and there is no field for one of your
+// own.** See the note on `_Builder`: the three parts that follow are only
+// ever the chosen situation's own lines, so a situation the app has no lines
+// for is a situation it cannot run the rest of the lesson on.
+//
+// **They are topic cards, not option cards, since 25 September 2026.** They
+// wore the sorting drill's own card until then, and the shape was telling
+// the reader the wrong thing: a full-width card with a sentence in it is the
+// shape of an answer in this lesson, so a step where nothing can be wrong
+// read as a seventh question. A topic card is a door -- a name in card-title
+// type, centred in a tile, and a pick that stays changeable. `SkTopicCard`
+// holds the whole comparison.
+//
+// **They sit two abreast, and that needed a fourth topic.** Asked for on 25
+// September 2026. Three tiles in a two-wide grid leave a hole in the corner,
+// and a hole reads as a card that failed to load. The fourth is "I'm asked
+// to do too much" -- the one common assertiveness situation the other three
+// did not cover, and the only one of the four set at work.
+//
+// **A grid is what a pick from a short list looks like; a stack is what a
+// list of answers looks like.** Side by side the four are compared at a
+// glance, which is the whole job of this step. It is also the second signal,
+// after the centred title, that these are not the six sorting cards.
+//
+// **At 200% text the grid is put away and the tiles stack.** Half the gutter
+// width is about 133 points of room for words, and at that text size a title
+// breaks into six or seven lines in it. A column is the honest answer;
+// shrinking the words is not. Same rule, and the same helper, as the feeling
+// dial's own fallback.
 class _Situation extends StatelessWidget {
   final SwapDrillState state;
   final SwapDrillViewModel viewModel;
@@ -2834,6 +2759,12 @@ class _Situation extends StatelessWidget {
   Widget build(BuildContext context) {
     final List<SwapSituation> situations = SwapDrillScript.situations;
 
+    Widget cardAt(int i) => SkTopicCard(
+          title: situations[i].title,
+          chosen: state.situationPick == i,
+          onPressed: () => viewModel.chooseSituation(i),
+        );
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
@@ -2845,16 +2776,40 @@ class _Situation extends StatelessWidget {
           child: _Heading(SwapDrillScript.situationQuestion),
         ),
         const SizedBox(height: SkLayout.xl),
-        for (int i = 0; i < situations.length; i++) ...<Widget>[
-          SkOptionCard(
-            label: situations[i].title,
-            state: state.situationPick == i
-                ? SkOptionState.chosen
-                : SkOptionState.plain,
-            onPressed: () => viewModel.chooseSituation(i),
-          ),
-          if (i != situations.length - 1) const SizedBox(height: SkLayout.md),
-        ],
+        if (SkLayout.isLargeText(context))
+          // The stack the grid becomes when the reader has turned the text
+          // up. See the note on the class.
+          for (int i = 0; i < situations.length; i++) ...<Widget>[
+            cardAt(i),
+            if (i != situations.length - 1) const SizedBox(height: SkLayout.md),
+          ]
+        else
+          // Two abreast, in rows of two. **`IntrinsicHeight` is what makes
+          // the two tiles in a row the same height**, so a one-line title
+          // beside a two-line one does not leave a short card sitting in a
+          // tall gap. Four tiles is well inside what that costs.
+          for (int row = 0; row * 2 < situations.length; row++) ...<Widget>[
+            IntrinsicHeight(
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: <Widget>[
+                  Expanded(child: cardAt(row * 2)),
+                  const SizedBox(width: SkLayout.md),
+                  // An odd list leaves the last slot empty rather than
+                  // stretching one tile across the row: a double-width card
+                  // is a different shape, and a different shape in a grid of
+                  // equals reads as the important one.
+                  Expanded(
+                    child: row * 2 + 1 < situations.length
+                        ? cardAt(row * 2 + 1)
+                        : const SizedBox.shrink(),
+                  ),
+                ],
+              ),
+            ),
+            if ((row + 1) * 2 < situations.length)
+              const SizedBox(height: SkLayout.md),
+          ],
       ],
     );
   }
@@ -2872,38 +2827,37 @@ class _Situation extends StatelessWidget {
 // with no lines to offer at all, so the reader who most needed the examples
 // got a blank page.
 //
-// The reader still ends up with a sentence about their own week: the three
+// The reader still ends up with a sentence about their own week: the four
 // situations are ordinary ones, and the finish screen is their pick read back
 // to them.
-// The reader's own sentence, built on one screen out of a bank of tiles.
+// One part of the reader's own sentence, on a page of its own.
 //
-// **It was three steps until 24 September 2026 -- one part, one helper, two
-// cards each.** It is now one screen: the whole sentence stands at the top
-// with a placeholder in every part it is still missing, and every line the
-// chosen situation offers is a tile underneath. Tapping a tile drops it into
-// its own part of the sentence. `SwapDrillScript.slots` holds why one screen
-// rather than three.
+// **Three pages, one per part, since 25 September 2026, from user feedback.**
+// It was one screen from 24 September: the whole sentence at the top and all
+// seven lines in a bank under it. Readers found that hard to finish -- seven
+// tiles in three unlabelled runs is a lot to sort out, and it was not clear
+// which tile went where or when the screen was done.
 //
-// **The tiles are a word bank, and the one thing it borrows from Duolingo is
-// the shape.** Duolingo's bank marks the answer, and nothing on this screen
-// can be wrong: every line belongs to exactly one part, the app puts it
-// there, and the reader is never asked which blank it goes in. What the shape
-// buys is that the sentence is visible while it is being made, which is the
-// whole teaching -- three parts, in that order, reading down as one line.
+// **`/lesson-design` rule 3 argued for one screen, and it is paid rather than
+// dropped.** Its point was that the three parts only mean something read
+// down as one sentence. So the whole sentence is still in her bubble on every
+// page, filling in as the reader goes: the part being asked for is a blank,
+// the parts already chosen are there in words, and the ones still to come are
+// blanks too. The shape stays on screen; only the choosing is split up.
 //
-// **The sentence is a picture, not a control.** Nothing in it takes a tap.
-// An inline blank inside a run of text cannot be 48 points tall without
-// wrecking the line it sits on, and the tile that filled it is already a full
-// control eight points below -- so tapping a used tile is the way back out,
-// and it is the only way. `SwapDrillScript.builderLead` says so out loud,
-// because a reader who thinks a tap is final stops tapping.
+// **Nothing here can be wrong, and nothing here is typed.** Every part is a
+// tap on one of the chosen situation's own lines. There was a "write your
+// own" field until 21 September 2026, and it came out because the app cannot
+// tell whether typed words are any good, on a screen where every other
+// question is marked.
 //
-// **A used tile stays where it is, dimmed, with its words still on it.**
-// Duolingo empties the tile and leaves a grey hole. That is the better
-// picture of "it moved" and the worse screen here: it takes the words away
-// from somebody who may want to compare the two offers, and a bank that
-// changes shape under a finger is the one thing this app's motion rules will
-// not have. Nothing reflows; the tile goes quiet.
+// **The sentence is a picture, not a control.** Tapping a tile puts it in,
+// tapping another swaps it, and tapping the chosen one takes it back out.
+// With only this part's lines on the page, there is nothing to explain about
+// where a tile goes, so the old "tap it again" line went with the bank.
+//
+// **A chosen tile stays where it is, dimmed, with its words still on it.**
+// Nothing reflows under the finger.
 class _Builder extends StatelessWidget {
   final SwapDrillState state;
   final SwapDrillViewModel viewModel;
@@ -2919,40 +2873,95 @@ class _Builder extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final List<SwapChip> chips = state.situation?.chips ?? const <SwapChip>[];
+    final SwapSlot slot = SwapDrillScript.slots[state.step.index];
+    final List<SwapChip> chips = (state.situation?.chips ?? const <SwapChip>[])
+        .where((SwapChip c) => c.part == slot.part)
+        .toList();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
-        // **She is the reason she is worth having on this step.** This is the
-        // only stretch of the lesson about the reader's own week, and she has
-        // just spent seven sentences talking. Somebody in the room while the
-        // reader answers back is what the finish screen already does, one
-        // step early.
+        // **The shape step's heading, on all four pages, since 25 September
+        // 2026.** The part's own name moved down to sit over its lines, so
+        // the four pages read as one page filling in.
+        _Heading(SwapDrillScript.shapeTitle),
+        const SizedBox(height: SkLayout.lg),
+
+        // **The sentence is an exhibit, not her words.** She holds up the
+        // frame the way she holds up a specimen sentence on a sorting step.
+        // No quote marks: it is not finished being said yet.
         _Asked(
           characterKey: teacherKey,
           skin: _teacherSkin(),
           pose: state.pose,
           poseSerial: state.poseSerial,
-          child: _Heading(SwapDrillScript.builderTitle),
+          child: _SentenceSoFar(state),
         ),
 
-        const SizedBox(height: SkLayout.xl),
-        _Frame(state),
-
         // A bigger gap than anything inside either group, so the sentence and
-        // the bank read as two things rather than one long block.
+        // the lines read as two things rather than one long block.
         const SizedBox(height: SkLayout.xxl),
-        _Ask(SwapDrillScript.builderLead),
-
-        const SizedBox(height: SkLayout.md),
-        _Bank(state: state, viewModel: viewModel, chips: chips),
+        _PartLines(
+          slot: slot,
+          child: _Bank(state: state, viewModel: viewModel, chips: chips),
+        ),
       ],
     );
   }
 }
 
-// The sentence so far, in a box of its own.
+// One part's name, its helper when it has one, and its lines.
+//
+// **It slides up as the page arrives, and nothing else on the page moves.**
+// Picking a line moves on to the next part by itself (see
+// `SwapDrillViewModel.choose`), and this is what makes that visible: the
+// heading and the teacher stay where they are, the sentence in her bubble
+// fills in, and the next set of lines comes up from below. Added 25 September
+// 2026, at the user's request, in place of pressing Continue.
+//
+// The guide says crossfade rather than slide between steps, because a
+// direction is wrong half the time when the reader can go both ways. The
+// user asked for the lines to come up the page, so it slides, and it is short
+// -- 240ms over 24 points. It plays once as the page arrives and never loops.
+//
+// **Reduce Motion turns it off.** The lines are simply there.
+class _PartLines extends StatelessWidget {
+  final SwapSlot slot;
+  final Widget child;
+
+  const _PartLines({required this.slot, required this.child});
+
+  @override
+  Widget build(BuildContext context) {
+    final String? helper = slot.helper;
+
+    final Widget lines = Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: <Widget>[
+        _SectionHeading(slot.title),
+        if (helper != null) ...<Widget>[
+          const SizedBox(height: SkLayout.xs),
+          _Ask(helper),
+        ],
+        const SizedBox(height: SkLayout.md),
+        child,
+      ],
+    );
+
+    if (MediaQuery.disableAnimationsOf(context)) return lines;
+
+    return lines
+        .animate()
+        .fadeIn(duration: 240.ms, curve: Curves.easeOut)
+        .moveY(
+            begin: SkLayout.xxl,
+            end: 0,
+            duration: 240.ms,
+            curve: Curves.easeOut);
+  }
+}
+
+// The sentence so far, for the bubble on the builder step.
 //
 // **It is on the screen this time, and the note that took it off is why it
 // can be.** A half-built sentence was removed from the old builder steps on
@@ -2962,46 +2971,41 @@ class _Builder extends StatelessWidget {
 // the bank under it is the only thing to answer. A picture of where the
 // tapping is going is exactly what the old screen had no room for.
 //
-// **`tile`, not `surface`.** The bank underneath is made of cards on
-// `surface`, and the sentence is not one of them. A different ground says
-// this is the thing being filled in rather than another thing to press.
-class _Frame extends StatelessWidget {
+// **It was a tinted box of its own until 25 September 2026, and now it is in
+// her bubble.** The box was a third ground on a page that already had a page
+// and a bank, and it left the sentence as the only thing in the lesson with
+// nobody holding it up. In the bubble the step reads exactly like a sorting
+// step, which is what it is: a sentence, and something to do about it.
+//
+// **`lessonSpoken`, the style every other bubble in the lesson takes.** It
+// was `cardTitle` at 18 in the old box -- a card heading, sized against
+// Home's rows. Inside a bubble the sentence has to be in step with her six,
+// or the reader's own sentence is set larger than the ones they were taught
+// on.
+//
+// **A screen reader hears the blanks as words.** The rules are drawn rather
+// than written, so the whole line is relabelled: "I feel how you feel when
+// what happened." is what VoiceOver reads, which is what `SwapSlot.blank`
+// has always held.
+class _SentenceSoFar extends StatelessWidget {
   final SwapDrillState state;
 
-  const _Frame(this.state);
+  const _SentenceSoFar(this.state);
 
   @override
   Widget build(BuildContext context) {
     final SkExerciseColors ex = context.exercise;
 
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(SkLayout.lg),
-      decoration: BoxDecoration(
-        color: ex.tile,
-        borderRadius: BorderRadius.circular(SkLayout.lg),
-      ),
-      child: Text.rich(
-        _sentenceSpan(
-          state,
-          // One step over body, because this is the thing on the screen the
-          // reader is making. It is the only thing at this size here.
-          SkText.cardTitle.copyWith(height: 1.5),
-          ex,
-        ),
+    return Semantics(
+      label: _sentenceLabel(state),
+      child: ExcludeSemantics(
+        child: Text.rich(_sentenceSpan(state, SkText.lessonSpoken, ex)),
       ),
     );
   }
 }
 
-// The bank of lines, in three runs -- one per part, in the sentence's own
-// order.
-//
-// **Three runs rather than one, and they are not labelled.** A single wrap
-// would put a feeling and a request on the same row, and the reader would
-// have to read every tile to find the one they wanted. The three runs line up
-// with the three blanks above them, so the grouping is already named by the
-// sentence.
+// The lines offered for the part on this page.
 //
 // **Nothing here is shuffled.** `SwapSituation.chips` holds why.
 class _Bank extends StatelessWidget {
@@ -3017,29 +3021,16 @@ class _Bank extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+    return Wrap(
+      spacing: SkLayout.sm,
+      runSpacing: SkLayout.sm,
       children: <Widget>[
-        for (int i = 0; i < SwapPart.values.length; i++) ...<Widget>[
-          Wrap(
-            spacing: SkLayout.sm,
-            runSpacing: SkLayout.sm,
-            children: <Widget>[
-              for (final SwapChip chip
-                  in chips.where((SwapChip c) => c.part == SwapPart.values[i]))
-                _Tile(
-                  label: chip.line,
-                  used: state.parts[chip.part] == chip.line,
-                  onPressed: () => viewModel.choose(chip.part, chip.line),
-                ),
-            ],
+        for (final SwapChip chip in chips)
+          _Tile(
+            label: chip.line,
+            used: state.parts[chip.part] == chip.line,
+            onPressed: () => viewModel.choose(chip.part, chip.line),
           ),
-
-          // The gap between two runs is a step bigger than the gap inside
-          // one, so a run reads as a group. Rule 3.
-          if (i != SwapPart.values.length - 1)
-            const SizedBox(height: SkLayout.lg),
-        ],
       ],
     );
   }
@@ -3120,20 +3111,75 @@ class _Tile extends StatelessWidget {
   }
 }
 
-// The three parts joined by the words that hold them together, with a
-// placeholder where a part has not been filled in.
+// The blank that stands where a part has not been filled in yet.
 //
-// **A placeholder is a word, not a gap.** "____" is a form; "how you feel"
-// in a lighter colour is the sentence saying what goes there. The
-// punctuation is the same either way, so the line never comes out with a
-// hole in it -- and because all three parts are required, the sentence on
-// the finish screen has no placeholders left in it at all.
+// **It is a rule, not a phrase, and that is a change of 25 September 2026.**
+// It used to be the slot's own `blank` -- "how you feel", "what happened",
+// "what you'd like" -- set in the caption colour. Three instructions inside
+// the one sentence the reader is trying to read meant the sentence had to be
+// read past before it could be read: on the opening frame there were
+// fourteen words on the screen and only six of them were the sentence.
 //
-// **Two callers: the builder's own frame and the finish screen.** The
-// placeholder branch is what the builder screen is mostly showing -- the
-// sentence opens with all three placeholders in it and loses one per tap --
-// and it is still what keeps the finish screen honest when it is reached by
-// going back.
+// **The joining words carry the teaching on their own.** "I feel ... when
+// ... I'd like ..." names all three parts and names the order, which is what
+// the shape step two screens earlier taught. The blank only has to say
+// *something goes here*, and a rule says that in no words at all.
+//
+// **It is as long as the words it replaced, capped at 14.** A blank the
+// length of the line that will fill it would run off a small phone -- "a
+// heads-up the night before" is 27 characters -- and a blank of one fixed
+// length makes the three parts look interchangeable when they are not. The
+// slot's own `blank` is still the measure, so shortening that copy shortens
+// the rule with it.
+//
+// It is drawn with non-breaking spaces so the rule never breaks across two
+// lines, and it is the caption colour: about 5.4:1 on `tile` in the light
+// set and 8.0:1 in the dark, well over the 3:1 WCAG 1.4.11 asks of a mark
+// that carries meaning.
+TextSpan _blankSpan(SwapPart which, SkExerciseColors ex) {
+  final String blank = SwapDrillScript.slots
+      .firstWhere((SwapSlot slot) => slot.part == which)
+      .blank;
+
+  return TextSpan(
+    text: '\u00A0' * (blank.length > 14 ? 14 : blank.length),
+    style: TextStyle(
+      decoration: TextDecoration.underline,
+      decorationColor: ex.caption,
+      decorationThickness: 1.5,
+    ),
+  );
+}
+
+// The same sentence as one plain string, for a screen reader.
+//
+// **The blanks go back to being words here.** A drawn rule is nothing at all
+// to VoiceOver, so the label is the version with `SwapSlot.blank` in it --
+// which is the whole reason that field is still in the script.
+String _sentenceLabel(SwapDrillState state) {
+  String part(SwapPart which) =>
+      state.parts[which] ??
+      SwapDrillScript.slots
+          .firstWhere((SwapSlot slot) => slot.part == which)
+          .blank;
+
+  return '${SwapDrillScript.joinOpen}${part(SwapPart.feel)}'
+      '${SwapDrillScript.joinWhen}${part(SwapPart.when)}'
+      '${SwapDrillScript.joinWant}${part(SwapPart.want)}'
+      '${SwapDrillScript.joinEnd}';
+}
+
+// The three parts joined by the words that hold them together, with a blank
+// where a part has not been filled in.
+//
+// **The punctuation is the same either way**, so the line never comes out
+// with a hole in it -- and because all three parts are required, the sentence
+// on the finish screen has no blanks left in it at all.
+//
+// **Two callers: the builder's bubble and the finish screen.** The blank
+// branch is what the builder screen is mostly showing -- the sentence opens
+// with all three blanks in it and loses one per tap -- and it is still what
+// keeps the finish screen honest when it is reached by going back.
 TextSpan _sentenceSpan(
   SwapDrillState state,
   TextStyle base,
@@ -3141,23 +3187,13 @@ TextSpan _sentenceSpan(
 ) {
   InlineSpan part(SwapPart which) {
     final String? value = state.parts[which];
-    if (value != null) {
-      return TextSpan(
-        text: value,
-        style: TextStyle(
-          color: ex.ink,
-          fontWeight: FontWeight.w600,
-        ),
-      );
-    }
+    if (value == null) return _blankSpan(which, ex);
 
     return TextSpan(
-      text: SwapDrillScript.slots
-          .firstWhere((SwapSlot slot) => slot.part == which)
-          .blank,
+      text: value,
       style: TextStyle(
-        color: ex.caption,
-        fontWeight: FontWeight.w400,
+        color: ex.ink,
+        fontWeight: FontWeight.w600,
       ),
     );
   }
@@ -3178,31 +3214,31 @@ TextSpan _sentenceSpan(
 
 // How to take it off the screen. The last step, added 21 September 2026.
 //
-// **She is on it, small and quiet, since 22 September 2026.** She was not,
-// and the note here said that was a rule rather than an omission: a character
-// with nothing to say is Rive work for nothing, the same rule that took her
-// off the tighten screen. That rule is about **building poses**, and her idle
-// is already in the file. See `_Beside` -- the last page of a lesson is the
-// last place she should vanish from.
+// **She is on it, and since 25 September 2026 she is on it the way she is on
+// every other page: full size, with one line in a bubble.** She was missing
+// altogether until 22 September 2026, then stood small and quiet beside the
+// title, then wore the title itself in her bubble. Each of those made the
+// last page of the lesson a shape the reader had not seen before.
 //
-// **Still no bubble.** This page is the app giving advice, and advice in her
-// mouth would be a friend telling somebody how to have a hard conversation.
+// **The title is a heading across the top and the bubble holds the note.**
+// That is introduction page one's own arrangement, which is the point: the
+// first page of a lesson and the last page of one are the same object.
 //
-// **It is built out of `_Heading` and `_Paragraph`, the introduction's own
-// two widgets.** The first page of a lesson and the last page of one are the
-// same object -- a title and some prose -- and giving the closing a look of
-// its own would say the drill had changed screens at the end.
+// **The three sections are still not in her mouth**, and the old note here
+// banning a bubble outright is why that matters. This page is the app giving
+// advice about a conversation it cannot see, and advice in her mouth would be
+// a friend telling somebody how to have a hard conversation. Her one line is
+// not advice -- it is the fact the three sections rest on, and it is the
+// lesson she has been teaching for six minutes.
 //
-// **No tick, no green, no red.** Those two mean "you were right" and "you
-// were not" everywhere else in this drill, and nothing on this page is a
-// verdict on anything the reader did.
+// **The bubble replaced a tinted `info` block**, which was the one toned
+// thing on the page. Nothing here is toned now, which is the safer end of the
+// same argument: no tick, no green, no red, because those mean "you were
+// right" and "you were not" everywhere else in this drill and nothing on this
+// page is a verdict on anything the reader did.
 //
-// **The one toned thing on it is the note, and it is `info`.** That is the
-// tone that carries no verdict -- `sk_status.dart` -- so it cannot be read as
-// marking the reader. It sits directly under the title, before the three
-// sections, because it is why the three are worth doing. It is not last: the
-// last line of the lesson is "It does get easier", and a note after it would
-// take the closing off the end.
+// **She is not last.** The last line of the lesson is "It does get easier",
+// and a note after it would take the closing off the end.
 class _BeforeYouTry extends StatelessWidget {
   final SwapDrillState state;
 
@@ -3216,31 +3252,45 @@ class _BeforeYouTry extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
-        _Asked(
+        // **The title runs the full width and she stands under it**, which is
+        // introduction page one's own shape -- a heading across the top, then
+        // her with a line in a bubble. It was the heading itself in the
+        // bubble until 25 September 2026, so the last page of the lesson was
+        // the one page built differently from the rest of it.
+        _Heading(SwapDrillScript.closingTitle),
+
+        // **Smaller than the gap under her**, which is the builder's own
+        // arrangement and the nesting rule: the title and the line she says
+        // are one group, and the three sections are the next. Everywhere else
+        // on the page the same rule does the work -- `sm` inside a section,
+        // `xxl` between them, so three sections read as three and not as six
+        // paragraphs.
+        const SizedBox(height: SkLayout.lg),
+
+        // Why any of this is worth saying out loud, in her own mouth. See
+        // `SwapDrillScript.closingSaid` for what it replaced and why the
+        // three sections below stay out of it.
+        _Said(
+          SwapDrillScript.closingSaid,
           characterKey: teacherKey,
           skin: _teacherSkin(),
           pose: state.pose,
           poseSerial: state.poseSerial,
-          child: _Heading(SwapDrillScript.closingTitle),
         ),
 
-        // **The gap under the page title is the largest on the page**, because
-        // it is the only one separating two headings. Everywhere else the
-        // nesting rule does the work: `sm` inside a section, `xxl` between
-        // them, so three sections read as three and not as six paragraphs.
-        const SizedBox(height: SkLayout.xxl),
-
-        // Why any of this is worth saying out loud. Moved here from
-        // introduction page one on 23 September 2026 -- `SwapNote` holds why.
-        _Takeaway(
-          heading: SwapDrillScript.closingNote.heading,
-          text: SwapDrillScript.closingNote.text,
-        ),
+        // The gap the introduction puts around anything she is drawn in.
         const SizedBox(height: SkLayout.xxl),
 
         for (int i = 0; i < SwapDrillScript.closing.length; i++) ...<Widget>[
           _SectionHeading(SwapDrillScript.closing[i].heading),
-          const SizedBox(height: SkLayout.md),
+          // **The list's own gap, not the marker's.** It was
+          // `SkLayout.markerGap` -- 8 -- against 12 between the points, so the
+          // heading sat closer to point one than the points sat to each other
+          // and read as glued to it. The two numbers are the same 8 again now
+          // that the list has tightened, and the constant is still what keeps
+          // them equal: raising one raises the other. See `SkLayout.listGap`,
+          // which `_Points` reads as well so the two cannot drift.
+          const SizedBox(height: SkLayout.listGap),
           _Points(
             SwapDrillScript.closing[i].points,
             emphasis: SwapDrillScript.closing[i].emphasis,
@@ -3253,120 +3303,26 @@ class _BeforeYouTry extends StatelessWidget {
   }
 }
 
-// How the seven graded answers went. Added 22 September 2026, and it is the
-// only screen in the app that shows the reader a number about themselves.
-//
-// **It exists to give the bob and the wince somewhere to live.** Both poses
-// were already drawn in `assets/rive/character.riv` and had nothing firing
-// them: the per-answer version was deleted on 21 September 2026 for reacting
-// to the reader seven times a sitting. Once, at the end of the quiz half, on a
-// step the reader pressed "See how that went" to reach, is the version that
-// survives that objection. `answer_pose.dart` has the full argument.
-//
-// **The page itself is neutral -- no tint, no tick, no tone.** Everywhere else
-// in this drill green means "you were right" and red means "you were not", and
-// those are verdicts on **a sentence**. A whole page washed green or red is a
-// verdict on the person reading it, on a lesson about criticism. Her face says
-// how it went, the number says what it was, and neither of them shouts.
-//
-// **The number is `ink`, for the same reason.** "3 of 7" set in red is the app
-// telling somebody they failed. The digits are the page's own body colour and
-// the news is carried by her shoulders.
-//
-// **She is the whole figure, not a head.** Both poses are shoulders-first --
-// the bob is a lift, the wince is shoulders up and the head pulled back -- so
-// a head crop would throw away the half of each pose that does the work.
-class _Score extends StatelessWidget {
-  final SwapDrillState state;
-
-  // **The teacher's `SkCharacter`, since 24 September 2026, and it used to be
-  // the reader's own.** The poses are the same two; who wears them is the
-  // change. `Teacher.explainRight` and `Teacher.explainWrong` already fire
-  // this pair after every graded answer, so the score step is the last mark
-  // in a run of seven rather than the reader's own companion suddenly
-  // appearing to grade them.
-  //
-  // `answer_pose.dart` argues the opposite and is worth reading before this
-  // is moved again: its case is that a reaction to the reader belongs to the
-  // reader's own character. The case for the swap is role -- marking is the
-  // teacher's job, and she is the one who asked all seven questions.
-  //
-  // Handed down so she walks on to this step rather than being decoded again
-  // for it. See `_Finished`.
-  final GlobalKey teacherKey;
-
-  const _Score({required this.state, required this.teacherKey});
-
-  // The same window as [_Finished], and for the same arithmetic: the artboard
-  // is 500 x 500 and she runs from x 78 to x 430, so `Fit.cover` at this
-  // height crops the empty margin off either side rather than padding it.
-  static const double _width = 150;
-  static const double _height = 200;
-
-  @override
-  Widget build(BuildContext context) {
-    final SkExerciseColors ex = context.exercise;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: <Widget>[
-        _Heading(SwapDrillScript.scoreTitle),
-        const SizedBox(height: SkLayout.xl),
-
-        Align(
-          child: SizedBox(
-            width: _width,
-            height: _height,
-            child: IgnorePointer(
-              // `cover` draws her wider than the window, so without this she
-              // paints across the whole step.
-              child: ClipRect(
-                child: SkCharacter(
-                  key: teacherKey,
-                  height: _height,
-                  fit: rive.Fit.cover,
-                  skin: _teacherSkin(),
-                  pose: state.pose,
-                  poseSerial: state.poseSerial,
-                ),
-              ),
-            ),
-          ),
-        ),
-        const SizedBox(height: SkLayout.lg),
-
-        // **`largeTitle`, and it is the only thing on the page at that size.**
-        // Rule 5: hierarchy is size first. The number is what the step is
-        // about, so it outranks its own heading rather than sitting level with
-        // the paragraph under it.
-        //
-        // **Read out as one phrase.** "5 of 7" is already a sentence a screen
-        // reader says correctly, so there is no label to add -- but it is not
-        // a heading, and marking it as one would put a number in the skim
-        // list between two real headings.
-        Text(
-          SwapDrillScript.scoreLine(state.rightCount),
-          textAlign: TextAlign.center,
-          style: SkText.largeTitle.copyWith(color: ex.ink),
-        ),
-        const SizedBox(height: SkLayout.md),
-
-        _Paragraph(
-          state.didWell
-              ? SwapDrillScript.scoreWell
-              : SwapDrillScript.scoreNotYet,
-        ),
-      ],
-    );
-  }
-}
-
 // The sentence the reader built, and the invitation to say it.
 //
+// **She is the teacher, and that is a change of 25 September 2026.** This was
+// the last step in the drill still carrying the reader's own character, kept
+// on the argument that the sentence in the bubble is the reader's and the
+// figure above it is the one being spoken to. Two things closed that:
+// `_Builder`, the step directly before this one, already holds the same
+// half-built sentence in the teacher's own bubble -- so the sentence changed
+// character between two screens showing the same words -- and the drill has
+// been one teacher end to end since 24 September 2026, which is the whole
+// reason the reader's half was handed to her.
+//
+// **The reader's own character is now on none of the drill's steps.** That is
+// the point rather than a side effect: the reader meets one teacher for the
+// length of one lesson, and their own sidekick is waiting on Home.
+//
 // **The bubble is under her rather than beside her, and she is centred.**
-// Six steps of her talking beside the words, then one of the reader talking
-// under her. It is the only layout change in the drill and it is doing the
-// work a line of explanation would otherwise have to do.
+// Six steps of her talking beside the words, then one of her holding up what
+// the reader made. It is the only layout change in the drill and it is doing
+// the work a line of explanation would otherwise have to do.
 //
 // **She was right-aligned until 21 September 2026, and the flip was the
 // signal.** Centred, the change of shape still reads -- she is the only thing
@@ -3380,13 +3336,13 @@ class _Score extends StatelessWidget {
 class _Finished extends StatelessWidget {
   final SwapDrillState state;
 
-  // The same `SkCharacter` as every other step, so she walks on to this screen
-  // rather than being decoded again for it. It built one of its own until 22
-  // September 2026 -- a second instance of the file, which is the girl-then-cat
-  // flash the sorting steps had already been fixed for.
-  final GlobalKey characterKey;
+  // The teacher's own `SkCharacter`, handed down so she walks on to this
+  // screen rather than being decoded again for it. It built one of its own
+  // until 22 September 2026 -- a second instance of the file, which is the
+  // girl-then-cat flash the sorting steps had already been fixed for.
+  final GlobalKey teacherKey;
 
-  const _Finished({required this.state, required this.characterKey});
+  const _Finished({required this.state, required this.teacherKey});
 
   // **All of her, not just her head.** This is the one screen in the drill
   // where she is looking at something the reader made, and a head floating on
@@ -3430,10 +3386,10 @@ class _Finished extends StatelessWidget {
               // paints across the whole step.
               child: ClipRect(
                 child: SkCharacter(
-                  key: characterKey,
+                  key: teacherKey,
                   height: _height,
                   fit: rive.Fit.cover,
-                  skin: getIt<ThemeService>().character.value.skin,
+                  skin: _teacherSkin(),
                 ),
               ),
             ),

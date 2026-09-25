@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 
 import 'package:sidekick/app/core/app_constants.dart';
@@ -7,6 +9,9 @@ import 'package:sidekick/app/core/notification_service.dart';
 import 'package:sidekick/app/core/theme_service.dart';
 import 'package:sidekick/app/core/view_model.dart';
 import 'package:sidekick/data/models/noticing_prompts.dart';
+import 'package:sidekick/features/dashboard/models/day_phase.dart';
+import 'package:sidekick/features/dashboard/models/sun_times.dart';
+import 'package:sidekick/features/dashboard/services/home_place_service.dart';
 
 // Home.
 //
@@ -34,11 +39,25 @@ class DashboardViewModel extends ViewModel<DashboardViewModelState> {
   final DeviceSettingsService _deviceSettingsService;
   final ThemeService _themeService;
   final NotificationService? _notificationService;
+  final HomePlaceService? _placeService;
+
+  // Where the phone roughly is, once read, and today's sun there. Worked out
+  // again only when the date changes, so the minute's check stays one
+  // comparison.
+  (double, double)? _place;
+  SunTimes? _sun;
+  DateTime? _sunDay;
 
   // Injected so a test can stand on a fixed day. Every "today" in this class
-  // comes through here, and there is only one: which day the prompt belongs
-  // to.
+  // comes through here: which day the prompt belongs to, the date and quote
+  // at the top of the page, and the time of day the sky shows.
   final DateTime Function() _now;
+
+  // How often the clock is looked at while Home is open. A minute is the
+  // largest gap that still turns the sky over close to the hour, and the
+  // check is one comparison. A timer that is late because the phone slept
+  // fires when it wakes, which is exactly when the sky needs checking.
+  static const Duration clockCheck = Duration(minutes: 1);
 
   // The notification service is optional so a test, and the preview harness,
   // can build this viewmodel without a plugin behind it. Home works the same
@@ -49,11 +68,13 @@ class DashboardViewModel extends ViewModel<DashboardViewModelState> {
     required DeviceSettingsService deviceSettingsService,
     required ThemeService themeService,
     NotificationService? notificationService,
+    HomePlaceService? placeService,
     DateTime Function()? now,
   })  : _loggerService = loggerService,
         _deviceSettingsService = deviceSettingsService,
         _themeService = themeService,
         _notificationService = notificationService,
+        _placeService = placeService,
         _now = now ?? DateTime.now,
         super(DashboardViewModelState());
 
@@ -82,6 +103,14 @@ class DashboardViewModel extends ViewModel<DashboardViewModelState> {
   // else: it means the page has nothing to show yet, never that an action is
   // running.
   Future<void> init() async {
+    // The sky starts on fixed hours and moves to the real sun as soon as the
+    // place is read -- a platform call, and not one worth holding the first
+    // frame for.
+    refreshClock();
+    final Timer clock = Timer.periodic(clockCheck, (_) => refreshClock());
+    addTeardown(clock.cancel);
+    _readPlace();
+
     // Watched, not read once: the Me tab can change the character while this
     // page is alive, and she should already be the new one when Home is next
     // looked at, not after a restart.
@@ -161,6 +190,39 @@ class DashboardViewModel extends ViewModel<DashboardViewModelState> {
     }
   }
 
+  // Moves the sky and the date on when the clock has crossed into a new part
+  // of the day, or a new day. Emits only then, so a minute that changed
+  // nothing rebuilds nothing.
+  @visibleForTesting
+  void refreshClock() {
+    final DateTime now = _now();
+    final DateTime today = DateTime(now.year, now.month, now.day);
+    final DayPhase phase = DayPhase.of(now, sun: _sunFor(today));
+
+    if (phase == current.phase && today == current.today) return;
+
+    emit(current.copyWith(phase: phase, today: today));
+  }
+
+  // Not awaited by init(): the prompt and a tapped check-in should not wait
+  // on it. `emit` is guarded, so a reply after Home has gone is a no-op.
+  Future<void> _readPlace() async {
+    final HomePlaceService? service = _placeService;
+    if (service == null) return;
+    _place = await service.coordinates();
+    refreshClock();
+  }
+
+  SunTimes? _sunFor(DateTime today) {
+    final (double, double)? place = _place;
+    if (place == null) return null;
+    if (_sunDay != today) {
+      _sun = SunTimes.of(today, place.$1, place.$2);
+      _sunDay = today;
+    }
+    return _sun;
+  }
+
   // `yyyy-mm-dd` in the phone's own zone. Not a timestamp: the only question
   // asked of it is whether this is still the day the reader was looking at.
   static String _dayStamp(DateTime day) => '${day.year}-'
@@ -197,6 +259,11 @@ class DashboardViewModelState {
   // default only stands for the frames before init() runs.
   final SidekickCharacter character;
 
+  // The part of the day the sky shows, and the date over the quote. Both
+  // come off the phone's clock and are checked once a minute.
+  final DayPhase phase;
+  final DateTime? today;
+
   final Map<String, String> errors;
   final Map<String, String> messages;
 
@@ -205,6 +272,8 @@ class DashboardViewModelState {
     this.prompt = '',
     this.line = '',
     this.character = SidekickCharacter.girl,
+    this.phase = DayPhase.day,
+    this.today,
     this.errors = const {},
     this.messages = const {},
   });
@@ -214,6 +283,8 @@ class DashboardViewModelState {
     String? prompt,
     String? line,
     SidekickCharacter? character,
+    DayPhase? phase,
+    DateTime? today,
     Map<String, String>? errors,
     Map<String, String>? messages,
   }) {
@@ -222,6 +293,8 @@ class DashboardViewModelState {
       prompt: prompt ?? this.prompt,
       line: line ?? this.line,
       character: character ?? this.character,
+      phase: phase ?? this.phase,
+      today: today ?? this.today,
       errors: errors ?? this.errors,
       messages: messages ?? this.messages,
     );

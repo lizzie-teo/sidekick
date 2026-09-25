@@ -4,6 +4,8 @@ import 'package:sidekick/app/core/app_constants.dart';
 import 'package:sidekick/app/core/notification_service.dart';
 import 'package:sidekick/app/core/theme_service.dart';
 import 'package:sidekick/data/models/noticing_prompts.dart';
+import 'package:sidekick/features/dashboard/models/day_phase.dart';
+import 'package:sidekick/features/dashboard/services/home_place_service.dart';
 import 'package:sidekick/features/dashboard/viewmodels/dashboard_viewmodel.dart';
 
 import 'support/fakes.dart';
@@ -103,6 +105,79 @@ void main() {
     await viewModel.init();
 
     expect(viewModel.state.value.prompt, NoticingPrompts.all.first);
+  });
+
+  // The sky and the date come off the clock. Checked again every minute
+  // while Home is open, and an emit only when something actually moved.
+  group('the clock', () {
+    test('an open at 9:30 is morning, on that day', () async {
+      await viewModel.init();
+
+      expect(viewModel.state.value.phase, DayPhase.morning);
+      expect(viewModel.state.value.today, DateTime(2026, 9, 24));
+    });
+
+    test('the sky turns over when the clock crosses into evening', () async {
+      DateTime clock = DateTime(2026, 9, 24, 16, 59);
+      final DashboardViewModel vm = DashboardViewModel(
+        loggerService: SilentLoggerService(),
+        deviceSettingsService: settings,
+        themeService: themeService,
+        now: () => clock,
+      );
+      addTearDown(vm.dispose);
+      await vm.init();
+      expect(vm.state.value.phase, DayPhase.day);
+
+      clock = DateTime(2026, 9, 24, 17, 0);
+      vm.refreshClock();
+      expect(vm.state.value.phase, DayPhase.evening);
+    });
+
+    // Sydney at 7:26 pm on 25 September: the fixed hours called it evening,
+    // the real sun had set half an hour before.
+    test('with a place, the sky follows the real sun', () async {
+      final DashboardViewModel vm = DashboardViewModel(
+        loggerService: SilentLoggerService(),
+        deviceSettingsService: settings,
+        themeService: themeService,
+        placeService: _FixedPlace((-33.87, 151.22)),
+        now: () => DateTime.utc(2026, 9, 25, 9, 26).toLocal(),
+      );
+      addTearDown(vm.dispose);
+      await vm.init();
+      await Future<void>.delayed(Duration.zero);
+
+      expect(vm.state.value.phase, DayPhase.night);
+    });
+
+    test('a minute that changes nothing does not rebuild the page', () async {
+      await viewModel.init();
+      int notified = 0;
+      viewModel.state.addListener(() => notified++);
+
+      viewModel.refreshClock();
+
+      expect(notified, 0);
+    });
+
+    test('midnight moves the date on and keeps the night', () async {
+      DateTime clock = DateTime(2026, 9, 24, 23, 59);
+      final DashboardViewModel vm = DashboardViewModel(
+        loggerService: SilentLoggerService(),
+        deviceSettingsService: settings,
+        themeService: themeService,
+        now: () => clock,
+      );
+      addTearDown(vm.dispose);
+      await vm.init();
+
+      clock = DateTime(2026, 9, 25, 0, 0);
+      vm.refreshClock();
+
+      expect(vm.state.value.phase, DayPhase.night);
+      expect(vm.state.value.today, DateTime(2026, 9, 25));
+    });
   });
 
   // The Me tab can change the character while Home is alive; the sidekick
@@ -267,4 +342,14 @@ void main() {
 
     expect(viewModel.openExplanation.value, isNull);
   });
+}
+
+// A place service that answers at once, with no platform behind it.
+class _FixedPlace implements HomePlaceService {
+  final (double, double)? place;
+
+  _FixedPlace(this.place);
+
+  @override
+  Future<(double, double)?> coordinates() async => place;
 }

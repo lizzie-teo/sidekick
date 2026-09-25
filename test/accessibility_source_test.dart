@@ -143,6 +143,10 @@ void main() {
     'tighten_view.dart': 'the lavender orb. Argued in CLAUDE.md: a soothing '
         'colour that went coral in one palette would be six promises',
     'low_day_view.dart': 'the warm orb, same argument',
+    'home_sky.dart': "Home's dawn, dusk and moonlit tints. The time of day is "
+        'a fact about the world, not the palette -- a coral dawn in one theme '
+        'would not read as dawn. Mixed into the canvas, and measured in '
+        'home_sky_test.dart',
     'swap_drill_view.dart': 'a ShaderMask under BlendMode.dstIn -- white and '
         'transparent are alpha values, not paint',
     'theme_sheet_view.dart':
