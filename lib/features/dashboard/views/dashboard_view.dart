@@ -10,6 +10,7 @@ import 'package:sidekick/app/core/theme_service.dart';
 import 'package:sidekick/app/utilities/date_format_utils.dart';
 import 'package:sidekick/app/widgets/sk_character.dart';
 import 'package:sidekick/app/widgets/sk_colors.dart';
+import 'package:sidekick/app/widgets/sk_contrast.dart';
 import 'package:sidekick/app/widgets/sk_layout.dart';
 import 'package:sidekick/app/widgets/sk_main_tab_bar.dart';
 import 'package:sidekick/app/widgets/sk_pressable.dart';
@@ -69,6 +70,9 @@ class DashboardView extends StatefulWidget {
 
   // The heading over the row of tiles.
   static const String tilesHeading = 'Now for you';
+
+  // The tile that opens the feeling picker, beside the moth.
+  static const String howIFeel = 'How I feel';
 
   // The tile that opens Good things.
   static const String whatWentWell = 'What went well';
@@ -274,14 +278,35 @@ class _DashboardViewState extends State<DashboardView> {
                               // the wrong welcome for somebody calm who wanted
                               // to breathe. A calm breathing exercise belongs
                               // on the Meditate tab. Removed 25 September 2026.
+                              //
+                              // **The order is rarest door first**, set 26
+                              // September 2026. The row scrolls, and on a
+                              // phone the last tile is cut at the edge, so
+                              // the first tiles are the ones everybody sees.
+                              // A door that exists only here goes before one
+                              // the reader can reach another way:
+                              //
+                              // | Tile | Also reached by |
+                              // | --- | --- |
+                              // | How I feel | The moth, which is often in flight and hard to hit |
+                              // | Mindfulness | Nothing |
+                              // | Scribble | The picker's Wound up stop |
+                              // | What went well | Its own tab, and the picker's two good stops |
                               children: <Widget>[
+                                // The plain door to the feeling picker. The
+                                // moth is the charming one, but it flies
+                                // round her most of the time and says "How
+                                // are you?" only on its first two landings,
+                                // so somebody on a hard day may never find
+                                // it. Not "How are you feeling?": that is the
+                                // moth's spoken label, and two controls with
+                                // one name on one screen are one too many.
                                 _Tile(
-                                  icon: Icons.gesture_rounded,
-                                  label: 'Scribble',
-                                  // Pushed, so both of the pad's doors come
-                                  // back here.
-                                  onPressed: () =>
-                                      context.push(Routes.scribble),
+                                  icon: Icons.favorite_rounded,
+                                  label: DashboardView.howIFeel,
+                                  // Pushed, like the moth, so "Just looking"
+                                  // comes straight back to Home.
+                                  onPressed: () => context.push(Routes.panic),
                                 ),
                                 // The day's one small thing, on a card. The
                                 // prompt is read at the tap, so the tile
@@ -295,6 +320,14 @@ class _DashboardViewState extends State<DashboardView> {
                                     if (prompt.isEmpty) return;
                                     PauseSheet.show(context, prompt);
                                   },
+                                ),
+                                _Tile(
+                                  icon: Icons.gesture_rounded,
+                                  label: 'Scribble',
+                                  // Pushed, so both of the pad's doors come
+                                  // back here.
+                                  onPressed: () =>
+                                      context.push(Routes.scribble),
                                 ),
                                 // The door the dashed invitation used to be.
                                 // Not "Good things": that is a tab, and two
@@ -363,7 +396,8 @@ class _DailyQuoteBlock extends StatelessWidget {
     // Blank until the clock has been read, which is before the first frame
     // in practice. Holding the space would be a gap with nothing to explain
     // it.
-    if (today == null) return const SizedBox.shrink();
+    final bool? dateShown = state.dateShown;
+    if (today == null || dateShown == null) return const SizedBox.shrink();
 
     final DailyQuote quote = DailyQuotes.forDay(today);
     final bool fromCheckIn = state.line.isNotEmpty;
@@ -382,28 +416,36 @@ class _DailyQuoteBlock extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
-        // One date, read as one: "25 September 2026", not "25" and then a
-        // shouted month.
-        MergeSemantics(
-          child: Semantics(
-            label: DateFormatUtils.fullDate(today),
+        // "Sat 26 SEPT", read as one: "Saturday 26 September". The day and
+        // number large, the month small in capitals, on one line. A rich
+        // text rather than a Row, so at 200% text the month wraps under the
+        // number instead of running off the side.
+        //
+        // The reader can turn it off on the Me tab. The quote then moves up
+        // to the top, with nothing held open above it.
+        if (dateShown) ...<Widget>[
+          Semantics(
+            label: DateFormatUtils.spokenDay(today),
             child: ExcludeSemantics(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  Text('${today.day}',
-                      style: SkText.homeDate.copyWith(color: ink)),
-                  const SizedBox(height: SkLayout.sm),
-                  Text(
-                    DateFormatUtils.shortMonthLabel(today).toUpperCase(),
-                    style: SkText.homeMonth.copyWith(color: ink),
-                  ),
-                ],
+              child: Text.rich(
+                TextSpan(
+                  children: <InlineSpan>[
+                    TextSpan(
+                      text: '${DateFormatUtils.shortWeekday(today)} '
+                          '${today.day} ',
+                      style: SkText.homeDate.copyWith(color: ink),
+                    ),
+                    TextSpan(
+                      text: DateFormatUtils.shortMonth(today).toUpperCase(),
+                      style: SkText.homeMonth.copyWith(color: ink),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
-        ),
-        const SizedBox(height: SkLayout.lg),
+          const SizedBox(height: SkLayout.lg),
+        ],
         words,
         if (!fromCheckIn) ...<Widget>[
           const SizedBox(height: SkLayout.md),
@@ -476,7 +518,27 @@ class _Tiles extends StatelessWidget {
   }
 }
 
-// One door on the hill: an icon over a label, on a card lifted off the page.
+// One door on the hill: an icon over a label, on a soft raised tile.
+//
+// **Raised, not frosted, and that was a choice.** Frosted glass was the
+// first idea (26 September 2026). Glass is only glass when something shows
+// through it, and these tiles sit on the flat canvas panel -- a blur of a
+// flat colour is the same flat colour, so glass here would read as a plain
+// white card. The panel is there for contrast (the old Tap me fill measured
+// 1.02:1 on a violet hill), so moving the tiles onto the sky to give the
+// glass something to blur was not on the table either.
+//
+// So the depth is said the way a pebble says it:
+//
+// | Layer | Job | Derived from |
+// | --- | --- | --- |
+// | The fill | A top-lit face, lighter at the top | `surface` into `canvas` |
+// | The lip | A lit top edge, so the tile has a rim | White, or the ink faintly in the dark |
+// | Two shadows | A tight one under the edge, a wide soft one under the body | The ink |
+// | The badge | A round soft well the icon sits in | `actionSoft` |
+//
+// Nothing is picked per palette. The shadow is read off the ink, so in a
+// dark palette it turns into a soft pale halo, the way `SkGlassButton` does.
 class _Tile extends StatelessWidget {
   final IconData icon;
   final String label;
@@ -486,6 +548,9 @@ class _Tile extends StatelessWidget {
   // small tile. A longer label widens its own tile rather than wrapping.
   static const double width = 132;
   static const double minHeight = 104;
+
+  // The round well behind the icon.
+  static const double badgeSize = 44;
 
   const _Tile({
     required this.icon,
@@ -497,33 +562,101 @@ class _Tile extends StatelessWidget {
   Widget build(BuildContext context) {
     final SkColors sk = context.sk;
     final BorderRadius radius = BorderRadius.circular(SkLayout.xl);
+    // The lip is always light, because light comes from above in both
+    // modes: white on a pale tile, a faint breath of the ink on a dark one.
+    final bool darkInk = sk.ink.computeLuminance() < 0.5;
+    final Color lip = darkInk
+        ? SkContrast.backdropFor(sk.ink).withValues(alpha: 0.8)
+        : sk.ink.withValues(alpha: 0.14);
+    final Color faceBottom = Color.lerp(sk.surface, sk.canvas, 0.6)!;
+    // The icon owes 3:1 against its well, and `action` on `actionSoft` is
+    // not promised that in every palette.
+    final Color iconColour = SkContrast.readable(
+      sk.action,
+      sk.actionSoft,
+      minRatio: SkContrast.nonText,
+    );
 
-    return SkPressable(
-      onPressed: onPressed,
-      wash: sk.ink,
-      borderRadius: radius,
-      semanticLabel: label,
-      child: Container(
-        constraints: const BoxConstraints(minHeight: minHeight),
-        padding: const EdgeInsets.all(SkLayout.lg),
-        decoration: BoxDecoration(
-          color: sk.surface,
-          borderRadius: radius,
-          border: Border.all(color: sk.border),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            ExcludeSemantics(child: Icon(icon, size: 24, color: sk.action)),
-            const SizedBox(height: SkLayout.xl),
-            ExcludeSemantics(
-              child: Text(
-                label,
-                style: SkText.rowLabel.copyWith(color: sk.ink),
-              ),
+    // The shadow is painted outside the pressable, so the press wash lands
+    // on the face alone and the tile keeps its lift while held -- the same
+    // arrangement `SkGlassButton` uses.
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        borderRadius: radius,
+        boxShadow: <BoxShadow>[
+          BoxShadow(
+            color: sk.ink.withValues(alpha: 0.10),
+            offset: const Offset(0, 2),
+            blurRadius: 3,
+          ),
+          BoxShadow(
+            color: sk.ink.withValues(alpha: 0.10),
+            offset: const Offset(0, 10),
+            blurRadius: 24,
+            spreadRadius: -4,
+          ),
+        ],
+      ),
+      child: SkPressable(
+        onPressed: onPressed,
+        wash: sk.ink,
+        borderRadius: radius,
+        semanticLabel: label,
+        child: Container(
+          constraints: const BoxConstraints(minHeight: minHeight),
+          padding: const EdgeInsets.all(SkLayout.lg),
+          decoration: BoxDecoration(
+            borderRadius: radius,
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: <Color>[sk.surface, faceBottom],
             ),
-          ],
+            border: Border.all(color: sk.border.withValues(alpha: 0.7)),
+          ),
+          // The lit lip along the top. A rounded border cannot take a
+          // different colour per side, so the light is a sheen laid over
+          // the face and faded out before the icon.
+          foregroundDecoration: BoxDecoration(
+            borderRadius: radius,
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: <Color>[
+                lip,
+                lip.withValues(alpha: 0),
+              ],
+              stops: const <double>[0, 0.08],
+            ),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              ExcludeSemantics(
+                child: Container(
+                  width: badgeSize,
+                  height: badgeSize,
+                  decoration: BoxDecoration(
+                    color: sk.actionSoft,
+                    shape: BoxShape.circle,
+                  ),
+                  alignment: Alignment.center,
+                  child: Icon(icon, size: 24, color: iconColour),
+                ),
+              ),
+              const SizedBox(height: SkLayout.lg),
+              ExcludeSemantics(
+                child: Text(
+                  label,
+                  style: SkText.rowLabel.copyWith(
+                    color: sk.ink,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

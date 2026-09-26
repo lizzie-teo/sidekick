@@ -16,11 +16,12 @@ void main() {
         final HomeSkyColors c = HomeSkyColors.of(phase, brightness);
 
         final Color words = FeelingsMoth.captionColour(c);
-        final Color? scrim = FeelingsMoth.wordsScrim(c);
+        final Color scrim = FeelingsMoth.wordsScrim(c);
+        expect(scrim.a, greaterThanOrEqualTo(FeelingsMoth.bubbleFloor - 0.001),
+            reason: 'every sky gets a bubble');
         for (final Color bare in FeelingsMoth.groundsBehindWords(c)) {
-          final Color ground = scrim == null
-              ? bare
-              : SkContrast.over(scrim.withValues(alpha: 1), bare, scrim.a);
+          final Color ground =
+              SkContrast.over(scrim.withValues(alpha: 1), bare, scrim.a);
           expect(SkContrast.ratio(words, ground),
               greaterThanOrEqualTo(SkContrast.bodyText),
               reason: 'words on $ground');

@@ -117,7 +117,7 @@ void main() {
 
     // **The third is `homeMothWords`, from 25 September 2026, at the user's
     // request.** It keeps the signal rather than spending it: the face means
-    // *somebody is speaking*, and "How are you?" is the moth on Home asking.
+    // *somebody is speaking*, and "Hi" is the moth on Home speaking.
     // A heading or a button in it would still be decoration.
     expect(
       uses,

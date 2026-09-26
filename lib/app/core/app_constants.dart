@@ -282,6 +282,15 @@ abstract class SettingsKeys {
   static const String colouringPalette = 'colouring_palette';
   static const String colouringRailSide = 'colouring_rail_side';
 
+  // Whether Home shows the date over the quote. On unless the reader turned
+  // it off on the Me tab. Some people find a date is a quiet anchor to the
+  // present; others find it reads like a calendar, and a calendar is where
+  // the deadlines live. Asked for by the user, 26 September 2026.
+  //
+  // On the phone rather than the server: it is about how the screen looks,
+  // and losing it on a new phone costs nothing.
+  static const String homeDateShown = 'home_date_shown';
+
   static const String appearanceMode = 'appearance_mode';
   static const String themePalette = 'theme_palette';
   static const String sidekickCharacter = 'sidekick_character';

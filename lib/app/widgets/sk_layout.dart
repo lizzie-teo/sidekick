@@ -101,6 +101,17 @@ abstract final class SkLayout {
   // 120 characters wide.
   static const double readingWidth = 560;
 
+  // The widest a guided script line may be: the breathing screen, the
+  // tighten screen and the Low face. Asked for by the user, 26 September
+  // 2026, with the lines set in Home's quote style.
+  //
+  // Much narrower than readingWidth on purpose. These are one sentence at a
+  // time, read by somebody whose attention is already stretched, and a short
+  // line is taken in at a glance rather than read across. 280 at 20pt is
+  // about 28 characters a line -- the same cap the feeling picker's question
+  // was measured to on an iPhone SE.
+  static const double scriptLineWidth = 280;
+
   // The smallest a tap target may be, on any screen, at any text size.
   //
   // 44 is Apple's floor and 48 is Android's. The app uses 48: a control that

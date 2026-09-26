@@ -45,6 +45,18 @@ void main() {
     expect(viewModel.state.value.email, 'someone@example.com');
   });
 
+  test('the Home date switch starts on and remembers being turned off',
+      () async {
+    viewModel.init();
+    await pumpEventQueue();
+    expect(viewModel.state.value.homeDateShown, isTrue);
+
+    await viewModel.setHomeDateShown(false);
+
+    expect(viewModel.state.value.homeDateShown, isFalse);
+    expect(settings.values[SettingsKeys.homeDateShown], isFalse);
+  });
+
   test('the account going away flips the page, however it goes', () {
     viewModel.init();
 

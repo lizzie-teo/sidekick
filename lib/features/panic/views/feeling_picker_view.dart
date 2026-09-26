@@ -1,11 +1,18 @@
+import 'dart:async';
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:sidekick/app/core/app_constants.dart';
+import 'package:sidekick/app/core/home_place_service.dart';
 import 'package:sidekick/app/core/service_locator.dart';
 import 'package:sidekick/app/core/theme_service.dart';
+import 'package:sidekick/app/models/day_phase.dart';
+import 'package:sidekick/app/models/moon_phase.dart';
+import 'package:sidekick/app/models/sun_times.dart';
+import 'package:sidekick/app/widgets/home_sky.dart';
 import 'package:sidekick/app/widgets/sk_colors.dart';
-import 'package:sidekick/app/widgets/sk_contrast.dart';
 import 'package:sidekick/app/widgets/sk_layout.dart';
 import 'package:sidekick/app/widgets/sk_mood_face.dart';
 import 'package:sidekick/app/widgets/sk_primary_button.dart';
@@ -105,6 +112,13 @@ class FeelingPickerView extends StatefulWidget {
   // lines and pushes her head down the screen.
   static const double titleWidth = 280;
 
+  // How far down the screen her answer may reach, as a share of its
+  // height. `onSky` reads at 3:1 or better on every sky down to here -- the
+  // floor for 24-point words like the answer -- and the words below it would
+  // not: dark midday goes pale towards the horizon. Measured 26 September
+  // 2026; `test/feeling_picker_sky_test.dart` holds both halves.
+  static const double answerLine = 0.65;
+
   // The live artboard the dial drives. `SkMoodFace` falls back to the still
   // faces when the file does not carry it.
   static const String moodArtboard = 'mood';
@@ -125,6 +139,39 @@ class _FeelingPickerViewState extends State<FeelingPickerView> {
   // reader over time; this is a frame counter that dies with the screen and is
   // never shown, compared or saved.
   int _celebrations = 0;
+
+  // The time of day the sky shows. The clock's guess on the first frame,
+  // corrected to the real sun once the time zone is read -- the same shape as
+  // `BreathingViewModel.readSky`, and read once: a sky that changed while
+  // somebody was answering would be the page moving on its own.
+  DayPhase _phase = DayPhase.of(DateTime.now());
+  MoonPhase _moon = MoonPhase.at(DateTime.now());
+
+  @override
+  void initState() {
+    super.initState();
+    unawaited(_readPlace());
+  }
+
+  Future<void> _readPlace() async {
+    if (!getIt.isRegistered<HomePlaceService>()) return;
+    final (double, double)? place =
+        await getIt<HomePlaceService>().coordinates();
+    if (place == null || !mounted) return;
+    final DateTime now = DateTime.now();
+    final DateTime today = DateTime(now.year, now.month, now.day);
+    final DayPhase phase =
+        DayPhase.of(now, sun: SunTimes.of(today, place.$1, place.$2));
+    final MoonPhase moon = MoonPhase.at(now, latitude: place.$1);
+    if (phase == _phase && moon.southern == _moon.southern) return;
+    setState(() {
+      _phase = phase;
+      _moon = moon;
+    });
+  }
+
+  HomeSkyColors get _sky =>
+      HomeSkyColors.of(_phase, Theme.of(context).brightness);
 
   void _pick(Feeling feeling) {
     if (feeling == _picked) return;
@@ -212,80 +259,322 @@ class _FeelingPickerViewState extends State<FeelingPickerView> {
     // and a bigger arc would simply not fit an iPhone SE. Changing shape is
     // the honest answer; shrinking the words is not.
     final bool asCards = SkLayout.isLargeText(context);
+    final HomeSkyColors sky = _sky;
+    final double gutter = SkLayout.gutter(context);
 
+    // **The page stands in Home's scene**, from 26 September 2026, at the
+    // user's request: the moth opens this page from Home, and a cream page
+    // after a violet evening was jarring. Home's whole sky, Home's hill band
+    // with nobody in it, and the hill's ground running on to the foot of the
+    // screen -- the same scene the breathing screen and the two Play orbs
+    // stand in.
+    //
+    // **The question, her, the dial and her answer sit in the middle, in the
+    // sky**, from 26 September 2026, at the user's request. The hills and
+    // their ground are at the foot, with the two buttons on the ground. For
+    // one afternoon the group sat on the hill's foot with the answer on the
+    // ground; that put the thing the page is about in the lower half of the
+    // screen, under a stripe of empty sky.
+    //
+    // **Every word is on plain sky or plain ground, never on the hills.** A
+    // word laid over the hills would need dark letters on one sky and light
+    // on the next. The words on the sky are `onSky`, and the group is kept
+    // above [FeelingPickerView.answerLine] so they read -- see there. The
+    // words on the ground take `wordsOn` the deepened ground, the way the
+    // breathing screen's buttons do.
+    //
+    // **The page does not answer in colour, and three attempts say why.** A
+    // wash across the middle dulled her, ribbons at the screen edges were
+    // wallpaper, and a pool of light in the floor of the bowl -- `MoodPool`,
+    // built and removed on 25 September 2026 -- was reported as not working
+    // either. Her face is the answer. The sky is the time of day, the same
+    // whatever is picked.
     return Scaffold(
-      // **The page does not answer in colour, and three attempts say why.**
-      // A wash across the middle dulled her, ribbons at the screen edges were
-      // wallpaper, and a pool of light in the floor of the bowl -- `MoodPool`,
-      // built and removed on 25 September 2026 -- was reported as not working
-      // either. Her face is the answer. Anything else on this page is a second
-      // thing saying the same thing, more faintly.
-      body: SafeArea(
-        child: Padding(
-          padding: EdgeInsets.fromLTRB(
-            SkLayout.gutter(context),
-            SkLayout.lg,
-            SkLayout.gutter(context),
-            0,
-          ),
-          child: ValueListenableBuilder<SidekickCharacter>(
+      backgroundColor: sky.top,
+      body: Stack(
+        fit: StackFit.expand,
+        children: <Widget>[
+          HomeSky(phase: _phase),
+          ValueListenableBuilder<SidekickCharacter>(
             valueListenable: getIt<ThemeService>().character,
             builder: (BuildContext context, SidekickCharacter character,
                 Widget? child) {
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: <Widget>[
-                  // **At 200% the question stays pinned to the top, and
-                  // on the dial it does not.** The cards are a list, and a
-                  // list that begins halfway down the screen shows fewer of
-                  // its own options before the fold. The dial carries the
-                  // question inside its own centred group instead -- see
-                  // [_dial].
-                  if (asCards) _title(context),
-                  Expanded(
-                    // **The confetti falls over the dial and over nothing
-                    // else.** It is not on the 200% card list, and that is not
-                    // an oversight: a card pick and its navigation happen in
-                    // the same tap, so a burst there would play over a page
-                    // already leaving -- a flash rather than a celebration.
-                    // The dial's pick and its button are two separate taps,
-                    // which is the gap the fall lives in.
-                    child: asCards
-                        ? _cards(context, character)
-                        : FeelingConfetti(
-                            trigger: _celebrations,
-                            child: _dial(context, character),
-                          ),
-                  ),
-                  if (!asCards) ...<Widget>[
-                    const SizedBox(height: SkLayout.md),
-                    _forward(context),
-                  ],
-                  // **The way out keeps its own room, and the room is
-                  // borrowed rather than added.** The ghost button used to sit
-                  // flush under the forward pill: both are 48-high tap targets
-                  // with nothing between them, so a thumb aiming low at "Say
-                  // hello" could leave the screen instead.
-                  //
-                  // **The 8 points come out of the gap above the pill, which
-                  // went from `xl` to `md`, so the page is exactly as tall as
-                  // it was.** That is not tidiness. On a wide, short surface
-                  // -- an iPad in landscape, and the 800x600 the widget tests
-                  // run on -- the dial is sized from the width, so this column
-                  // already fills the screen with nothing to spare and the
-                  // view scrolls. Four points of extra height there push the
-                  // dial's own stop buttons under the fold.
-                  //
-                  // The nesting still reads: `md` from the dial group to the
-                  // actions, `sm` between the two actions, so the pair at the
-                  // foot of the page is one group and the dial is another.
-                  const SizedBox(height: SkLayout.sm),
-                  SkTextButton(label: 'Just looking', onPressed: _leave),
+                  Expanded(child: _upper(context, character, asCards, gutter)),
+                  _lower(context, sky, asCards, gutter),
                 ],
               );
             },
           ),
+        ],
+      ),
+    );
+  }
+
+  // The sky half: the question, her, the dial and her answer in the middle,
+  // and Home's hills standing on the ground at the foot.
+  Widget _upper(
+    BuildContext context,
+    SidekickCharacter character,
+    bool asCards,
+    double gutter,
+  ) {
+    final double top = MediaQuery.paddingOf(context).top + SkLayout.lg;
+
+    return LayoutBuilder(
+      builder: (BuildContext context, BoxConstraints box) {
+        final _Layout? layout =
+            asCards ? null : _layout(context, box, top: top, gutter: gutter);
+
+        // **The hills shrink to fit under the group, the way a range looks
+        // further away.** The band is drawn at its own size and scaled down
+        // evenly, so the sun stays round and her hill keeps its crest. It was
+        // clipped for an afternoon instead, which cut the hill off in a hard
+        // flat line above the buttons.
+        final double room = layout == null
+            ? HomeStage.bandHeight
+            : box.maxHeight - layout.bottom - SkLayout.md;
+        final double scale =
+            (room / HomeStage.bandHeight).clamp(_smallestHills, 1.0);
+
+        return Stack(
+          fit: StackFit.expand,
+          children: <Widget>[
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 0,
+              height: HomeStage.bandHeight * scale,
+              child: FittedBox(
+                fit: BoxFit.fill,
+                alignment: Alignment.bottomCenter,
+                child: SizedBox(
+                  width: box.maxWidth / scale,
+                  height: HomeStage.bandHeight,
+                  // The same band Home draws, with nobody in it: she is in
+                  // the dial. No mist either -- it is there to stand her out
+                  // on Home, and with nobody in front of it it is a dark
+                  // patch. Home's moth is not here: it opened this page.
+                  child: HomeStage(
+                    phase: _phase,
+                    moon: _moon,
+                    height: HomeStage.bandHeight,
+                    mist: false,
+                    child: const SizedBox.shrink(),
+                  ),
+                ),
+              ),
+            ),
+            Padding(
+              padding: EdgeInsets.fromLTRB(
+                gutter,
+                layout?.top ?? top,
+                gutter,
+                0,
+              ),
+              child: layout == null
+                  // **At 200% the question stays pinned to the top.** The
+                  // cards are a list, and a list that begins halfway down the
+                  // screen shows fewer of its own options before the fold.
+                  //
+                  // **The confetti is not on the card list, and that is not
+                  // an oversight:** a card pick and its navigation happen in
+                  // the same tap, so a burst there would play over a page
+                  // already leaving.
+                  ? Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: <Widget>[
+                        _title(context),
+                        Expanded(child: _cards(context, character)),
+                      ],
+                    )
+                  : FeelingConfetti(
+                      trigger: _celebrations,
+                      child: _dial(context, character, layout.dialWidth),
+                    ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  // The smallest the hills shrink to. Below this they are a strip, and the
+  // group scrolls over them instead.
+  static const double _smallestHills = 0.5;
+
+  // Where the group goes and how wide the dial is, worked out once from the
+  // room this half has and the reader's text size.
+  //
+  // **The group is centred in this half**, from 26 September 2026, at the
+  // user's request -- between the top of the screen and the buttons.
+  //
+  // **The dial is as wide as the screen allows, and narrower only to keep her
+  // answer above [FeelingPickerView.answerLine], or to keep the whole group
+  // on the screen** -- the second is a wide, short surface: an iPad in
+  // landscape, and the 800x600 the widget tests run on. It never goes below
+  // [_smallestDial]; past that the group scrolls.
+  _Layout _layout(
+    BuildContext context,
+    BoxConstraints box, {
+    required double top,
+    required double gutter,
+  }) {
+    final double around = _titleHeight(context) +
+        SkLayout.xxl +
+        SkLayout.md +
+        _answerHeight(context);
+    final double limit =
+        MediaQuery.sizeOf(context).height * FeelingPickerView.answerLine;
+
+    // Centred, the group ends at (half + group) / 2, so keeping that above
+    // the line caps the group at 2 * line - half.
+    final double tallest = math.min(
+      2 * limit - box.maxHeight,
+      box.maxHeight - top - SkLayout.md,
+    );
+    final double widest =
+        math.min(FeelingDial.maxWidth, box.maxWidth - gutter * 2);
+    final double width = math
+        .min(widest, FeelingDial.widthForHeight(tallest - around))
+        .clamp(math.min(_smallestDial, widest), widest);
+
+    final double group = around + FeelingDial.heightFor(width);
+    // Off centre, upwards, only when the smallest dial still reaches past the
+    // line -- a small phone. The answer's contrast beats the centring.
+    final double start =
+        math.max(top, math.min((box.maxHeight - group) / 2, limit - group));
+
+    return (dialWidth: width, top: start, bottom: start + group);
+  }
+
+  // The ground half: the rest of Home's hill, running to the foot of the
+  // screen, with the two buttons on it.
+  //
+  // **The ground deepens only as far as the words on it need**, the same
+  // `groundUnderButtons` the breathing screen uses: the light-mode morning
+  // and midday grounds are mid-tones that no word colour clears at the
+  // faintest weight. It starts as the band's own ground colour so there is
+  // no seam at the foot.
+  Widget _lower(
+    BuildContext context,
+    HomeSkyColors sky,
+    bool asCards,
+    double gutter,
+  ) {
+    final Color deep = HomeSkyColors.groundUnderButtons(sky.ground);
+
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: <Color>[sky.ground, deep],
+          stops: const <double>[0, groundFade],
         ),
+      ),
+      child: Padding(
+        // No top padding at 200%: there is no pill there then, and at that
+        // text size every point goes to the card list above.
+        padding: EdgeInsets.fromLTRB(
+          gutter,
+          asCards ? 0 : SkLayout.md,
+          gutter,
+          MediaQuery.paddingOf(context).bottom,
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: <Widget>[
+            if (!asCards) _forward(context),
+            // **The way out keeps its own room.** The ghost button used to
+            // sit flush under the forward pill: both are 48-high tap targets
+            // with nothing between them, so a thumb aiming low at "Say
+            // hello" could leave the screen instead. `sm` between the two
+            // keeps the pair one group.
+            const SizedBox(height: SkLayout.sm),
+            SkTextButton(
+              label: 'Just looking',
+              color: HomeSkyColors.wordsOn(deep),
+              onPressed: _leave,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // How far down the ground half the hill's own ground colour has turned
+  // into the deepened one: slowly, behind the pill, so the hill reads as
+  // carrying on towards the viewer and only "Just looking" needs the deep
+  // colour under it. It was 0.12 for an afternoon, and a change that fast
+  // read as a straight line across the screen.
+  static const double groundFade = 0.45;
+
+  // The question, her, the dial and her answer -- one group at the top of
+  // the sky.
+  //
+  // **The gaps are nested, not equal.** Question to dial is `xxl`; dial to
+  // its answer is `md`. The control and the word it is currently saying are
+  // one thing, and the question is the thing asking about them.
+  //
+  // It scrolls only when even the smallest dial does not fit -- a short
+  // phone at a large text size short of 200%.
+  Widget _dial(
+    BuildContext context,
+    SidekickCharacter character,
+    double width,
+  ) {
+    final SkColors sk = context.sk;
+    final Feeling? picked = _picked;
+    final HomeSkyColors sky = _sky;
+
+    return SingleChildScrollView(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: <Widget>[
+          _title(context),
+          const SizedBox(height: SkLayout.xxl),
+          SizedBox(
+            width: width,
+            child: FeelingDial(
+              stops: Feeling.values
+                  .map((Feeling feeling) => feeling.label)
+                  .toList(),
+              selected: picked?.index,
+              onChanged: (int index) => _pick(Feeling.values[index]),
+              // The leftmost stop is the panic door, so the arc behind it and
+              // the knob on it wear the panic colour. It is the one hue that
+              // does not move between the six palettes or the two modes, which
+              // is what makes that end of the dial findable without reading.
+              // Every other stop takes the reader's own palette.
+              activeColor:
+                  picked != null && picked.isPanic ? sk.panic : sk.action,
+              // The sky's word colour, and a ring of its opposite round each
+              // dot. The dial is on the sky now, but on a short phone the
+              // mountains come up behind the ends of the arc, and one of the
+              // two colours always stands off whatever is behind.
+              trackColor: sky.onSky.withValues(alpha: 0.35),
+              stopColor: sky.onSky,
+              stopRing: HomeSkyColors.wordsOn(sky.onSky),
+              character: (BuildContext context, double size) => SkMoodFace(
+                artboard: FeelingPickerView.moodArtboard,
+                size: size,
+                skin: character.skin,
+                mood: picked?.index.toDouble(),
+                stillArtboard: picked?.artboardFor(character),
+                stillFallbackArtboard:
+                    picked?.artboardFor(SidekickCharacter.girl),
+                idleArtboard: Feeling.restingArtboardFor(character),
+                idleFallbackArtboard:
+                    Feeling.restingArtboardFor(SidekickCharacter.girl),
+              ),
+            ),
+          ),
+          const SizedBox(height: SkLayout.md),
+          _answer(context, sky.onSky),
+        ],
       ),
     );
   }
@@ -295,8 +584,6 @@ class _FeelingPickerViewState extends State<FeelingPickerView> {
   // It is capped at [FeelingPickerView.titleWidth] rather than run the full
   // gutter, and the cap is measured -- see the constant.
   Widget _title(BuildContext context) {
-    final SkColors sk = context.sk;
-
     return Semantics(
       header: true,
       child: Center(
@@ -309,7 +596,7 @@ class _FeelingPickerViewState extends State<FeelingPickerView> {
             textAlign: TextAlign.center,
             style: SkLayout.display(
               context,
-              SkText.sceneLine.copyWith(color: sk.ink),
+              SkText.sceneLine.copyWith(color: _sky.onSky),
             ),
           ),
         ),
@@ -317,92 +604,41 @@ class _FeelingPickerViewState extends State<FeelingPickerView> {
     );
   }
 
-  // The question, her, the dial and its answer -- one group, centred in the
-  // room left between the top of the page and the button.
-  //
-  // **All four moved into one column on 24 September 2026, at the user's
-  // request.** The question used to sit at the top of the page on its own and
-  // the dial hung under it from the same edge, so the whole screen was pinned
-  // to the top and the spare height fell out below the answer. On a tall
-  // phone that left the thing the reader is meant to touch high up and a
-  // stripe of empty page under it.
-  //
-  // **A scroll view is greedy, so `Align` alone could never do this.** It
-  // takes the whole height it is offered and its content starts at the top
-  // whatever is wrapped around it -- which is why the old header here said the
-  // `Align` was documentation. The centring works now because the column is
-  // given the viewport height as a *minimum* first, so there is something for
-  // `MainAxisAlignment.center` to centre inside. At 200% text, or on a short
-  // phone, the content outgrows that minimum and the view simply scrolls, so
-  // nothing is ever pushed off the screen.
-  //
-  // **The gaps are nested, not equal.** Question to dial is `xxl`; dial to its
-  // answer is `lg`. The control and the word it is currently saying are one
-  // thing, and the question is the thing asking about them.
-  Widget _dial(BuildContext context, SidekickCharacter character) {
-    final SkColors sk = context.sk;
-    final Feeling? picked = _picked;
+  // The narrowest the dial may shrink to on a short screen. Below this her
+  // face and the stops crowd each other, and scrolling is the better answer.
+  static const double _smallestDial = 260;
 
-    // **The name of the answer travels with the dial rather than sitting in
-    // the page's own rhythm below it.** The two are one group -- the control
-    // and what it currently says -- so the gap between them is smaller than
-    // the gap from either of them to the button. Centring the dial on its own
-    // left the name stranded a third of a screen away, where it read as a
-    // caption on the button instead of as the dial's own answer.
-    return LayoutBuilder(
-      builder: (BuildContext context, BoxConstraints constraints) {
-        return SingleChildScrollView(
-          child: ConstrainedBox(
-            constraints: BoxConstraints(minHeight: constraints.maxHeight),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                _title(context),
-                const SizedBox(height: SkLayout.xxl),
-                FeelingDial(
-                  stops: Feeling.values
-                      .map((Feeling feeling) => feeling.label)
-                      .toList(),
-                  selected: picked?.index,
-                  onChanged: (int index) => _pick(Feeling.values[index]),
-                  // The leftmost stop is the panic door, so the arc behind it and
-                  // the knob on it wear the panic colour. It is the one hue that
-                  // does not move between the six palettes or the two modes, which
-                  // is what makes that end of the dial findable without reading.
-                  // Every other stop takes the reader's own palette.
-                  activeColor:
-                      picked != null && picked.isPanic ? sk.panic : sk.action,
-                  character: (BuildContext context, double size) => SkMoodFace(
-                    artboard: FeelingPickerView.moodArtboard,
-                    size: size,
-                    skin: character.skin,
-                    mood: picked?.index.toDouble(),
-                    stillArtboard: picked?.artboardFor(character),
-                    stillFallbackArtboard:
-                        picked?.artboardFor(SidekickCharacter.girl),
-                    idleArtboard: Feeling.restingArtboardFor(character),
-                    idleFallbackArtboard:
-                        Feeling.restingArtboardFor(SidekickCharacter.girl),
-                    // The resting face is the lesson's neutral head: open eyes,
-                    // one flat line for a mouth. It makes no claim, which is the
-                    // only thing a face over an unanswered question may do.
-                    //
-                    // **The bowl was empty here for an hour on 24 September
-                    // 2026**, on the argument that a resting *idle* is motion and
-                    // a still face cannot be one. True -- and it left the screen
-                    // opening on a hole with a knob under it. A face that does
-                    // not move yet beats no face at all.
-                  ),
-                ),
-                const SizedBox(height: SkLayout.lg),
-                _answer(context),
-              ],
-            ),
-          ),
-        );
-      },
-    );
+  // How tall the question is at the reader's text size.
+  double _titleHeight(BuildContext context) => _measure(
+        context,
+        FeelingPickerView.title,
+        SkLayout.display(context, SkText.sceneLine),
+        FeelingPickerView.titleWidth,
+      );
+
+  // How tall the answer line is at the reader's text size.
+  double _answerHeight(BuildContext context) => _measure(
+        context,
+        FeelingPickerView.prompt,
+        SkText.sceneLine,
+        double.infinity,
+      );
+
+  double _measure(
+    BuildContext context,
+    String text,
+    TextStyle style,
+    double maxWidth,
+  ) {
+    final TextPainter painter = TextPainter(
+      text: TextSpan(text: text, style: style),
+      textAlign: TextAlign.center,
+      textDirection: Directionality.of(context),
+      textScaler: MediaQuery.textScalerOf(context),
+    )..layout(maxWidth: maxWidth);
+    final double height = painter.height;
+    painter.dispose();
+    return height;
   }
 
   // The picked feeling's name, or the prompt while there is none.
@@ -411,8 +647,7 @@ class _FeelingPickerViewState extends State<FeelingPickerView> {
   // at a time: the answer when there is one, and what to do when there is
   // not. Two blocks there would make the reader choose what to read at the
   // moment the screen is asking them to choose something else.
-  Widget _answer(BuildContext context) {
-    final SkColors sk = context.sk;
+  Widget _answer(BuildContext context, Color words) {
     final Feeling? picked = _picked;
 
     return AnimatedSwitcher(
@@ -427,9 +662,10 @@ class _FeelingPickerViewState extends State<FeelingPickerView> {
         textAlign: TextAlign.center,
         // The same size either way, so the band does not change height under
         // somebody reading it and she does not shift. The prompt is quieter by
-        // weight and by colour; the answer is `ink` at full weight.
+        // weight only: there is one word colour on the ground, and a faded
+        // one would drop under 4.5:1 on the paler grounds.
         style: SkText.sceneLine.copyWith(
-          color: picked == null ? SkContrast.captionOn(sk.canvas) : sk.ink,
+          color: words,
           fontWeight: picked == null ? FontWeight.w400 : FontWeight.w600,
         ),
       ),
@@ -489,3 +725,7 @@ class _FeelingPickerViewState extends State<FeelingPickerView> {
     );
   }
 }
+
+// Where the dial group goes: how wide the dial is, and where the group
+// starts and ends.
+typedef _Layout = ({double dialWidth, double top, double bottom});

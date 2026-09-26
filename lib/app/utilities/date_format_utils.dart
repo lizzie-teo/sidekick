@@ -63,6 +63,30 @@ abstract final class DateFormatUtils {
     'Dec',
   ];
 
+  // "Sat", "Sept". Home's date is "Sat 26 SEPT": the day's name and number,
+  // no year. The year is a fact about a record, and Home is not one -- it is
+  // today, read today. Asked for by the user, 26 September 2026.
+  static String shortWeekday(DateTime day) => _shortWeekdays[day.weekday];
+
+  static String shortMonth(DateTime day) => _shortMonths[day.month - 1];
+
+  // Index 0 unused, for the same reason as _weekdays.
+  static const List<String> _shortWeekdays = <String>[
+    '',
+    'Mon',
+    'Tue',
+    'Wed',
+    'Thu',
+    'Fri',
+    'Sat',
+    'Sun',
+  ];
+
+  // "Saturday 26 September". What a screen reader says for Home's date: the
+  // short forms are for the eye, and "Sat" read aloud is a word nobody says.
+  static String spokenDay(DateTime day) =>
+      '${_weekdays[day.weekday]} ${day.day} ${_months[day.month - 1]}';
+
   // "5 September 2026", always, however near the day is.
   //
   // The relative names dayLabel gives -- Today, Yesterday, Friday -- are read

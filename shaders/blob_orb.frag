@@ -18,6 +18,10 @@
 // | 7     | uOpacity  | Fade-in, 0 to 1, on first appearance                |
 // | 8-11  | uCore     | The light stop, straight alpha                      |
 // | 12-15 | uEdge     | The dark stop, straight alpha                       |
+// | 16-19 | uLight    | The light end. White unless a scene sets it         |
+// | 20-23 | uDark     | The dark end. Black unless a scene sets it          |
+// | 24-27 | uField    | The see-through field on a scene, straight alpha    |
+// | 28    | uFieldMix | 0 on a plain page (no field), 1 on a scene          |
 //
 // ## Attribution
 //
@@ -99,6 +103,10 @@ uniform float uSeed;
 uniform float uOpacity;
 uniform vec4 uCore;
 uniform vec4 uEdge;
+uniform vec4 uLight;
+uniform vec4 uDark;
+uniform vec4 uField;
+uniform float uFieldMix;
 
 out vec4 fragColor;
 
@@ -154,8 +162,9 @@ float around(vec3 dec, float along, float scale) {
   );
 }
 
-// Four stops, evenly spaced. Black and white are fixed at the ends and the
-// app's two colours hold the middle, which is what lets one grey field reach
+// Four stops, evenly spaced. Black and white sit at the ends unless a screen
+// on a painted scene sets them (uDark, uLight), and the app's two colours
+// hold the middle, which is what lets one grey field reach
 // both true shadow and true highlight while still being this palette.
 vec3 ramp(float g, vec3 a, vec3 b, vec3 c, vec3 d) {
   float s = clamp(g, 0.0, 1.0) * 3.0;
@@ -175,6 +184,12 @@ float rampA(float g, float a, float b, float c, float d) {
 // because `fill` below measures from it, and it must stay equal to
 // `SkBlobOrb.defaultRestingLevel`. Moving one means moving the other.
 const float kRestingLevel = 0.30;
+
+// Where the uncovered field starts, on the grey scale, for a screen that sets
+// uField. Below this the ramp shows unchanged -- petals, their pale fringes and
+// all -- and from here to pure white the field fades in. Lower and the
+// fringes' shine is eaten; higher and a pale rim shows round every petal.
+const float kFieldFrom = 0.75;
 
 // What the grey field starts at once the disc is full. The petals lay down
 // about 0.5, so this is deliberately lighter than they are: the whole disc
@@ -318,10 +333,14 @@ void main() {
   float ringA = max(a1, a2) * (1.0 - fill);
   lum = 1.0 - (1.0 - lum) * (1.0 - ringA);
 
+  // How uncovered this point is, measured before the dark-mode flip so it
+  // means the same thing in both modes. See uField below.
+  float field = smoothstep(kFieldFrom, 1.0, lum) * clamp(uFieldMix, 0.0, 1.0);
+
   // Dark mode: flip the grey, keep the colours. See the header.
   float g = mix(lum, 1.0 - lum, clamp(uInverted, 0.0, 1.0));
 
-  vec3 rgb = ramp(g, vec3(0.0), uEdge.rgb, uCore.rgb, vec3(1.0));
+  vec3 rgb = ramp(g, uDark.rgb, uEdge.rgb, uCore.rgb, uLight.rgb);
 
   // A cut circle, antialiased over about a pixel and a half. The orb is a
   // deliberate object, not a smudge; a screen that wants atmosphere should
@@ -330,10 +349,21 @@ void main() {
   float mask = 1.0 - smoothstep(1.0 - aa, 1.0 + aa, radius);
 
   // Alpha rides the same four stops, so a translucent colour does what its
-  // swatch says. The ends are opaque: they are the shadow and the highlight,
-  // and a see-through highlight is not a highlight.
-  float alpha = mask * rampA(g, 1.0, uEdge.a, uCore.a, 1.0)
-              * clamp(uOpacity, 0.0, 1.0);
+  // swatch says. The ends are opaque by default: they are the shadow and the
+  // highlight, and on a plain page a see-through highlight is not one.
+  float alpha = rampA(g, uDark.a, uEdge.a, uCore.a, uLight.a);
+
+  // **On a painted scene the uncovered field is its own layer**, added 26
+  // September 2026. For one afternoon the field *was* the ramp's light end,
+  // and that cost the petals their shine: the pale fringe between a petal and
+  // the gaps is the top of the ramp, so a dark field end made every fringe go
+  // dark and the petals read as flat. Now the ramp keeps a pale end for the
+  // fringes and the field fades in only where nothing covers the disc. At
+  // uFieldMix 0 -- every plain page -- this does nothing at all.
+  rgb = mix(rgb, uField.rgb, field);
+  alpha = mix(alpha, uField.a, field);
+
+  alpha *= mask * clamp(uOpacity, 0.0, 1.0);
 
   // Dither, always on and far too small to see. The orb is mostly very soft
   // gradients, and soft gradients on an 8-bit screen band into visible rings.

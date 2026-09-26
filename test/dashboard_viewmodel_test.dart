@@ -44,6 +44,24 @@ void main() {
     expect(viewModel.state.value.line, isEmpty);
   });
 
+  test('the date shows on Home unless the reader turned it off', () async {
+    await viewModel.init();
+    await pumpEventQueue();
+    expect(viewModel.state.value.dateShown, isTrue);
+
+    settings.values[SettingsKeys.homeDateShown] = false;
+    final DashboardViewModel off = DashboardViewModel(
+      loggerService: SilentLoggerService(),
+      deviceSettingsService: settings,
+      themeService: themeService,
+      now: () => today,
+    );
+    addTearDown(off.dispose);
+    await off.init();
+    await pumpEventQueue();
+    expect(off.state.value.dateShown, isFalse);
+  });
+
   test('the prompt shown is remembered on the device, with its day', () async {
     await viewModel.init();
 

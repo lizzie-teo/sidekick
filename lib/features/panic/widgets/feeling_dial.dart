@@ -32,6 +32,9 @@ class FeelingDial extends StatefulWidget {
     required this.onChanged,
     required this.activeColor,
     required this.character,
+    this.trackColor,
+    this.stopColor,
+    this.stopRing,
   });
 
   // One label per stop, left to right. They are what a screen reader reads;
@@ -57,6 +60,18 @@ class FeelingDial extends StatefulWidget {
   // The sidekick, built at the size that fits inside the bowl.
   final Widget Function(BuildContext context, double size) character;
 
+  // The empty arc, and the dots marking each stop. Left unset they are the
+  // theme's `border` and a caption on `canvas`. The picker hands in its own
+  // since it stands on Home's sky rather than on the canvas, where a
+  // palette colour was picked against cream, not against violet.
+  final Color? trackColor;
+  final Color? stopColor;
+
+  // A ring around each stop dot, for a dial on a picture rather than on a
+  // flat page: the dot and its ring are two colours, so one of them always
+  // stands off whatever is behind. Left unset, the dots are plain.
+  final Color? stopRing;
+
   // Half the arc's sweep. 80 degrees each side of straight down, so the ends
   // finish just above her waist: a full half-circle would put them level with
   // her head, where they read as two horns rather than as the ends of a line.
@@ -71,6 +86,20 @@ class FeelingDial extends StatefulWidget {
   // The widest the dial is ever drawn. Without it a tablet hands one control
   // the whole page.
   static const double maxWidth = 420;
+
+  // The widest dial that is no taller than [height]. The dial is sized from
+  // its width, so a screen that is wide and short -- an iPad in landscape --
+  // needs the caller to hand it a narrower box, or its lower stops sit under
+  // the fold. The height grows in a straight line with the width, so two
+  // samples give the exact answer.
+  // How tall the dial is at [width]. The caller lays out around it.
+  static double heightFor(double width) => _DialGeometry(width).height;
+
+  static double widthForHeight(double height) {
+    final double h0 = _DialGeometry(0).height;
+    final double slope = _DialGeometry(1).height - h0;
+    return (height - h0) / slope;
+  }
 
   @override
   State<FeelingDial> createState() => _FeelingDialState();
@@ -237,8 +266,10 @@ class _FeelingDialState extends State<FeelingDial>
                               stops: widget.stops.length,
                               picked: widget.selected != null,
                               active: widget.activeColor,
-                              track: sk.border,
-                              stop: SkContrast.captionOn(sk.canvas),
+                              track: widget.trackColor ?? sk.border,
+                              stop: widget.stopColor ??
+                                  SkContrast.captionOn(sk.canvas),
+                              stopRing: widget.stopRing,
                               knobRing: sk.surface,
                               shadow: sk.ink,
                             ),
@@ -362,6 +393,7 @@ class _DialPainter extends CustomPainter {
   final Color stop;
   final Color knobRing;
   final Color shadow;
+  final Color? stopRing;
 
   const _DialPainter({
     required this.geometry,
@@ -373,6 +405,7 @@ class _DialPainter extends CustomPainter {
     required this.stop,
     required this.knobRing,
     required this.shadow,
+    this.stopRing,
   });
 
   // How many marks sit along the whole arc. Enough to read as a scale, few
@@ -459,10 +492,12 @@ class _DialPainter extends CustomPainter {
   // meaning, so they are the part held to a text-grade contrast.
   void _paintStops(Canvas canvas) {
     final Paint paint = Paint()..color = stop;
+    final Color? ring = stopRing;
 
     for (int index = 0; index < stops; index++) {
-      final double at = index / (stops - 1);
-      canvas.drawCircle(geometry.pointAt(at), 3.5, paint);
+      final Offset at = geometry.pointAt(index / (stops - 1));
+      if (ring != null) canvas.drawCircle(at, 5, Paint()..color = ring);
+      canvas.drawCircle(at, 3.5, paint);
     }
   }
 
@@ -495,5 +530,6 @@ class _DialPainter extends CustomPainter {
       old.active != active ||
       old.track != track ||
       old.stop != stop ||
+      old.stopRing != stopRing ||
       old.geometry.width != geometry.width;
 }

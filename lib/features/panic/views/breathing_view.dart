@@ -13,6 +13,7 @@ import 'package:sidekick/app/widgets/home_sky.dart';
 import 'package:sidekick/app/widgets/sk_circle_icon_button.dart';
 import 'package:sidekick/app/widgets/sk_colors.dart';
 import 'package:sidekick/app/widgets/sk_outline_button.dart';
+import 'package:sidekick/app/widgets/sk_layout.dart';
 import 'package:sidekick/app/widgets/sk_text.dart';
 import 'package:sidekick/app/widgets/sk_text_button.dart';
 import 'package:sidekick/app/widgets/guided_intro.dart';
@@ -30,7 +31,7 @@ import 'package:sidekick/features/panic/widgets/breath_ring.dart';
 // that afternoon. The fireflies and butterflies move, on Home's own loop --
 // the user's decision, knowing it is a second clock on this screen. Home's
 // moth is not here. The words take the sky's `onSky`; the buttons take
-// `BreathingView.wordsOn` on the ground below her.
+// `HomeSkyColors.wordsOn` on the ground below her.
 //
 // The animation is the clock. SkCharacter starts her breathing cycle on
 // arrival and surfaces the timeline's own inhale/exhale moments, so the cue
@@ -87,46 +88,6 @@ class BreathingView extends StatefulWidget {
   // Begin button in front of a panic attack because a query string went
   // missing.
   final bool showsIntro;
-
-  // The two word colours the buttons at the foot can take.
-  static const Color _darkWords = Color(0xFF221D33);
-  static const Color _lightWords = Color(0xFFFBF8F2);
-
-  // Near-white or near-black, whichever reads better on [ground]: the colour
-  // of the buttons at the foot of the screen, which sit on Home's hill.
-  static Color wordsOn(Color ground) =>
-      _ratio(_darkWords, ground) >= _ratio(_lightWords, ground)
-          ? _darkWords
-          : _lightWords;
-
-  // The ground under the buttons: Home's own ground, taken only as much
-  // darker as it needs for the faintest words there -- "That's enough for
-  // now", at 70% -- to reach 4.5:1.
-  //
-  // **Home never needed this, because a cream panel covers its ground.** Here
-  // the buttons sit on the hill itself, and the light-mode morning and midday
-  // grounds are mid-tones that neither near-black nor near-white clears at
-  // 70%. Darkening is the one direction that always ends: near-white clears
-  // any ground dark enough. The dark-mode grounds already pass and come back
-  // unchanged. `test/breathing_view_sky_test.dart` walks every sky.
-  static Color groundUnderButtons(Color ground) {
-    HSLColor hsl = HSLColor.fromColor(ground);
-    Color c = ground;
-    while (_faintRatio(c) < 4.5 && hsl.lightness > 0) {
-      hsl = hsl.withLightness((hsl.lightness - 0.02).clamp(0.0, 1.0));
-      c = hsl.toColor();
-    }
-    return c;
-  }
-
-  static double _faintRatio(Color ground) => _ratio(
-      Color.alphaBlend(wordsOn(ground).withValues(alpha: 0.7), ground), ground);
-
-  static double _ratio(Color a, Color b) {
-    final double x = a.computeLuminance();
-    final double y = b.computeLuminance();
-    return x > y ? (x + 0.05) / (y + 0.05) : (y + 0.05) / (x + 0.05);
-  }
 
   @override
   State<BreathingView> createState() => _BreathingViewState();
@@ -208,7 +169,7 @@ class _BreathingViewState extends State<BreathingView> {
   // That is why the words and the cue share one band instead of stacking, and
   // why the two button bands are there from the start.
 
-  // Tall enough for the longest line in the script at sceneLine size. The
+  // Tall enough for the longest line in the script at homeQuote size. The
   // text scrolls inside it rather than overflowing, so a larger system font
   // cannot push her either.
   static const double _wordsBand = 160;
@@ -239,7 +200,7 @@ class _BreathingViewState extends State<BreathingView> {
         final HomeSkyColors sky =
             HomeSkyColors.of(state.phase, Theme.of(context).brightness);
         final Color onGround =
-            BreathingView.wordsOn(BreathingView.groundUnderButtons(sky.ground));
+            HomeSkyColors.wordsOn(HomeSkyColors.groundUnderButtons(sky.ground));
 
         // The breath rings are drawn in the sky's `onSky`, the colour already
         // tuned to read against its sky in both modes (it was the palette's
@@ -431,18 +392,28 @@ class _BreathingViewState extends State<BreathingView> {
                                   : const Duration(milliseconds: 1000),
                               switchInCurve: Curves.easeInOut,
                               switchOutCurve: Curves.easeInOut,
-                              child: Text(
-                                state.showsWords ? state.line ?? '' : state.cue,
+                              // Everything in the band takes Home's quote
+                              // style, in a narrow column, at the user's
+                              // request (26 September 2026). It was 34/600
+                              // for the cue and 24/600 for the words. See
+                              // SkLayout.scriptLineWidth.
+                              child: ConstrainedBox(
                                 key: ValueKey<String>(
                                   state.showsWords
                                       ? 'line-${state.lineIndex}'
                                       : 'cue-${state.cue}',
                                 ),
-                                textAlign: TextAlign.center,
-                                style: (state.showsWords
-                                        ? SkText.sceneLine
-                                        : SkText.breathCue)
-                                    .copyWith(color: sky.onSky),
+                                constraints: const BoxConstraints(
+                                  maxWidth: SkLayout.scriptLineWidth,
+                                ),
+                                child: Text(
+                                  state.showsWords
+                                      ? state.line ?? ''
+                                      : state.cue,
+                                  textAlign: TextAlign.center,
+                                  style: SkText.homeQuote
+                                      .copyWith(color: sky.onSky),
+                                ),
                               ),
                             ),
                           ),
@@ -650,7 +621,7 @@ class _Place extends StatelessWidget {
             ),
             // The rest of the hill, down to the foot of the screen: the colour
             // the band's own ground fades to, deepening only where the
-            // buttons need it. See `BreathingView.groundUnderButtons`.
+            // buttons need it. See `HomeSkyColors.groundUnderButtons`.
             Positioned(
               left: 0,
               right: 0,
@@ -663,7 +634,7 @@ class _Place extends StatelessWidget {
                     end: Alignment.bottomCenter,
                     colors: <Color>[
                       sky.ground,
-                      BreathingView.groundUnderButtons(sky.ground),
+                      HomeSkyColors.groundUnderButtons(sky.ground),
                     ],
                     stops: const <double>[0, 0.3],
                   ),

@@ -107,6 +107,49 @@ class HomeSkyColors {
   static const Color _lightText = Color(0xFFFBF8F2);
   static const Color _starlight = Color(0xFFFFFFFF);
 
+  // The buttons at the foot of a screen that stands on this hill: the
+  // breathing screen, and the two Play orbs. Moved here from `BreathingView`
+  // on 26 September 2026, when the Play screens became the second feature to
+  // need them -- one feature reaching into another's view is the shape the
+  // registry exists to prevent. The words take the same near-black or
+  // near-white `onSky` chooses between.
+  //
+  // Near-white or near-black, whichever reads better on [ground]: the colour
+  // of the buttons at the foot of the screen, which sit on Home's hill.
+  static Color wordsOn(Color ground) =>
+      _ratio(_darkText, ground) >= _ratio(_lightText, ground)
+          ? _darkText
+          : _lightText;
+
+  // The ground under the buttons: Home's own ground, taken only as much
+  // darker as it needs for the faintest words there -- "That's enough for
+  // now", at 70% -- to reach 4.5:1.
+  //
+  // **Home never needed this, because a cream panel covers its ground.** Here
+  // the buttons sit on the hill itself, and the light-mode morning and midday
+  // grounds are mid-tones that neither near-black nor near-white clears at
+  // 70%. Darkening is the one direction that always ends: near-white clears
+  // any ground dark enough. The dark-mode grounds already pass and come back
+  // unchanged. `test/breathing_view_sky_test.dart` walks every sky.
+  static Color groundUnderButtons(Color ground) {
+    HSLColor hsl = HSLColor.fromColor(ground);
+    Color c = ground;
+    while (_faintRatio(c) < 4.5 && hsl.lightness > 0) {
+      hsl = hsl.withLightness((hsl.lightness - 0.02).clamp(0.0, 1.0));
+      c = hsl.toColor();
+    }
+    return c;
+  }
+
+  static double _faintRatio(Color ground) => _ratio(
+      Color.alphaBlend(wordsOn(ground).withValues(alpha: 0.7), ground), ground);
+
+  static double _ratio(Color a, Color b) {
+    final double x = a.computeLuminance();
+    final double y = b.computeLuminance();
+    return x > y ? (x + 0.05) / (y + 0.05) : (y + 0.05) / (x + 0.05);
+  }
+
   // How far down the sky the quote can reach on an ordinary phone. The text
   // test measures every sky between its top and this point.
   static const double textZone = 0.45;
@@ -424,7 +467,14 @@ class HomeStage extends StatefulWidget {
     this.moon = const MoonPhase(age: 0.5),
     required this.height,
     required this.child,
+    this.mist = true,
   });
+
+  // The soft mist in the valley behind her. It exists so a pale character
+  // has something deeper to stand against, so a band with nobody standing in
+  // it -- the feeling picker's, where she is up in the dial -- turns it off:
+  // there it is a dark patch with nothing in front of it.
+  final bool mist;
 
   @override
   State<HomeStage> createState() => _HomeStageState();
@@ -483,6 +533,7 @@ class _HomeStageState extends State<HomeStage>
                   phase: widget.phase,
                   colours: colours,
                   moon: widget.moon,
+                  mist: widget.mist,
                 ),
               ),
             ),
@@ -524,11 +575,13 @@ class _StagePainter extends CustomPainter {
   final DayPhase phase;
   final MoonPhase moon;
   final HomeSkyColors colours;
+  final bool mist;
 
   const _StagePainter({
     required this.phase,
     required this.colours,
     required this.moon,
+    this.mist = true,
   });
 
   // How far the sun's glow reaches, in disc radii. The mist thins over the
@@ -723,47 +776,7 @@ class _StagePainter extends CustomPainter {
     // gradient as the glow, so it greys none of the disc and none of the
     // glow. It used to have a hard hole the size of the disc, and the mist
     // then lay over the glow and cut it off at a sharp circle.
-    final Rect oval = Rect.fromCenter(
-      center: Offset(w * 0.5, h * 0.55),
-      width: w * 0.8,
-      height: h * 0.85,
-    );
-    final double strength = colours.mistStrength;
-    final double reach = radius * _glowReach;
-    canvas.saveLayer(
-        oval.expandToInclude(Rect.fromCircle(center: centre, radius: reach)),
-        Paint());
-    canvas.drawOval(
-      oval,
-      Paint()
-        ..isAntiAlias = true
-        ..shader = RadialGradient(
-          colors: <Color>[
-            colours.mist.withValues(alpha: strength),
-            colours.mist.withValues(alpha: strength * 0.74),
-            colours.mist.withValues(alpha: 0),
-          ],
-          stops: const <double>[0, 0.45, 1],
-        ).createShader(oval),
-    );
-    // Colour values here are only an eraser's strength: dstOut keeps the
-    // alpha and throws the colour away.
-    canvas.drawCircle(
-      centre,
-      reach,
-      Paint()
-        ..blendMode = BlendMode.dstOut
-        ..shader = RadialGradient(
-          colors: <Color>[
-            colours.mist,
-            colours.mist,
-            colours.mist.withValues(alpha: 0.6),
-            colours.mist.withValues(alpha: 0),
-          ],
-          stops: const <double>[0, 1 / _glowReach, 0.6, 1],
-        ).createShader(Rect.fromCircle(center: centre, radius: reach)),
-    );
-    canvas.restore();
+    if (mist) _paintMist(canvas, w, h, centre, radius);
 
     // The near trees go down before the ground, sunk into it, so the slope
     // covers their feet and they grow out of the hill. Painted after it,
@@ -1017,9 +1030,57 @@ class _StagePainter extends CustomPainter {
     canvas.restore();
   }
 
+  void _paintMist(
+      Canvas canvas, double w, double h, Offset centre, double radius) {
+    final Rect oval = Rect.fromCenter(
+      center: Offset(w * 0.5, h * 0.55),
+      width: w * 0.8,
+      height: h * 0.85,
+    );
+    final double strength = colours.mistStrength;
+    final double reach = radius * _glowReach;
+    canvas.saveLayer(
+        oval.expandToInclude(Rect.fromCircle(center: centre, radius: reach)),
+        Paint());
+    canvas.drawOval(
+      oval,
+      Paint()
+        ..isAntiAlias = true
+        ..shader = RadialGradient(
+          colors: <Color>[
+            colours.mist.withValues(alpha: strength),
+            colours.mist.withValues(alpha: strength * 0.74),
+            colours.mist.withValues(alpha: 0),
+          ],
+          stops: const <double>[0, 0.45, 1],
+        ).createShader(oval),
+    );
+    // Colour values here are only an eraser's strength: dstOut keeps the
+    // alpha and throws the colour away.
+    canvas.drawCircle(
+      centre,
+      reach,
+      Paint()
+        ..blendMode = BlendMode.dstOut
+        ..shader = RadialGradient(
+          colors: <Color>[
+            colours.mist,
+            colours.mist,
+            colours.mist.withValues(alpha: 0.6),
+            colours.mist.withValues(alpha: 0),
+          ],
+          stops: const <double>[0, 1 / _glowReach, 0.6, 1],
+        ).createShader(Rect.fromCircle(center: centre, radius: reach)),
+    );
+    canvas.restore();
+  }
+
   @override
   bool shouldRepaint(_StagePainter old) =>
-      old.phase != phase || old.colours != colours || old.moon != moon;
+      old.phase != phase ||
+      old.colours != colours ||
+      old.moon != moon ||
+      old.mist != mist;
 }
 
 // The fireflies and butterflies, painted on the band's clock.

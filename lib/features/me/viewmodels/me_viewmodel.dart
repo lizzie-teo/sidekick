@@ -91,6 +91,23 @@ class MeViewModel extends ViewModel<MeViewModelState> {
     // show yet", and that is not true here -- every other row is ready, so
     // the card simply carries no caption for the one frame the read takes.
     _loadDaysTogether();
+    _loadDateShown();
+  }
+
+  // The Home date switch. This page is the only writer, so it keeps its own
+  // copy rather than watching a service, and Home reads the stored value when
+  // it is next built -- which a tab change always does.
+  Future<void> _loadDateShown() async {
+    final bool? shown =
+        await _deviceSettingsService.getBool(SettingsKeys.homeDateShown);
+    emit(current.copyWith(homeDateShown: shown ?? true));
+  }
+
+  // The row answers the tap at once; the write has nothing to report, for the
+  // same reason as the appearance setters below.
+  Future<void> setHomeDateShown(bool shown) async {
+    emit(current.copyWith(homeDateShown: shown));
+    await _deviceSettingsService.setBool(SettingsKeys.homeDateShown, shown);
   }
 
   // The card's caption. A missing or unreadable stamp leaves it at null and
@@ -252,6 +269,9 @@ class MeViewModelState {
   final String paletteId;
   final SidekickCharacter character;
 
+  // Whether Home shows the date over the quote. On by default.
+  final bool homeDateShown;
+
   // The two daily reminders, mirrored from NotificationService. Times are
   // minutes past midnight. Both default to off: an app that starts ringing
   // because it was installed has taken a decision that was not its own.
@@ -278,6 +298,7 @@ class MeViewModelState {
     this.mode = ThemeMode.system,
     this.paletteId = '',
     this.character = SidekickCharacter.girl,
+    this.homeDateShown = true,
     this.checkInEnabled = false,
     this.checkInMinutes = NotificationService.defaultCheckInMinutes,
     this.goodThingsEnabled = false,
@@ -309,6 +330,7 @@ class MeViewModelState {
     ThemeMode? mode,
     String? paletteId,
     SidekickCharacter? character,
+    bool? homeDateShown,
     bool? checkInEnabled,
     int? checkInMinutes,
     bool? goodThingsEnabled,
@@ -324,6 +346,7 @@ class MeViewModelState {
       mode: mode ?? this.mode,
       paletteId: paletteId ?? this.paletteId,
       character: character ?? this.character,
+      homeDateShown: homeDateShown ?? this.homeDateShown,
       checkInEnabled: checkInEnabled ?? this.checkInEnabled,
       checkInMinutes: checkInMinutes ?? this.checkInMinutes,
       goodThingsEnabled: goodThingsEnabled ?? this.goodThingsEnabled,

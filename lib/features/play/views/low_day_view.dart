@@ -2,15 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:sidekick/app/core/app_constants.dart';
+import 'package:sidekick/app/core/home_place_service.dart';
+import 'package:sidekick/app/core/service_locator.dart';
+import 'package:sidekick/app/models/day_phase.dart';
+import 'package:sidekick/app/widgets/home_sky.dart';
 import 'package:sidekick/app/widgets/sk_blob_orb.dart';
 import 'package:sidekick/app/widgets/sk_circle_icon_button.dart';
-import 'package:sidekick/app/widgets/sk_colors.dart';
+import 'package:sidekick/app/widgets/sk_layout.dart';
 import 'package:sidekick/app/widgets/sk_text.dart';
 import 'package:sidekick/app/widgets/sk_text_button.dart';
 import 'package:sidekick/features/play/models/low_day_script.dart';
 import 'package:sidekick/app/widgets/guided_intro.dart';
 import 'package:sidekick/features/play/viewmodels/low_day_viewmodel.dart';
-import 'package:sidekick/app/widgets/sk_contrast.dart';
+import 'package:sidekick/features/play/widgets/orb_scene.dart';
 
 // Somebody else, and you too -- the picker's Low face.
 //
@@ -37,20 +41,27 @@ import 'package:sidekick/app/widgets/sk_contrast.dart';
 // gradient. Three things changed together, and they are one decision rather
 // than three:
 //
-// - **The ground is `sk.canvas`, not `SkScenePanel`.** A fixed-colour orb
-//   needs a quiet ground to read as anything: on the scene gradient it is a
-//   coloured blob on a coloured field and the two fight, and three of the six
-//   palettes put a warm scene behind it, where a warm orb nearly disappears.
-//   The canvas is the app's page ground in every palette and in both modes, so
-//   the orb is the only colour on the page. The tighten screen was moved off
-//   the gradient the same day, for the same reason.
+// - **The ground was `sk.canvas`, not `SkScenePanel`.** A fixed-colour orb
+//   on the palette's scene gradient fought it. That changed on 26 September
+//   2026 -- see below.
 // - **The orb has its own two colours, and they do not come from the
 //   palette.** They must not change with it -- see below.
 // - **The script drives it.** See below again.
 //
-// That is also why the text here is `ink` and `muted` rather than `onScene`.
-// `onScene` is only legible on the gradient; using it on the canvas is the
-// mistake this swap is one edit away from.
+// **It stands in Home's scene, from 26 September 2026, at the user's
+// request** -- the sky for the time of day, the hills, the fireflies and
+// butterflies, the same way the breathing screen does. See `OrbScene`. The
+// canvas it sat on was chosen so the orb was the only colour on the page; it
+// no longer is, and the user decided that knowingly. Home's sky is not the
+// palette's gradient: it changes with the time of day, not the theme, so
+// the fixed warm colours still make one promise. The orb's field is a
+// darker, see-through tone of the scene, so each sky's colour comes through
+// the disc instead of a white (or, in dark mode, black) hole.
+//
+// The words take the sky's `onSky`, not `ink`, and the way out
+// `HomeSkyColors.wordsOn` on the hill's ground. `test/orb_scene_test.dart`
+// walks every sky. The fireflies and butterflies are a second clock on an
+// eyes-closed screen -- the user's decision, as on the breathing screen.
 //
 // **The orb is warm, and the warmth is the script's own image.** "Feel the
 // warmth of your palm coming through." is the one physical thing this script
@@ -151,7 +162,13 @@ class LowDayView extends StatefulWidget {
 
 class _LowDayViewState extends State<LowDayView>
     with SingleTickerProviderStateMixin {
-  final LowDayViewModel _viewModel = LowDayViewModel();
+  final LowDayViewModel _viewModel = LowDayViewModel(
+    // Guarded the way Home and the breathing screen guard it, so a widget
+    // test with no place in the container gets fixed hours, not a crash.
+    placeService: getIt.isRegistered<HomePlaceService>()
+        ? getIt<HomePlaceService>()
+        : null,
+  );
 
   // The orb's level, 0 to 1. An `AnimationController` rather than an
   // `SkBlobOrbLevel`, because the two smooth different things: that one is
@@ -172,6 +189,9 @@ class _LowDayViewState extends State<LowDayView>
   @override
   void initState() {
     super.initState();
+
+    // Home's sky for the time of day, read once and never refreshed.
+    _viewModel.readSky();
 
     // Attached before `start()`, which emits the first line synchronously.
     // Attached now rather than at Begin, because `start()` emits the first
@@ -197,6 +217,11 @@ class _LowDayViewState extends State<LowDayView>
   //
   // 0.45 is the floor where the disc closes up and stays a solid warm circle.
   // Nothing below it belongs on this screen.
+  //
+  // **On Home's scene the white core is gone**, because the field is a
+  // see-through tone of the sky, so the reason for this floor has gone with
+  // it. It is kept for now, by the user's choice on 26 September 2026, until
+  // somebody looks at a lower one on the scene.
   static const double _restingLevel = 0.45;
 
   // **Level moves two things at once: how much of the disc is coloured, and
@@ -266,7 +291,7 @@ class _LowDayViewState extends State<LowDayView>
   // of it.
   static const double _closeBand = 52;
 
-  // Tall enough for the longest line in the script at sceneLine size, so a
+  // Tall enough for the longest line in the script at homeQuote size, so a
   // longer line or a larger system font scrolls inside the band rather than
   // growing it.
   static const double _wordsBand = 140;
@@ -300,24 +325,34 @@ class _LowDayViewState extends State<LowDayView>
   // them back to back.
   static const double _orbSeed = 2.31;
 
+  // The orb, built once per sky rather than once per line. The phase changes
+  // at most once -- when the real sun corrects the clock's guess -- while the
+  // line changes forty times, so the same widget instance is handed back until
+  // the sky itself changes and the per-line rebuild never reaches the shader.
+  DayPhase? _orbPhase;
+  Widget? _orb;
+
+  Widget _orbOn(DayPhase phase) {
+    if (_orb == null || phase != _orbPhase) {
+      _orbPhase = phase;
+      _orb = _LowDayOrb(seed: _orbSeed, level: _level, phase: phase);
+    }
+    return _orb!;
+  }
+
   @override
   Widget build(BuildContext context) {
-    final SkColors sk = context.sk;
-
-    // No `SkScenePanel`, so the Scaffold's own background shows -- which the
-    // theme sets to `sk.canvas`. A plain SafeArea is enough: there is no
-    // gradient for it to cut short, which is the only reason the scene screens
-    // handle their insets by hand.
+    // **Home's scene is behind the script, from 26 September 2026.** See
+    // `OrbScene`. The words at the top take the sky's `onSky`, and the way out
+    // at the foot the colour that reads on the hill's ground.
+    //
     // **The listener wraps the Scaffold rather than sitting inside it**, so
     // the introduction can be swapped for the script by the same emit that
     // shows the first line. Inside the Scaffold it would only ever rebuild
     // the column, and the gate above it would never be read again.
     return ValueListenableBuilder<LowDayState>(
       valueListenable: _viewModel.state,
-      // Built once and passed through, so the line changing every few seconds
-      // does not rebuild the most expensive widget on the screen.
-      child: _LowDayOrb(seed: _orbSeed, level: _level),
-      builder: (BuildContext context, LowDayState state, Widget? child) {
+      builder: (BuildContext context, LowDayState state, Widget? _) {
         // The introduction, until Begin. It is a whole page of its own, so
         // nothing below is built while it is up and the orb's shader never
         // runs behind it.
@@ -331,119 +366,138 @@ class _LowDayViewState extends State<LowDayView>
           );
         }
 
-        return Scaffold(
-          body: SafeArea(
-            // **The horizontal padding is on the bands, not on the column.** The
-            // orb fills the box it is given, so the words and the buttons keep
-            // their gutters while the orb gets the widest box on the screen.
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: <Widget>[
-                // The X, on screen from the first frame. It is the only
-                // control up here: there is no speaker button yet because
-                // there are no recordings yet, and a mute button that mutes
-                // nothing is a lie. It lands beside this one when they
-                // arrive, which is why the band is a Row.
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: Row(
-                    children: <Widget>[
-                      SkCircleIconButton(
-                        icon: Icons.close,
-                        label: 'Close',
-                        color: sk.ink,
-                        onPressed: _leave,
-                      ),
-                    ],
-                  ),
-                ),
+        final HomeSkyColors sky =
+            HomeSkyColors.of(state.phase, Theme.of(context).brightness);
+        final Color onGround =
+            HomeSkyColors.wordsOn(HomeSkyColors.groundUnderButtons(sky.ground));
 
-                // One line at a time, in one place. The pauses are part of
-                // the hold, so a line that looks like it is sitting still is
-                // the script running, not the screen stalling.
-                SizedBox(
-                  height: _wordsBand,
-                  child: Center(
-                    child: SingleChildScrollView(
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                      child: AnimatedSwitcher(
-                        duration: const Duration(milliseconds: 400),
-                        switchInCurve: Curves.easeInOut,
-                        switchOutCurve: Curves.easeInOut,
-                        child: Text(
-                          state.line,
-                          key: ValueKey<int>(state.stepIndex),
-                          textAlign: TextAlign.center,
-                          style: SkText.sceneLine.copyWith(color: sk.ink),
+        return Scaffold(
+          body: OrbScene(
+            phase: state.phase,
+            moon: state.moon,
+            footAbove: _exitGap + _exitBand,
+            child: SafeArea(
+              // **The horizontal padding is on the bands, not on the column.** The
+              // orb fills the box it is given, so the words and the buttons keep
+              // their gutters while the orb gets the widest box on the screen.
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: <Widget>[
+                  // The X, on screen from the first frame. It is the only
+                  // control up here: there is no speaker button yet because
+                  // there are no recordings yet, and a mute button that mutes
+                  // nothing is a lie. It lands beside this one when they
+                  // arrive, which is why the band is a Row.
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: Row(
+                      children: <Widget>[
+                        SkCircleIconButton(
+                          icon: Icons.close,
+                          label: 'Close',
+                          color: sky.onSky,
+                          onPressed: _leave,
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  // One line at a time, in one place. The pauses are part of
+                  // the hold, so a line that looks like it is sitting still is
+                  // the script running, not the screen stalling.
+                  SizedBox(
+                    height: _wordsBand,
+                    child: Center(
+                      child: SingleChildScrollView(
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        child: AnimatedSwitcher(
+                          duration: const Duration(milliseconds: 400),
+                          switchInCurve: Curves.easeInOut,
+                          switchOutCurve: Curves.easeInOut,
+                          // Home's quote style, in a narrow column: one
+                          // short line at a glance rather than a wide one
+                          // read across. See SkLayout.scriptLineWidth.
+                          child: ConstrainedBox(
+                            key: ValueKey<int>(state.stepIndex),
+                            constraints: const BoxConstraints(
+                              maxWidth: SkLayout.scriptLineWidth,
+                            ),
+                            child: Text(
+                              state.line,
+                              textAlign: TextAlign.center,
+                              style:
+                                  SkText.homeQuote.copyWith(color: sky.onSky),
+                            ),
+                          ),
                         ),
                       ),
                     ),
                   ),
-                ),
 
-                // The orb's box is the same size at every line, because
-                // everything above and below it is fixed.
-                //
-                // **Square, and centred in what is left.** `AspectRatio` caps
-                // the box at the short side rather than letting it stretch to
-                // a tall rectangle the orb would only draw a circle inside --
-                // paid for in shader work across the whole rect, for nothing.
-                // On a short phone the height wins and the side gaps simply
-                // come out wider than `_orbGutter`, which is the safe way for
-                // this to degrade.
-                //
-                // `inverted` is left unset, so the orb follows the ambient
-                // theme and the same two colours read correctly on the light
-                // canvas and the dark one.
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: _orbGutter,
-                    ),
-                    child: Center(
-                      child: AspectRatio(
-                        aspectRatio: 1,
-                        // Handed in as the builder's `child`, so the per-line
-                        // rebuild above cannot reach it. The orb repaints from
-                        // the level listenable without rebuilding at all.
-                        child: child,
+                  // The orb's box is the same size at every line, because
+                  // everything above and below it is fixed.
+                  //
+                  // **Square, and centred in what is left.** `AspectRatio` caps
+                  // the box at the short side rather than letting it stretch to
+                  // a tall rectangle the orb would only draw a circle inside --
+                  // paid for in shader work across the whole rect, for nothing.
+                  // On a short phone the height wins and the side gaps simply
+                  // come out wider than `_orbGutter`, which is the safe way for
+                  // this to degrade.
+                  //
+                  // `inverted` is left unset, so the orb follows the ambient
+                  // theme and the same two colours read correctly on the light
+                  // canvas and the dark one.
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: _orbGutter,
+                      ),
+                      child: Center(
+                        child: AspectRatio(
+                          aspectRatio: 1,
+                          // The same instance at every line, so the per-line
+                          // rebuild above cannot reach it. The orb repaints from
+                          // the level listenable without rebuilding at all.
+                          child: _orbOn(state.phase),
+                        ),
                       ),
                     ),
                   ),
-                ),
 
-                const SizedBox(height: _centringBand),
+                  const SizedBox(height: _centringBand),
 
-                const SizedBox(height: _exitGap),
+                  const SizedBox(height: _exitGap),
 
-                // One door at the bottom, and it is on from the first frame.
-                // Nothing on this screen is skippable by tapping, so unlike
-                // the breathing screen there is no tap for a button down here
-                // to swallow.
-                //
-                // **The label may not read as quitting and may not claim the
-                // session worked.** "That's enough for now" says the reader
-                // decided and claims nothing about how they feel, so somebody
-                // still flat can press it honestly. On the last line it
-                // becomes "I'm done", which is the only honest upgrade: the
-                // script really has finished, and that is a fact about the
-                // script rather than a verdict on the reader. The last line
-                // now says the same thing in words -- "You can close this
-                // page when you are done" -- so the button and the script
-                // agree instead of the screen simply going quiet.
-                SizedBox(
-                  height: _exitBand,
-                  child: Center(
-                    child: SkTextButton(
-                      label: state.isLastLine
-                          ? "I'm done"
-                          : "That's enough for now",
-                      color: SkContrast.captionOn(sk.canvas),
-                      onPressed: _leave,
+                  // One door at the bottom, and it is on from the first frame.
+                  // Nothing on this screen is skippable by tapping, so unlike
+                  // the breathing screen there is no tap for a button down here
+                  // to swallow.
+                  //
+                  // **The label may not read as quitting and may not claim the
+                  // session worked.** "That's enough for now" says the reader
+                  // decided and claims nothing about how they feel, so somebody
+                  // still flat can press it honestly. On the last line it
+                  // becomes "I'm done", which is the only honest upgrade: the
+                  // script really has finished, and that is a fact about the
+                  // script rather than a verdict on the reader. The last line
+                  // now says the same thing in words -- "You can close this
+                  // page when you are done" -- so the button and the script
+                  // agree instead of the screen simply going quiet.
+                  SizedBox(
+                    height: _exitBand,
+                    child: Center(
+                      child: SkTextButton(
+                        label: state.isLastLine
+                            ? "I'm done"
+                            : "That's enough for now",
+                        color: onGround,
+                        onPressed: _leave,
+                      ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         );
@@ -463,26 +517,58 @@ class _LowDayViewState extends State<LowDayView>
 // rebuild its `CustomPaint` and its painter for nothing, and the shader is the
 // most expensive thing on the screen.
 class _LowDayOrb extends StatelessWidget {
-  const _LowDayOrb({required this.seed, required this.level});
+  const _LowDayOrb({
+    required this.seed,
+    required this.level,
+    required this.phase,
+  });
 
   final double seed;
+
+  // The sky it sits in, for the orb's colours. See `OrbScene.orbColours`.
+  final DayPhase phase;
 
   // The script's warmth, already shaped. See `_followWarmth`.
   final Animation<double> level;
 
   // Warm sand over a deeper clay. Both full strength: the orb's own fade and
-  // the ramp's white end do the softening, so an alpha here would only wash it
-  // into the page.
+  // the see-through field do the softening, so an alpha here would only
+  // wash it into the sky.
   //
   // **Warm, and never hot.** A red or orange orb in front of somebody flat is
   // an alarm, and this screen spends seven minutes being ordinary. These two
   // are the temperature of a hand, which is the one image the script actually
   // asks the reader to feel.
-  static const Color _core = Color(0xFFE7BE9C);
-  static const Color _edge = Color(0xFFA87458);
+  //
+  // **Retuned on 26 September 2026, for the scene.** They were `#E7BE9C` over
+  // `#A87458`. On a pink or blue sky that deeper colour read as brown, and
+  // brown on a sky looks dirty rather than warm. Terracotta keeps the warmth
+  // without the mud, and the paler peach gives each petal a light edge.
+  static const Color _core = Color(0xFFEDB48A);
+  static const Color _edge = Color(0xFFB8674A);
 
   @override
   Widget build(BuildContext context) {
-    return SkBlobOrb(core: _core, edge: _edge, seed: seed, level: level);
+    final Brightness brightness = Theme.of(context).brightness;
+    final ({
+      Color core,
+      Color edge,
+      Color light,
+      Color dark,
+      Color field
+    }) colours = OrbScene.orbColours(
+        HomeSkyColors.of(phase, brightness), brightness,
+        core: _core, edge: _edge);
+    return SkBlobOrb(
+      core: colours.core,
+      edge: colours.edge,
+      lightEnd: colours.light,
+      darkEnd: colours.dark,
+      field: colours.field,
+      // Not flipped in dark mode on the scene. See `OrbScene.orbColours`.
+      inverted: false,
+      seed: seed,
+      level: level,
+    );
   }
 }

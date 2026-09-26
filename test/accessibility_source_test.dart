@@ -143,6 +143,9 @@ void main() {
     'tighten_view.dart': 'the lavender orb. Argued in CLAUDE.md: a soothing '
         'colour that went coral in one palette would be six promises',
     'low_day_view.dart': 'the warm orb, same argument',
+    'sk_blob_orb.dart': "the orb ramp's default black and white ends. The "
+        'ends of a grey ramp, not a colour anybody picks; a screen on a '
+        'painted scene replaces them (OrbScene)',
     'home_sky.dart': "Home's dawn, dusk and moonlit tints. The time of day is "
         'a fact about the world, not the palette -- a coral dawn in one theme '
         'would not read as dawn. Mixed into the canvas, and measured in '

@@ -65,8 +65,16 @@ class FeelingsMoth extends StatefulWidget {
   // her for the rest, so it has to own the layers either side of her.
   final Widget child;
 
-  static const String caption = 'How are you?';
-  static const String semanticLabel = 'How are you feeling?';
+  // **"Hi", in a circle, from 26 September 2026, at the user's request.**
+  // It was "How are you?" in a bubble, and three words beside a moth read as
+  // awkward. A greeting is enough to say the moth is somebody to meet; the
+  // question itself is asked on the picker it opens. Two letters also fit a
+  // true circle, which a longer word does not.
+  //
+  // The spoken name starts with the visible word, so voice control can say
+  // what it sees, and then says where it goes.
+  static const String caption = 'Hi';
+  static const String semanticLabel = 'Hi. How are you feeling?';
 
   // The moth at full size, and the square that takes the tap -- larger than
   // the drawing, because a small thing that moves is hard to hit.
@@ -185,15 +193,25 @@ class FeelingsMoth extends StatefulWidget {
   // whichever this sky carries.
   static Color captionColour(HomeSkyColors colours) => colours.onSky;
 
-  // **The softest wash that makes them readable, or none.** The evening
-  // hills are mid-tones, and no text colour at all clears 4.5:1 on every one
-  // of them -- the same fault the scene gradients had, fixed the same way,
-  // with `SkContrast.sceneScrim`. A sky that already clears gets nothing.
-  // `test/feelings_moth_test.dart` walks all eight skies.
-  static Color? wordsScrim(HomeSkyColors colours) => SkContrast.sceneScrim(
-        captionColour(colours),
-        groundsBehindWords(colours),
-      );
+  // **The fill of the oval bubble the words sit in.** White under dark
+  // words, black under light ones, at the softest strength that makes them
+  // readable -- `SkContrast.sceneScrim`, because the evening hills are
+  // mid-tones no text colour clears on its own.
+  //
+  // **Every sky gets a bubble now, from 26 September 2026, at the user's
+  // request.** Before, a sky that already cleared got bare words and the
+  // rest got a rounded box, so the same line was two different shapes
+  // depending on the hour, and the box read as awkward. `bubbleFloor` is how
+  // faint the bubble may be where no wash is needed, so it still reads as a
+  // shape. `test/feelings_moth_test.dart` walks all eight skies.
+  static const double bubbleFloor = 0.22;
+
+  static Color wordsScrim(HomeSkyColors colours) {
+    final Color ink = captionColour(colours);
+    final Color? needed = SkContrast.sceneScrim(ink, groundsBehindWords(colours));
+    final double alpha = math.max(needed?.a ?? 0, bubbleFloor);
+    return SkContrast.backdropFor(ink).withValues(alpha: alpha);
+  }
 
   // Where the moth is at a moment of the flight, in seconds from its start.
   // The planned path only: the wander and the darts go on top of it.
@@ -542,7 +560,7 @@ class _FeelingsMothState extends State<FeelingsMoth>
             Positioned(
               left: SkLayout.sm,
               right: box.maxWidth - (rest.dx - half * 0.7),
-              top: rest.dy - SkLayout.md,
+              top: rest.dy - SkLayout.xl,
               child: ExcludeSemantics(
                 child: IgnorePointer(
                   child: still
@@ -602,34 +620,31 @@ class _Words extends StatelessWidget {
 
   const _Words({required this.colours});
 
+  // The circle's width at 100% text. It grows with the text, so "Hi" stays
+  // well inside it at 200%.
+  static const double _diameter = 44;
+
   @override
   Widget build(BuildContext context) {
-    final Color? scrim = FeelingsMoth.wordsScrim(colours);
-    final Widget text = Text(
-      FeelingsMoth.caption,
-      textAlign: TextAlign.right,
-      style: SkText.homeMothWords.copyWith(
-        color: FeelingsMoth.captionColour(colours),
-      ),
-    );
-
+    final double size = MediaQuery.textScalerOf(context).scale(_diameter);
     return Align(
       alignment: Alignment.topRight,
-      child: scrim == null
-          ? text
-          : DecoratedBox(
-              decoration: BoxDecoration(
-                color: scrim,
-                borderRadius: BorderRadius.circular(SkLayout.md),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: SkLayout.sm,
-                  vertical: SkLayout.xs,
-                ),
-                child: text,
-              ),
-            ),
+      child: Container(
+        width: size,
+        height: size,
+        alignment: Alignment.center,
+        decoration: ShapeDecoration(
+          color: FeelingsMoth.wordsScrim(colours),
+          shape: const CircleBorder(),
+        ),
+        child: Text(
+          FeelingsMoth.caption,
+          textAlign: TextAlign.center,
+          style: SkText.homeMothWords.copyWith(
+            color: FeelingsMoth.captionColour(colours),
+          ),
+        ),
+      ),
     );
   }
 }

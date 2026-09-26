@@ -1,6 +1,10 @@
 import 'dart:async';
 
+import 'package:sidekick/app/core/home_place_service.dart';
 import 'package:sidekick/app/core/view_model.dart';
+import 'package:sidekick/app/models/day_phase.dart';
+import 'package:sidekick/app/models/moon_phase.dart';
+import 'package:sidekick/app/models/sun_times.dart';
 import 'package:sidekick/features/play/models/low_day_script.dart';
 
 // Walks "Somebody else, and you too" -- one line at a time, on its own clock.
@@ -41,12 +45,51 @@ import 'package:sidekick/features/play/models/low_day_script.dart';
 // -- the same fact `stepIndex` is half of. Two sources for one fact is how a
 // screen ends up showing an introduction over a running clock.
 class LowDayViewModel extends ViewModel<LowDayState> {
-  LowDayViewModel() : super(const LowDayState());
+  LowDayViewModel({
+    HomePlaceService? placeService,
+    DateTime Function()? now,
+  })  : _placeService = placeService,
+        _now = now ?? DateTime.now,
+        super(const LowDayState());
+
+  // Where the phone roughly is, for the sky's real sunrise and sunset.
+  // Optional: without it the sky falls back to fixed hours, which is what a
+  // test wants and what Home does when the zone is unknown.
+  final HomePlaceService? _placeService;
+
+  final DateTime Function() _now;
 
   Timer? _beat;
   bool _isStarted = false;
 
   List<LowDayStep> get _steps => LowDayScript.steps;
+
+  // The sky behind the orb: Home's, for the time of day. Called once from the
+  // view's initState. The same shape as `BreathingViewModel.readSky`: the
+  // clock's phase on the first frame, corrected to the real sun when the
+  // place is read, and never refreshed -- a sky that changed mid-script would
+  // be the screen moving on its own.
+  void readSky() {
+    final DateTime now = _now();
+    emit(current.copyWith(
+      phase: DayPhase.of(now),
+      moon: MoonPhase.at(now),
+    ));
+    unawaited(_readPlace(now));
+  }
+
+  Future<void> _readPlace(DateTime now) async {
+    final (double, double)? place = await _placeService?.coordinates();
+    if (place == null) return;
+    final DateTime today = DateTime(now.year, now.month, now.day);
+    final DayPhase phase =
+        DayPhase.of(now, sun: SunTimes.of(today, place.$1, place.$2));
+    final MoonPhase moon = MoonPhase.at(now, latitude: place.$1);
+    if (phase == current.phase && moon.southern == current.moon.southern) {
+      return;
+    }
+    emit(current.copyWith(phase: phase, moon: moon));
+  }
 
   // Called once, when the reader presses Begin.
   void start() {
@@ -98,6 +141,10 @@ class LowDayState {
   // Which line the band is showing.
   final int stepIndex;
 
+  // The sky behind the orb, Home's for the time of day. See `readSky`.
+  final DayPhase phase;
+  final MoonPhase moon;
+
   // Resting, warm, or settled -- and the one thing on this screen that drives
   // the orb. It is derived from nothing: the script carries it directly, on
   // the two lines that move it.
@@ -109,6 +156,8 @@ class LowDayState {
     this.messages = const {},
     this.hasStarted = false,
     this.stepIndex = 0,
+    this.phase = DayPhase.midday,
+    this.moon = const MoonPhase(age: 0.5),
     this.warmth = LowDayWarmth.resting,
   });
 
@@ -122,6 +171,8 @@ class LowDayState {
     Map<String, String>? messages,
     bool? hasStarted,
     int? stepIndex,
+    DayPhase? phase,
+    MoonPhase? moon,
     LowDayWarmth? warmth,
   }) {
     return LowDayState(
@@ -130,6 +181,8 @@ class LowDayState {
       messages: messages ?? this.messages,
       hasStarted: hasStarted ?? this.hasStarted,
       stepIndex: stepIndex ?? this.stepIndex,
+      phase: phase ?? this.phase,
+      moon: moon ?? this.moon,
       warmth: warmth ?? this.warmth,
     );
   }

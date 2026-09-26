@@ -29,7 +29,9 @@ import 'package:sidekick/app/core/shader_cache.dart';
 // ## Five things to give it, and nothing else
 //
 // **Two colours, a level, a seed, and a box.** That is the whole surface, and
-// it is deliberately this small.
+// it is deliberately this small. The one exception is the ramp's two ends,
+// and a see-through [field], for a screen that puts the orb on a painted
+// scene -- see [lightEnd] and [field].
 //
 // The orb had sliders for its shape for one afternoon on 20 September 2026 --
 // wobble, softness, crispness, swirl, rings, grain, radius, speed -- and they
@@ -91,6 +93,9 @@ class SkBlobOrb extends StatefulWidget {
     super.key,
     required this.core,
     required this.edge,
+    this.lightEnd = defaultLightEnd,
+    this.darkEnd = defaultDarkEnd,
+    this.field,
     this.level,
     this.inverted,
     this.seed = defaultSeed,
@@ -115,12 +120,38 @@ class SkBlobOrb extends StatefulWidget {
   // darker of the two and [core] the lighter; the ramp runs black, [edge],
   // [core], white.
   //
-  // **The two ends are black and white and are not settable.** They are what
-  // let one grey field reach real shadow and real highlight. A third theme
-  // colour in the middle was tried and removed: it squeezes the ends, and the
-  // ends are doing most of the work.
+  // **The two ends are black and white on a plain page.** They are what let
+  // one grey field reach real shadow and real highlight. A third theme colour
+  // in the middle was tried and removed: it squeezes the ends, and the ends
+  // are doing most of the work.
   final Color core;
   final Color edge;
+
+  // The ramp's two ends, each carrying its own alpha. Left alone they are
+  // opaque white and black, and the orb looks exactly as it always has.
+  //
+  // **They became settable on 26 September 2026, for the two Play orbs on
+  // Home's scene**, where a pure white or black end is a hole cut in the
+  // picture. There the light end is a pale tint of [core] -- the shine on the
+  // petals' fringes -- and the dark end a deep tint of [edge]. `OrbScene` in
+  // the Play feature picks them. Nothing else should need to.
+  final Color lightEnd;
+  final Color darkEnd;
+
+  // The see-through ground behind the petals, on a painted scene. Null on a
+  // plain page, where the uncovered part of the disc is the ramp's own end.
+  //
+  // **It is a layer of its own, not one of the ramp's ends.** It was the
+  // light end for one afternoon, and every petal's pale fringe went dark with
+  // it -- the fringe is the top of the ramp -- so the petals read as flat. As
+  // a layer it fades in only where nothing covers the disc, and the ramp keeps
+  // its shine. See `uField` in `shaders/blob_orb.frag`.
+  final Color? field;
+
+  // The two ends a plain page wants. Named rather than typed at the call
+  // site, because they are the orb's own and not a colour anybody picks.
+  static const Color defaultLightEnd = Color(0xFFFFFFFF);
+  static const Color defaultDarkEnd = Color(0xFF000000);
 
   // 0 resting, 1 loudest. Null means idle at [restingLevel] for good.
   final ValueListenable<double>? level;
@@ -328,6 +359,9 @@ class _SkBlobOrbState extends State<SkBlobOrb>
                 opacity: _opacity,
                 core: widget.core,
                 edge: widget.edge,
+                lightEnd: widget.lightEnd,
+                darkEnd: widget.darkEnd,
+                field: widget.field,
                 inverted: inverted,
                 seed: widget.seed,
               ),
@@ -350,6 +384,10 @@ abstract final class _U {
   static const int opacity = 7;
   static const int coreR = 8;
   static const int edgeR = 12;
+  static const int lightR = 16;
+  static const int darkR = 20;
+  static const int fieldR = 24;
+  static const int fieldMix = 28;
 }
 
 class _BlobOrbPainter extends CustomPainter {
@@ -361,6 +399,9 @@ class _BlobOrbPainter extends CustomPainter {
     required this.opacity,
     required this.core,
     required this.edge,
+    required this.lightEnd,
+    required this.darkEnd,
+    required this.field,
     required this.inverted,
     required this.seed,
   }) : super(
@@ -374,6 +415,9 @@ class _BlobOrbPainter extends CustomPainter {
   final ValueListenable<double> opacity;
   final Color core;
   final Color edge;
+  final Color lightEnd;
+  final Color darkEnd;
+  final Color? field;
   final bool inverted;
   final double seed;
 
@@ -391,6 +435,11 @@ class _BlobOrbPainter extends CustomPainter {
 
     _setColor(shader, _U.coreR, core);
     _setColor(shader, _U.edgeR, edge);
+    _setColor(shader, _U.lightR, lightEnd);
+    _setColor(shader, _U.darkR, darkEnd);
+    // A plain page sets no field: any colour does, because the mix is zero.
+    _setColor(shader, _U.fieldR, field ?? darkEnd);
+    shader.setFloat(_U.fieldMix, field == null ? 0.0 : 1.0);
 
     canvas.drawRect(Offset.zero & size, Paint()..shader = shader);
   }
@@ -413,6 +462,9 @@ class _BlobOrbPainter extends CustomPainter {
     return old.shader != shader ||
         old.core != core ||
         old.edge != edge ||
+        old.lightEnd != lightEnd ||
+        old.darkEnd != darkEnd ||
+        old.field != field ||
         old.inverted != inverted ||
         old.seed != seed;
   }

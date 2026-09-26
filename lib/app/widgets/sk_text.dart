@@ -165,21 +165,24 @@ abstract final class SkText {
   // The four styles of the day's quote at the top of Home, added 25
   // September 2026 from the daily-quote reference the user brought.
   //
-  // **The date is the largest thing on the page and the lightest.** 52 at
-  // 300: it is a place to start reading, not something to read, so it takes
-  // size without taking weight. It is the one 300 in the app, and it earns it
+  // **The date is the lightest thing on the page.** 300 weight: it is a
+  // place to start reading, not something to read, so it takes size without
+  // taking weight. It is the one 300 in the app, and it earns it
   // the way a printed calendar does -- a numeral that big at 600 would be a
   // shout. The quote under it is rank one in weight, which is what the eye
   // settles on.
   static const TextStyle homeDate = TextStyle(
     fontFamily: display,
     fontWeight: FontWeight.w300,
-    fontSize: 52,
+    // 32, down from 52 on 26 September 2026. At 52 it held a lone numeral;
+    // "Sat 26" at that size was reported as far too big.
+    fontSize: 32,
     height: 1,
-    letterSpacing: 52 * -0.015,
+    letterSpacing: 32 * -0.015,
   );
 
-  // The month under the date. Capitals and open tracking, the one place
+  // The month, on the same line as "Sat 26" since 26 September 2026 (it sat
+  // under the numeral before). Capitals and open tracking, the one place
   // outside a section header that uses them: it is a label on the numeral,
   // not a sentence.
   static const TextStyle homeMonth = TextStyle(
@@ -209,16 +212,16 @@ abstract final class SkText {
     height: 1.4,
   );
 
-  // "How are you?" beside the moth on Home. The handwritten face, because
-  // the moth is asking -- quoted speech is what `quoted` is for -- set two
-  // points under `lessonSpoken`, because it is a whisper beside her rather
-  // than a line on a page, and it still clears the 17 of body text at
-  // Shantell's taller x-height.
+  // "Hi" beside the moth on Home. The handwritten face, because the moth is
+  // speaking -- quoted speech is what `quoted` is for. 15, down from 18 on 26
+  // September 2026 at the user's request, when the words went into a small
+  // circle: at 18 the circle was bigger than the moth that says it. It is a
+  // whisper beside her, not a line on a page.
   static const TextStyle homeMothWords = TextStyle(
     fontFamily: quoted,
     fontWeight: FontWeight.w600,
     fontVariations: <FontVariation>[FontVariation('wght', 600)],
-    fontSize: 18,
+    fontSize: 15,
     height: 1.25,
   );
 

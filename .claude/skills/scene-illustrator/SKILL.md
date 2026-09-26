@@ -25,6 +25,7 @@ Also read `_docs/skills/lively-motion.md` for the general craft of motion.
 | Home's scene, cards with a picture, a calm screen someone chose to open | Anything new on the breathing screen and the whole panic path. It has one clock, the Rive events. A creature is a second clock; Home's own are there only by the user's decision |
 | Behind words, if it is slow and small (the user lifted that ban on 26 September 2026) | Across her face, or across a line of text while somebody reads it |
 | The breathing screen: it draws Home's own `HomeSky` and `HomeStage`, fireflies and butterflies included -- the user's decision, 26 September 2026, knowing they are a second clock there. **Never the moth, and never a new creature there** | On the character. She is Rive, through `SkCharacter` |
+| The two Play orb screens (tighten, Low): Home's `HomeSky` and an empty `HomeStage` through `OrbScene`, fireflies and butterflies included -- the user's decision, 26 September 2026, the same as the breathing screen. **Never the moth, and nobody on the hill** | |
 
 Before you add a creature, ask: **what is this screen for?** A creature is
 there to make a calm place feel alive. If the screen is for doing something

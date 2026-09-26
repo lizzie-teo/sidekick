@@ -320,6 +320,13 @@ class _MeViewState extends State<MeView> {
                                 ],
                               ),
                             ),
+                            SkRow(
+                              label: 'Show the date on Home',
+                              trailing: SkToggle(
+                                value: state.homeDateShown,
+                                onChanged: _viewModel.setHomeDateShown,
+                              ),
+                            ),
                           ],
                         ),
 

@@ -111,6 +111,7 @@ class DashboardViewModel extends ViewModel<DashboardViewModelState> {
     final Timer clock = Timer.periodic(clockCheck, (_) => refreshClock());
     addTeardown(clock.cancel);
     _readPlace();
+    _readDateShown();
 
     // Watched, not read once: the Me tab can change the character while this
     // page is alive, and she should already be the new one when Home is next
@@ -211,6 +212,16 @@ class DashboardViewModel extends ViewModel<DashboardViewModelState> {
     emit(current.copyWith(phase: phase, today: today, moon: moon));
   }
 
+  // Whether the reader wants the date over the quote. Read once: it is changed
+  // only on the Me tab, and coming back from there builds Home again.
+  //
+  // Not awaited by init(), for the same reason as the place below.
+  Future<void> _readDateShown() async {
+    final bool? shown =
+        await _deviceSettingsService.getBool(SettingsKeys.homeDateShown);
+    emit(current.copyWith(dateShown: shown ?? true));
+  }
+
   // Not awaited by init(): the prompt and a tapped check-in should not wait
   // on it. `emit` is guarded, so a reply after Home has gone is a no-op.
   Future<void> _readPlace() async {
@@ -271,6 +282,11 @@ class DashboardViewModelState {
   final DayPhase phase;
   final DateTime? today;
 
+  // Whether the date sits over the quote. Null until the setting has been
+  // read, and the top of the page waits for it: a date that showed for one
+  // frame and then vanished would be the screen moving on its own.
+  final bool? dateShown;
+
   // Tonight's moon: how much of it is lit, and which side.
   final MoonPhase moon;
 
@@ -284,6 +300,7 @@ class DashboardViewModelState {
     this.character = SidekickCharacter.girl,
     this.phase = DayPhase.midday,
     this.today,
+    this.dateShown,
     this.moon = const MoonPhase(age: 0.5),
     this.errors = const {},
     this.messages = const {},
@@ -296,6 +313,7 @@ class DashboardViewModelState {
     SidekickCharacter? character,
     DayPhase? phase,
     DateTime? today,
+    bool? dateShown,
     MoonPhase? moon,
     Map<String, String>? errors,
     Map<String, String>? messages,
@@ -307,6 +325,7 @@ class DashboardViewModelState {
       character: character ?? this.character,
       phase: phase ?? this.phase,
       today: today ?? this.today,
+      dateShown: dateShown ?? this.dateShown,
       moon: moon ?? this.moon,
       errors: errors ?? this.errors,
       messages: messages ?? this.messages,

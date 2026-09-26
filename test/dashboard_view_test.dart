@@ -3,6 +3,8 @@ import 'package:flutter/rendering.dart';
 
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:sidekick/app/utilities/date_format_utils.dart';
+
 import 'package:sidekick/app/widgets/theme.dart';
 import 'package:sidekick/data/models/noticing_prompts.dart';
 import 'package:sidekick/features/dashboard/models/daily_quotes.dart';
@@ -10,6 +12,7 @@ import 'package:sidekick/features/dashboard/views/dashboard_view.dart';
 import 'package:sidekick/features/dashboard/widgets/affirmation_sheet.dart';
 import 'package:sidekick/features/dashboard/widgets/feelings_moth.dart';
 import 'package:sidekick/features/dashboard/widgets/pause_sheet.dart';
+import 'package:sidekick/features/panic/views/feeling_picker_view.dart';
 import 'package:sidekick/features/play/views/scribble_view.dart';
 
 import 'support/pump_app.dart';
@@ -45,7 +48,9 @@ void main() {
     final DateTime now = DateTime.now();
     final DailyQuote quote = DailyQuotes.forDay(now);
 
-    expect(find.text('${now.day}'), findsOneWidget);
+    // "Sat 26 SEPT" is one rich text, so it is found by its spoken label.
+    expect(find.bySemanticsLabel(DateFormatUtils.spokenDay(now)),
+        findsOneWidget);
     expect(find.text(quote.text), findsOneWidget);
     expect(find.text(quote.attribution), findsOneWidget);
   });
@@ -120,6 +125,7 @@ void main() {
     await pumpApp(tester, isAuthenticated: true);
 
     for (final String label in <String>[
+      DashboardView.howIFeel,
       'Scribble',
       PauseSheet.buttonLabel,
       DashboardView.whatWentWell,
@@ -130,6 +136,33 @@ void main() {
       expect(tester.getSize(text).height, lessThan(lineHeight * 1.5),
           reason: label);
     }
+  });
+
+  // The moth is the charming door to the picker, but it is often in flight.
+  // The tile is the door that is always there, and it comes first because
+  // nothing else on Home reaches the picker standing still.
+  testWidgets('the first tile opens the feeling picker', (tester) async {
+    usePhone(tester);
+    await pumpApp(tester, isAuthenticated: true);
+
+    final List<double> lefts = <String>[
+      DashboardView.howIFeel,
+      PauseSheet.buttonLabel,
+      'Scribble',
+      DashboardView.whatWentWell,
+    ].map((String label) => tester.getTopLeft(find.text(label)).dx).toList();
+    for (int i = 1; i < lefts.length; i++) {
+      expect(lefts[i], greaterThan(lefts[i - 1]));
+    }
+
+    // Two controls with one name on one screen are one too many for a
+    // screen reader.
+    expect(DashboardView.howIFeel, isNot(FeelingsMoth.semanticLabel));
+
+    await tester.tap(find.text(DashboardView.howIFeel));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(FeelingPickerView), findsOneWidget);
   });
 
   // The soft button that used to say "Play" and go nowhere. It is now the
@@ -148,6 +181,9 @@ void main() {
 
     expect(find.text('Play'), findsNothing);
 
+    // Third in the row now, so it may start cut at the edge.
+    await tester.ensureVisible(find.text('Scribble'));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Scribble'));
     await tester.pumpAndSettle();
 

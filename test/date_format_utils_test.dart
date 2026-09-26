@@ -61,6 +61,15 @@ void main() {
     expect(DateFormatUtils.shortMonthLabel(DateTime(2025, 12)), 'Dec 2025');
   });
 
+  // Home's date: "Sat 26 SEPT" on screen, the whole words when spoken.
+  test('Home writes the day short and says it in full', () {
+    final DateTime day = DateTime(2026, 9, 26);
+    expect(DateFormatUtils.shortWeekday(day), 'Sat');
+    expect(DateFormatUtils.shortMonth(day), 'Sept');
+    expect(DateFormatUtils.spokenDay(day), 'Saturday 26 September');
+    expect(DateFormatUtils.shortWeekday(DateTime(2026, 9, 27)), 'Sun');
+  });
+
   // Anything kept or sent somewhere needs a day that is still that day when
   // it is read. "Yesterday" in a PDF opened next month names nothing.
   group('fullDate', () {

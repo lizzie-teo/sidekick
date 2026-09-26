@@ -1,6 +1,10 @@
 import 'dart:async';
 
+import 'package:sidekick/app/core/home_place_service.dart';
 import 'package:sidekick/app/core/view_model.dart';
+import 'package:sidekick/app/models/day_phase.dart';
+import 'package:sidekick/app/models/moon_phase.dart';
+import 'package:sidekick/app/models/sun_times.dart';
 import 'package:sidekick/features/play/models/tighten_script.dart';
 
 // Walks "Tighten, and stop" -- one line at a time, on its own clock.
@@ -36,12 +40,51 @@ import 'package:sidekick/features/play/models/tighten_script.dart';
 // -- the same fact `stepIndex` is half of. Two sources for one fact is how a
 // screen ends up showing an introduction over a running clock.
 class TightenViewModel extends ViewModel<TightenState> {
-  TightenViewModel() : super(const TightenState());
+  TightenViewModel({
+    HomePlaceService? placeService,
+    DateTime Function()? now,
+  })  : _placeService = placeService,
+        _now = now ?? DateTime.now,
+        super(const TightenState());
+
+  // Where the phone roughly is, for the sky's real sunrise and sunset.
+  // Optional: without it the sky falls back to fixed hours, which is what a
+  // test wants and what Home does when the zone is unknown.
+  final HomePlaceService? _placeService;
+
+  final DateTime Function() _now;
 
   Timer? _beat;
   bool _isStarted = false;
 
   List<TightenStep> get _steps => TightenScript.steps;
+
+  // The sky behind the orb: Home's, for the time of day. Called once from the
+  // view's initState. The same shape as `BreathingViewModel.readSky`: the
+  // clock's phase on the first frame, corrected to the real sun when the
+  // place is read, and never refreshed -- a sky that changed mid-script would
+  // be the screen moving on its own.
+  void readSky() {
+    final DateTime now = _now();
+    emit(current.copyWith(
+      phase: DayPhase.of(now),
+      moon: MoonPhase.at(now),
+    ));
+    unawaited(_readPlace(now));
+  }
+
+  Future<void> _readPlace(DateTime now) async {
+    final (double, double)? place = await _placeService?.coordinates();
+    if (place == null) return;
+    final DateTime today = DateTime(now.year, now.month, now.day);
+    final DayPhase phase =
+        DayPhase.of(now, sun: SunTimes.of(today, place.$1, place.$2));
+    final MoonPhase moon = MoonPhase.at(now, latitude: place.$1);
+    if (phase == current.phase && moon.southern == current.moon.southern) {
+      return;
+    }
+    emit(current.copyWith(phase: phase, moon: moon));
+  }
 
   // Called once, when the reader presses Begin.
   void start() {
@@ -97,6 +140,10 @@ class TightenState {
   // Which line the band is showing.
   final int stepIndex;
 
+  // The sky behind the orb, Home's for the time of day. See `readSky`.
+  final DayPhase phase;
+  final MoonPhase moon;
+
   // The pose most recently asked for, or null before the first one. It stays
   // set after it has been fired -- a trigger is a moment, not a mode, and
   // clearing it would mean a second emit for every pose.
@@ -119,6 +166,8 @@ class TightenState {
     this.messages = const {},
     this.hasStarted = false,
     this.stepIndex = 0,
+    this.phase = DayPhase.midday,
+    this.moon = const MoonPhase(age: 0.5),
     this.pose,
     this.poseSerial = 0,
     this.tension = TightenTension.resting,
@@ -134,6 +183,8 @@ class TightenState {
     Map<String, String>? messages,
     bool? hasStarted,
     int? stepIndex,
+    DayPhase? phase,
+    MoonPhase? moon,
     TightenPose? pose,
     int? poseSerial,
     TightenTension? tension,
@@ -144,6 +195,8 @@ class TightenState {
       messages: messages ?? this.messages,
       hasStarted: hasStarted ?? this.hasStarted,
       stepIndex: stepIndex ?? this.stepIndex,
+      phase: phase ?? this.phase,
+      moon: moon ?? this.moon,
       pose: pose ?? this.pose,
       poseSerial: poseSerial ?? this.poseSerial,
       tension: tension ?? this.tension,

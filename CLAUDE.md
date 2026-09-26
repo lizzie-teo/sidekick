@@ -436,7 +436,7 @@ and one quote at the top, and her standing on a hill.
 | The words on the sky are near-black or near-white per sky (`onSky`), not the palette's `ink` | same |
 | **Tap me and the tiles sit on a canvas panel, not on the land.** The palette's action fill measured as low as 1.02:1 on a violet hill | `DashboardView` |
 | One quote a day, the same all day. Every quote needs its source checked before release | `daily_quotes.dart` |
-| **The door to the feeling picker is her moth**, not a "Tap me" pill. It lands on her shoulder, says "How are you?" on its first two landings of a visit, then flies round her. A screen reader always finds it on her shoulder. The fluffball and her shadow were tried first and removed | `feelings_moth.dart` |
+| **The door to the feeling picker is her moth**, not a "Tap me" pill. It lands on her shoulder, says "Hi", in a small circle, on its first two landings of a visit, then flies round her. A screen reader always finds it on her shoulder. The fluffball and her shadow were tried first and removed | `feelings_moth.dart` |
 
 The time zone, not the location, was the user's choice: a permission prompt
 in a wellbeing app to colour a sky is a big ask, and a "no" needs this
@@ -746,14 +746,72 @@ stay here", which is the rule's own test for nobody watching. **If her poses
 are ever built this is a decision to reopen, not a bug to fix quietly** --
 and whichever way it lands, only one of the two is ever on the screen.
 
-It is also the one guided screen with **no scene gradient and a palette-proof
-orb**. The ground is `sk.canvas`, so the orb is the only colour on the page,
-and its lavender is a pair of fixed constants rather than two theme slots --
+It has a **palette-proof orb**. Its lavender is a pair of fixed constants rather than two theme slots --
 settled the same way `panic` is, and for the same reason. A soothing colour
 that went coral in Coral diorama and teal in Dusk terrarium would be six
 different promises. The orb was `destructive` for an afternoon first: a hot
 orb shows somebody their own state back, which is the opposite of what five
 minutes of relax-and-release is for.
+
+**It stands in Home's scene, from 26 September 2026, and so does the Low
+face.** The user asked for it, knowing it reverses two decisions: the tighten
+screen sat on `sk.canvas` "so the orb is the only colour on the page", and the
+Low face sat there too. Both now draw `HomeSky`, an empty `HomeStage` and the
+hill's ground, through `OrbScene` (`lib/features/play/widgets/`), the same
+shape as the breathing screen's `_Place`. What each decision was protecting
+against, and whether it is still here:
+
+| Decision | What it protected against | On Home's scene |
+| --- | --- | --- |
+| Orb on `sk.canvas` | A fixed orb fighting the **palette's** gradient, which changes hue by theme | Gone. Home's sky changes by time of day, never by theme |
+| Fixed lavender / fixed warm colours | Six palettes making six promises | Still holds. Kept |
+| Low face floor at 0.45 | A white core reading as a hole on a pale page | The white end is gone, so the reason is gone. Kept for now until somebody looks at a lower one |
+| Nothing moves but the orb | A second clock on an eyes-closed screen | **The fireflies and butterflies move -- the user's decision**, the same one as the breathing screen. The script still drives only the orb |
+
+**No character stands on the hill.** The orb is the subject, and the
+character and the orb never share a screen; `GuidedIntro` still has her.
+
+**The orb's ramp ends became settable for this, and it gained a field.**
+`SkBlobOrb.lightEnd` and `darkEnd` default to the old white and black, and
+`field` defaults to none, so the orb lab looks exactly as it did. On the scene
+(`OrbScene.orbColours`):
+
+| Part | On the scene | Why |
+| --- | --- | --- |
+| `field` | A darker, see-through tone of the sky, a layer of its own | Where nothing covers the disc. White there was a hole in a pale sky, black a hole in a night one. See-through, so each sky's own colour comes through |
+| `lightEnd` | A pale tint of the orb's core | The shine on each petal's fringe |
+| `darkEnd` | A deep tint of the orb's edge | Where petals pile up. Black read as soot on a sky |
+| `inverted` | `false` in both modes | The flip exists for a near-white page against a near-black one. The field already carries each sky's brightness |
+
+**The field was the ramp's light end for one afternoon, and the petals went
+flat.** The pale fringe between a petal and the gaps is the top of the ramp,
+so a dark end there darkened every fringe. As its own layer (`uField`,
+`kFieldFrom` in `shaders/blob_orb.frag`) it fades in only where nothing covers
+the disc, and the fringes keep their shine.
+
+**Both pairs were pulled apart for the sky the same day.** Tighten went from
+`#BB9EDB`/`#7655AA` to `#B99DE3`/`#5A3E96`: on a violet evening the old petals
+were the sky's own colour. Low went from `#E7BE9C`/`#A87458` to
+`#EDB48A`/`#B8674A`: the old deep colour read as brown, and brown on a sky
+looks dirty. A paler core than these was tried and read as white.
+
+**Light mode is bolder than dark, at the user's request, 26 September 2026.**
+The same colours that glow on a night sky read as faint on a pale one, and the
+lavender was called too subtle. In light mode `OrbScene.orbColours` makes a
+greyer colour richer -- more saturated, a step deeper -- and lays a darker,
+less see-through field behind the petals. Two limits came out of looking:
+a colour that is already strong is left alone (deepening the peach turned it
+burnt orange), and saturation stops at 0.78 (the Low face is "warm, and never
+hot", and orange reads as an alarm). Dark mode is unchanged. Each orb is still
+one colour in every theme; only how loud it is follows the room.
+
+**The sun and moon can sit behind or beside the orb.** Home places them to
+clear *her* head, and the orb is bigger than her head. At midday and in the
+afternoon the sun shows through the disc; at night the moon touches its edge.
+Left as it is on 26 September 2026 and raised with the user.
+
+The words take `onSky`, the X too, and the way out `HomeSkyColors.wordsOn` on
+the deepened ground. `test/orb_scene_test.dart` walks every sky.
 
 **The lavender was reopened on 20 September 2026 and kept.** The argument for
 taking the theme's colour is real -- a theme picker reads as skin-deep when the
@@ -885,8 +943,9 @@ is deleted. Do not rebuild it.
 
 **The Low face runs the same shape as the tighten screen, with different
 numbers.** Rebuilt 20 September 2026: it had a pale, palette-coloured orb
-idling on the scene gradient, and now sits on `sk.canvas` with two fixed warm
-colours and a level the script drives.
+idling on the scene gradient, and sat on `sk.canvas` with two fixed warm
+colours and a level the script drives. Since 26 September 2026 it stands in
+Home's scene instead -- see the tighten screen above.
 
 | | Level | Travel |
 | --- | --- | --- |
@@ -898,7 +957,9 @@ colours and a level the script drives.
 At 0.30 the disc has a blown-out white core -- correct in the tighten screen's
 deep lavender, a hole in a warm colour on a pale canvas. Nothing below 0.45
 belongs on this screen, the settled level included: 0.12 put the hollow look
-back at the exact moment the script closes.
+back at the exact moment the script closes. **On Home's scene the white core
+is gone** (the field is a see-through tone of the sky), so this floor's
+reason is gone too; it is kept until a lower one has been looked at.
 
 **Two lines in six and three quarter minutes move it, and the travel is slower
 than any line.** They are the only two places the reader's own body changes --
@@ -1399,7 +1460,8 @@ enough to breathe along with. Three things about it are decisions, not taste:
 at the user's request. Same sky for the time of day, same moon, same band
 (`HomeStage`), and her the same size in the same place on it
 (`HomeStage.characterHeight`, `bandHeight`, `characterLift`, which Home now
-reads too). Home's moth is not here.
+reads too). Home's moth is not here. The two Play orb screens stand in the
+same scene with nobody on the hill -- see the tighten screen.
 
 **The fireflies and butterflies move, and that is the user's decision, taken
 knowing it is a second clock on the panic path.** Raised twice that afternoon
@@ -1419,15 +1481,16 @@ Mechanics worth knowing:
   band on the breathing screen means checking this again.
 - `HomeSky`, `HomeStage`, `DayPhase`, `MoonPhase`, `SunTimes` and
   `zone_coordinates.dart` moved to `lib/app/` for this, and `HomePlaceService`
-  to `lib/app/core/`, registered in `service_locator.dart`, because two
-  features read them now.
+  to `lib/app/core/`, registered in `service_locator.dart`, because three
+  features read them now. `wordsOn` and `groundUnderButtons` moved from
+  `BreathingView` to `HomeSkyColors` for the same reason.
 - `BreathingViewModel.readSky()` puts up the clock's phase on the first frame
   and corrects it to the real sun when the place is read. It is read once and
   never refreshed: a sky that changed mid-session would be the screen moving
   on its own.
 - **The buttons sit on the hill, where Home has a cream panel.** The
   light-mode morning and midday grounds are mid-tones no word colour clears
-  at 70%, so `BreathingView.groundUnderButtons` deepens the ground under them,
+  at 70%, so `HomeSkyColors.groundUnderButtons` deepens the ground under them,
   only as far as it must. `test/breathing_view_sky_test.dart` walks every sky.
 
 The cue keeps being updated under the words even though nothing shows it. It
@@ -2236,9 +2299,10 @@ explicitly chosen the version that got softened.
 | A pair passes at 4.5:1 | Text nobody can read. It is a **floor**, and it was calibrated on dark text on light grounds | Pale text on a dark ground, where WCAG over-rewards and APCA is the one to believe |
 | No character on the picker | A **smiling** character over a question the app should have noticed, on the body screen | The dial's own head, which wears the mood the reader has just chosen. The body sheet still has none |
 | The neutral head has a flat mouth | An unmeant **answer** to a question the lesson is asking about a sentence | A face waiting for the reader to answer. `resting-<skin>` smiles a little; `lesson-neutral-<skin>` still does not |
+| The orb is the only colour on the page | A fixed orb fighting the **palette's** scene gradient, which changes hue with the theme | Home's sky, which changes with the time of day and never with the theme. The two Play orbs stand in it from 26 September 2026 |
 | Nothing moves on the panic path | Motion that **startles** or sets a second clock -- the cut startle, the fidgeting idle | A control the reader is dragging. The face follows the thumb, so it is one instruction, not two |
 | A bubble holds only what somebody said | The app **ventriloquising** -- putting its own label or its own words in a character's mouth, on the steps where the sentence is hers or the reader's | An **exhibit**: the swap drill's two introduction bubbles, which the page holds up, names and quotes. "A criticism" sits inside one and the sentence is in quote marks |
-| Only two styles take the handwriting face | Spending the face's one meaning -- *somebody is speaking* -- on a heading or a button | Words somebody says. The Home moth's "How are you?" is the third style, `SkText.homeMothWords`, added 25 September 2026 |
+| Only two styles take the handwriting face | Spending the face's one meaning -- *somebody is speaking* -- on a heading or a button | Words somebody says. The Home moth's "Hi" is the third style, `SkText.homeMothWords`, added 25 September 2026 |
 | Detail on a phone reads as noise (scene-illustrator) | The **land** -- mountains, hills, dunes, water -- where many small bumps turn to grain | One focal figure in a scene -- a girl and her cat in a boat, a crane, a lighthouse. Section 9 of the skill says how much detail survives at card size |
 | A bubble already says somebody is talking, so quote marks say it twice | The same thing, one level down. Her six sorting sentences are **spoken**, so the marks are a second speaker tag | A sentence being **quoted** rather than said. On the introduction the page is citing a specimen, and that is what quote marks are for |
 
