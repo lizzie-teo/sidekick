@@ -199,8 +199,8 @@ class LowDayScript {
   // hands the reader arithmetic.
 
   //
-  // The introduction page -- read before the clock starts, at the reader's
-  // own speed, with nothing moving.
+  // The introduction -- read in a sheet on the feeling picker before the
+  // clock starts, at the reader's own speed, with nothing moving.
   //
   // **The page opens on the situation, the way the wound-up page does.**
   // Rewritten 23 September 2026. It used to open on the name -- "People call
@@ -256,7 +256,11 @@ class LowDayScript {
   // **Nothing here names a length.** A duration is a number, and a number
   // hands the reader arithmetic.
   //
-  static const String title = 'Somebody else, and you too';
+  // **"Loving kindness", from 26 September 2026, at the user's request.** It
+  // was "Somebody else, and you too", which described the order of the script
+  // rather than naming it. The practice has a name people can look up again,
+  // and the sheet's third line already uses it.
+  static const String title = 'Loving kindness';
 
   static const List<String> intro = <String>[
     'When you are low, being kind to yourself gets hard.',

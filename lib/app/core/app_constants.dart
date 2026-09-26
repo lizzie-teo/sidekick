@@ -59,22 +59,6 @@ abstract class Routes {
   // the general script, which is the safer thing to land on by accident.
   static const String sensationQuery = 'sensation';
 
-  // Whether the breathing opens on its introduction page, carried as
-  // `?intro=1`. Every door on the picker sets it; the tab-bar panic button
-  // does not.
-  //
-  // **Unset is the pacer, and that is the safe way round.** A restored route
-  // or a deep link that lost its query string lands on the breathing itself,
-  // which is what somebody came for. The other way round would put a page
-  // with a Begin button in front of a panic attack because a parameter went
-  // missing.
-  //
-  // A parameter rather than a second route, for the same reason the
-  // introduction is not a route of its own: a route would put the page in the
-  // back stack, where the system back gesture drops somebody mid-script onto
-  // a page inviting them to start again.
-  static const String introQuery = 'intro';
-
   // Wound up -- tighten, and stop. The first of the three Play faces, reached
   // from the picker and from nowhere else. Nothing on it is saved, which is
   // the point, so the route carries nothing either.

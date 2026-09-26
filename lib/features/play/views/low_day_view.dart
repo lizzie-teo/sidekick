@@ -12,7 +12,6 @@ import 'package:sidekick/app/widgets/sk_layout.dart';
 import 'package:sidekick/app/widgets/sk_text.dart';
 import 'package:sidekick/app/widgets/sk_text_button.dart';
 import 'package:sidekick/features/play/models/low_day_script.dart';
-import 'package:sidekick/app/widgets/guided_intro.dart';
 import 'package:sidekick/features/play/viewmodels/low_day_viewmodel.dart';
 import 'package:sidekick/features/play/widgets/orb_scene.dart';
 
@@ -139,19 +138,13 @@ import 'package:sidekick/features/play/widgets/orb_scene.dart';
 // button that mutes nothing is a lie. It lands beside the X when they arrive,
 // which is why that band is a Row.
 //
-// **It opens on an introduction page, and the script does not start until
-// Begin.** Until 23 September 2026 `initState` started the clock, so the
-// first thing somebody saw after tapping a face was a line already counting
-// down -- and what the exercise was for arrived over the next fifteen
-// seconds, on a timer, after they had already committed to it. The words on
-// that page are the script's own opening lines, moved rather than rewritten,
-// and they are no longer in the timed script.
-//
-// **The two pages are one screen.** `GuidedIntro` puts its X in the same
-// corner at the same size, so pressing Begin changes the middle of the
-// screen and nothing else. It is not a second route: a route would put the
-// introduction in the back stack, where the system back gesture would drop
-// somebody mid-script onto a page inviting them to start it again.
+// **It is running when it arrives.** What the exercise is for is said
+// first, in a sheet on the feeling picker, and Begin there is what pushes
+// this screen -- so `initState` starts the clock. Until 26 September 2026 the
+// introduction was a page this screen drew in front of itself; that was one
+// page too many on the way in, and it put the character and the orb one tap
+// apart on one screen. A deep link or a restored route lands here running
+// too, which is the safe way round: never on a Begin button.
 //
 class LowDayView extends StatefulWidget {
   const LowDayView({super.key});
@@ -194,9 +187,9 @@ class _LowDayViewState extends State<LowDayView>
     _viewModel.readSky();
 
     // Attached before `start()`, which emits the first line synchronously.
-    // Attached now rather than at Begin, because `start()` emits the first
-    // line synchronously and the listener has to already be there.
     _viewModel.state.addListener(_followWarmth);
+
+    _viewModel.start();
   }
 
   @override
@@ -270,11 +263,6 @@ class _LowDayViewState extends State<LowDayView>
   // Same exit shape as the picker, the breathing screen and the tighten
   // screen: pop back to wherever the user was, or go home when the screen was
   // opened cold with nothing underneath it.
-  // Begin. The viewmodel emits the first line synchronously, which flips
-  // `hasStarted` and rebuilds this widget onto the script page -- so there is
-  // no `setState` here and no second copy of "has it started".
-  void _begin() => _viewModel.start();
-
   void _leave() {
     final GoRouter? router = GoRouter.maybeOf(context);
     if (router == null) return;
@@ -346,26 +334,9 @@ class _LowDayViewState extends State<LowDayView>
     // `OrbScene`. The words at the top take the sky's `onSky`, and the way out
     // at the foot the colour that reads on the hill's ground.
     //
-    // **The listener wraps the Scaffold rather than sitting inside it**, so
-    // the introduction can be swapped for the script by the same emit that
-    // shows the first line. Inside the Scaffold it would only ever rebuild
-    // the column, and the gate above it would never be read again.
     return ValueListenableBuilder<LowDayState>(
       valueListenable: _viewModel.state,
       builder: (BuildContext context, LowDayState state, Widget? _) {
-        // The introduction, until Begin. It is a whole page of its own, so
-        // nothing below is built while it is up and the orb's shader never
-        // runs behind it.
-        if (!state.hasStarted) {
-          return GuidedIntro(
-            title: LowDayScript.title,
-            lines: LowDayScript.intro,
-            emphasis: LowDayScript.emphasis,
-            onBegin: _begin,
-            onLeave: _leave,
-          );
-        }
-
         final HomeSkyColors sky =
             HomeSkyColors.of(state.phase, Theme.of(context).brightness);
         final Color onGround =

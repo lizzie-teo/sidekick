@@ -35,15 +35,9 @@ import 'package:sidekick/features/play/models/low_day_script.dart';
 // stops. Nobody is moved anywhere, nothing is congratulated, and the two doors
 // are the same two doors they have been since the first frame.
 //
-// **Nothing runs until the reader presses Begin.** The view opens on the
-// introduction page, which says what this exercise is for and carries the
-// standing way out. `start()` is what the button calls, and it is still safe
-// to call twice.
-//
-// The gate is `hasStarted` on the state rather than a bool in the widget,
-// because which of the two pages is showing *is* where the script has got to
-// -- the same fact `stepIndex` is half of. Two sources for one fact is how a
-// screen ends up showing an introduction over a running clock.
+// **It starts when the screen is built.** The introduction is a sheet on
+// the feeling picker now, and Begin there is what pushes this screen, so the
+// view calls `start()` from `initState`. It is still safe to call twice.
 class LowDayViewModel extends ViewModel<LowDayState> {
   LowDayViewModel({
     HomePlaceService? placeService,
@@ -91,7 +85,7 @@ class LowDayViewModel extends ViewModel<LowDayState> {
     emit(current.copyWith(phase: phase, moon: moon));
   }
 
-  // Called once, when the reader presses Begin.
+  // Called once, from the view's initState.
   void start() {
     if (_isStarted) return;
     _isStarted = true;
@@ -110,7 +104,6 @@ class LowDayViewModel extends ViewModel<LowDayState> {
     // the words are one instruction said twice rather than two things to
     // obey. That is the whole licence for a moving orb on this screen.
     emit(current.copyWith(
-      hasStarted: true,
       stepIndex: index,
       // A line with no warmth carries the last one forward, which is what
       // holds the orb warm from the palm on the chest all the way through the
@@ -133,11 +126,6 @@ class LowDayState {
   final Map<String, String> errors;
   final Map<String, String> messages;
 
-  // False while the introduction page is up, true from the moment Begin is
-  // pressed. The first line and this both land in one emit, so the page can
-  // never swap to a script that has not started.
-  final bool hasStarted;
-
   // Which line the band is showing.
   final int stepIndex;
 
@@ -154,7 +142,6 @@ class LowDayState {
     this.isLoading = false,
     this.errors = const {},
     this.messages = const {},
-    this.hasStarted = false,
     this.stepIndex = 0,
     this.phase = DayPhase.midday,
     this.moon = const MoonPhase(age: 0.5),
@@ -169,7 +156,6 @@ class LowDayState {
     bool? isLoading,
     Map<String, String>? errors,
     Map<String, String>? messages,
-    bool? hasStarted,
     int? stepIndex,
     DayPhase? phase,
     MoonPhase? moon,
@@ -179,7 +165,6 @@ class LowDayState {
       isLoading: isLoading ?? this.isLoading,
       errors: errors ?? this.errors,
       messages: messages ?? this.messages,
-      hasStarted: hasStarted ?? this.hasStarted,
       stepIndex: stepIndex ?? this.stepIndex,
       phase: phase ?? this.phase,
       moon: moon ?? this.moon,

@@ -5,12 +5,15 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:sidekick/app/core/app_constants.dart';
+import 'package:sidekick/app/core/guided_intros.dart';
 import 'package:sidekick/app/core/home_place_service.dart';
 import 'package:sidekick/app/core/service_locator.dart';
 import 'package:sidekick/app/core/theme_service.dart';
 import 'package:sidekick/app/models/day_phase.dart';
+import 'package:sidekick/app/models/guided_intro.dart';
 import 'package:sidekick/app/models/moon_phase.dart';
 import 'package:sidekick/app/models/sun_times.dart';
+import 'package:sidekick/app/widgets/guided_intro_sheet.dart';
 import 'package:sidekick/app/widgets/home_sky.dart';
 import 'package:sidekick/app/widgets/sk_colors.dart';
 import 'package:sidekick/app/widgets/sk_layout.dart';
@@ -19,7 +22,7 @@ import 'package:sidekick/app/widgets/sk_primary_button.dart';
 import 'package:sidekick/app/widgets/sk_text.dart';
 import 'package:sidekick/app/widgets/sk_text_button.dart';
 import 'package:sidekick/features/panic/models/feeling.dart';
-import 'package:sidekick/features/panic/models/sensation.dart';
+import 'package:sidekick/features/panic/models/breathing_arguments.dart';
 import 'package:sidekick/features/panic/widgets/body_sensation_sheet.dart';
 import 'package:sidekick/features/panic/widgets/feeling_button.dart';
 import 'package:sidekick/features/panic/widgets/feeling_confetti.dart';
@@ -194,6 +197,13 @@ class _FeelingPickerViewState extends State<FeelingPickerView> {
 
   // What the button under the dial does. Each stop has its own destination, and
   // one of them is a question rather than a screen.
+  //
+  // **A guided script opens behind a sheet on this page**, from 26 September
+  // 2026. The sheet says what the exercise is for; Begin closes it and pushes
+  // the screen, which is already running when it arrives. A swipe away is
+  // "I changed my mind" and leaves the reader on the dial with nothing
+  // started. Stops with no introduction -- Actually okay, Good, Really good --
+  // go straight where they go.
   Future<void> _go(Feeling feeling) async {
     if (feeling == Feeling.cantCope) {
       await _askTheBody();
@@ -201,40 +211,44 @@ class _FeelingPickerViewState extends State<FeelingPickerView> {
     }
 
     final String? route = feeling.route;
-    if (route == null || !mounted) return;
+    if (route == null) return;
+
+    final GuidedIntro? intro = guidedIntroFor(route);
+    if (intro != null) {
+      final bool begun = await GuidedIntroSheet.show(context, intro);
+      if (!begun || !mounted) return;
+    }
+    if (!mounted) return;
 
     await context.push(route);
   }
 
-  // "Can't cope" asks what is happening in the body before it starts the
-  // breathing, because the answer changes two lines of the script and the
-  // whole of the introduction page.
+  // "Can't cope" asks what is happening in the body, then shows the
+  // breathing's introduction for that answer -- one sheet, changing in place.
   //
-  // A swipe away is not an answer and goes nowhere: somebody who opened the
-  // sheet by mistake should land back on the dial, not in a six-minute
-  // script.
+  // A swipe away at either step is not an answer and goes nowhere: somebody
+  // who opened the sheet by mistake should land back on the dial, not in a
+  // six-minute script.
   Future<void> _askTheBody() async {
     final BodyAnswer? answer = await BodySensationSheet.show(context);
     if (answer == null || !mounted) return;
 
-    _breathe(answer.sensation);
-  }
+    // Pushed, not replaced. The picker is what the reader came from, and
+    // closing the breathing should put them back on it.
+    //
+    // **The sensation is a query parameter**, so a restored route still
+    // knows which tile was tapped. **The voice is `extra`**: it is the room
+    // the phone is in rather than where the reader is, and a restored route
+    // that loses it simply reads the stored setting, which the sheet has
+    // already written.
+    final String path = answer.sensation == null
+        ? Routes.breathe
+        : '${Routes.breathe}?${Routes.sensationQuery}=${answer.sensation!.name}';
 
-  // Pushed, not replaced. The picker is what the reader came from, and
-  // closing the breathing should put them back on it.
-  //
-  // **Both parameters are query parameters rather than `extra`**, so a
-  // restored route still knows which tile was tapped and that this door was
-  // the picker's. `intro` is what puts the introduction page in front of the
-  // pacer; the tab-bar panic button omits it and opens on the breathing
-  // itself.
-  void _breathe(Sensation? sensation) {
-    final String query = <String>[
-      '${Routes.introQuery}=1',
-      if (sensation != null) '${Routes.sensationQuery}=${sensation.name}',
-    ].join('&');
-
-    context.push('${Routes.breathe}?$query');
+    context.push(
+      path,
+      extra: BreathingArguments(isVoiceOn: answer.isVoiceOn),
+    );
   }
 
   // "Just looking" exits with nothing asked. Popping puts the user back on the

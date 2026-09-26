@@ -31,8 +31,9 @@ import 'package:sidekick/features/panic/models/sensation.dart';
 // lives here rather than in the view.
 abstract final class BreathingScript {
   //
-  // The introduction page -- read before the pacer starts, at the reader's own
-  // speed, with nothing moving. See `GuidedIntro`.
+  // The introduction -- read before the pacer starts, at the reader's own
+  // speed, with nothing moving. It is the second step of the body sheet on
+  // the picker; see `GuidedIntroSheet`.
   //
   // **It is on the picker's path only, and never on the tab-bar panic
   // button.** That button is pressed instead of waiting, and a page with a
@@ -125,10 +126,10 @@ abstract final class BreathingScript {
   // It read "You can stop whenever you want. Nothing here has to be
   // finished.", word for word the same sentence the two Play intros carried,
   // and it was cut from all three on the same day at the user's request.
-  // `GuidedIntro` no longer has a slot for one.
+  // `GuidedIntroPanel` has no slot for one.
   //
   // The argument against cutting it was made first and is kept in
-  // `guided_intro.dart`: it is the trauma-informed choice point the
+  // `guided_intro_sheet.dart`: it is the trauma-informed choice point the
   // meditation-writer skill asks every inward-turning script to give early,
   // while the reader is still surfaced.
   //

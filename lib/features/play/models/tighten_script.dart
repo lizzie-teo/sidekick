@@ -96,8 +96,8 @@ class TightenScript {
   // off the hold.
 
   //
-  // The introduction page -- read before the clock starts, at the reader's
-  // own speed, with nothing moving.
+  // The introduction -- read in a sheet on the feeling picker before the
+  // clock starts, at the reader's own speed, with nothing moving.
   //
   // **These are the script's own opening lines, moved rather than rewritten.**
   // Until 23 September 2026 the first three were steps 0, 1 and 2 of
@@ -126,7 +126,12 @@ class TightenScript {
   // here either: the page is read by somebody wound up, and the shortest
   // honest answer is the one they will actually read.
   //
-  static const String title = 'Tighten, and stop';
+  // **"Unwind", from 26 September 2026.** The user asked for "Release
+  // tension" or something better. "Release" is banned app-wide (see above),
+  // and "Tighten, and stop" read cold as an instruction. "Unwind" is the plain
+  // answer to the stop the reader just picked -- Wound up -- and it names
+  // where the exercise goes without promising how it will feel.
+  static const String title = 'Unwind';
 
   static const List<String> intro = <String>[
     'When you are wound up, your muscles go tight.',
@@ -179,8 +184,8 @@ class TightenScript {
   // in two buttons the reader can see rather than in a line they have to
   // remember.
   //
-  // `GuidedIntro` no longer takes a permission at all, so putting it back is
-  // a change to the widget as well as to this file.
+  // `GuidedIntroPanel` does not take a permission at all, so putting it back
+  // is a change to the widget as well as to this file.
 
   //
   static const List<TightenStep> opening = <TightenStep>[

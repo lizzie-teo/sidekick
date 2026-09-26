@@ -15,8 +15,8 @@ import 'package:sidekick/app/widgets/sk_blob_orb.dart';
 // `breathing_view.dart`).
 //
 // **Nobody stands on the hill.** The orb is the subject here, and the
-// character and the orb never share a screen. `GuidedIntro` in front of each
-// script still has her; Begin swaps that whole page for this one.
+// character and the orb never share a screen. The introduction in front of
+// each script is a sheet on the picker, with nobody in it.
 //
 // **The fireflies and butterflies move, and that is the user's decision,**
 // taken knowing they are a second clock on an eyes-closed screen -- the same

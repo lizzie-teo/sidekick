@@ -1,6 +1,8 @@
 import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:sidekick/app/models/guided_intro.dart';
+
 // The contract every feature implements.
 //
 // A feature is a folder under lib/features/ plus one entry in
@@ -22,6 +24,12 @@ abstract class FeatureModule {
 
   // Routes contributed to the shell. Paths are declared in app_constants.dart.
   List<RouteBase> get routes => const <RouteBase>[];
+
+  // Routes of this feature that the feeling picker opens through an
+  // introduction sheet rather than directly, keyed by path. The screen behind
+  // each one starts running the moment it is pushed; the sheet is where the
+  // reader decides. See `guidedIntroFor`.
+  Map<String, GuidedIntro> get guidedIntros => const <String, GuidedIntro>{};
 
   // Optional async work at startup, run after all services are registered.
   Future<void> onAppStart() async {}

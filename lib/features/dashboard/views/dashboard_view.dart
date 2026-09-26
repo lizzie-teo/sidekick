@@ -10,10 +10,9 @@ import 'package:sidekick/app/core/theme_service.dart';
 import 'package:sidekick/app/utilities/date_format_utils.dart';
 import 'package:sidekick/app/widgets/sk_character.dart';
 import 'package:sidekick/app/widgets/sk_colors.dart';
-import 'package:sidekick/app/widgets/sk_contrast.dart';
 import 'package:sidekick/app/widgets/sk_layout.dart';
 import 'package:sidekick/app/widgets/sk_main_tab_bar.dart';
-import 'package:sidekick/app/widgets/sk_pressable.dart';
+import 'package:sidekick/app/widgets/sk_raised_tile.dart';
 import 'package:sidekick/app/widgets/sk_text.dart';
 import 'package:sidekick/features/dashboard/models/daily_quotes.dart';
 import 'package:sidekick/app/core/home_place_service.dart';
@@ -518,27 +517,8 @@ class _Tiles extends StatelessWidget {
   }
 }
 
-// One door on the hill: an icon over a label, on a soft raised tile.
-//
-// **Raised, not frosted, and that was a choice.** Frosted glass was the
-// first idea (26 September 2026). Glass is only glass when something shows
-// through it, and these tiles sit on the flat canvas panel -- a blur of a
-// flat colour is the same flat colour, so glass here would read as a plain
-// white card. The panel is there for contrast (the old Tap me fill measured
-// 1.02:1 on a violet hill), so moving the tiles onto the sky to give the
-// glass something to blur was not on the table either.
-//
-// So the depth is said the way a pebble says it:
-//
-// | Layer | Job | Derived from |
-// | --- | --- | --- |
-// | The fill | A top-lit face, lighter at the top | `surface` into `canvas` |
-// | The lip | A lit top edge, so the tile has a rim | White, or the ink faintly in the dark |
-// | Two shadows | A tight one under the edge, a wide soft one under the body | The ink |
-// | The badge | A round soft well the icon sits in | `actionSoft` |
-//
-// Nothing is picked per palette. The shadow is read off the ink, so in a
-// dark palette it turns into a soft pale halo, the way `SkGlassButton` does.
+// One door on the hill: an icon over a label, on a soft raised tile. The
+// face is `SkRaisedTile`, shared with the body sheet behind "Can't cope".
 class _Tile extends StatelessWidget {
   final IconData icon;
   final String label;
@@ -549,9 +529,6 @@ class _Tile extends StatelessWidget {
   static const double width = 132;
   static const double minHeight = 104;
 
-  // The round well behind the icon.
-  static const double badgeSize = 44;
-
   const _Tile({
     required this.icon,
     required this.label,
@@ -560,104 +537,26 @@ class _Tile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final SkColors sk = context.sk;
-    final BorderRadius radius = BorderRadius.circular(SkLayout.xl);
-    // The lip is always light, because light comes from above in both
-    // modes: white on a pale tile, a faint breath of the ink on a dark one.
-    final bool darkInk = sk.ink.computeLuminance() < 0.5;
-    final Color lip = darkInk
-        ? SkContrast.backdropFor(sk.ink).withValues(alpha: 0.8)
-        : sk.ink.withValues(alpha: 0.14);
-    final Color faceBottom = Color.lerp(sk.surface, sk.canvas, 0.6)!;
-    // The icon owes 3:1 against its well, and `action` on `actionSoft` is
-    // not promised that in every palette.
-    final Color iconColour = SkContrast.readable(
-      sk.action,
-      sk.actionSoft,
-      minRatio: SkContrast.nonText,
-    );
-
-    // The shadow is painted outside the pressable, so the press wash lands
-    // on the face alone and the tile keeps its lift while held -- the same
-    // arrangement `SkGlassButton` uses.
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        borderRadius: radius,
-        boxShadow: <BoxShadow>[
-          BoxShadow(
-            color: sk.ink.withValues(alpha: 0.10),
-            offset: const Offset(0, 2),
-            blurRadius: 3,
-          ),
-          BoxShadow(
-            color: sk.ink.withValues(alpha: 0.10),
-            offset: const Offset(0, 10),
-            blurRadius: 24,
-            spreadRadius: -4,
+    return SkRaisedTile(
+      onPressed: onPressed,
+      semanticLabel: label,
+      minHeight: minHeight,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: <Widget>[
+          SkIconBadge(icon),
+          const SizedBox(height: SkLayout.lg),
+          ExcludeSemantics(
+            child: Text(
+              label,
+              style: SkText.rowLabel.copyWith(
+                color: context.sk.ink,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
           ),
         ],
-      ),
-      child: SkPressable(
-        onPressed: onPressed,
-        wash: sk.ink,
-        borderRadius: radius,
-        semanticLabel: label,
-        child: Container(
-          constraints: const BoxConstraints(minHeight: minHeight),
-          padding: const EdgeInsets.all(SkLayout.lg),
-          decoration: BoxDecoration(
-            borderRadius: radius,
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: <Color>[sk.surface, faceBottom],
-            ),
-            border: Border.all(color: sk.border.withValues(alpha: 0.7)),
-          ),
-          // The lit lip along the top. A rounded border cannot take a
-          // different colour per side, so the light is a sheen laid over
-          // the face and faded out before the icon.
-          foregroundDecoration: BoxDecoration(
-            borderRadius: radius,
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: <Color>[
-                lip,
-                lip.withValues(alpha: 0),
-              ],
-              stops: const <double>[0, 0.08],
-            ),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              ExcludeSemantics(
-                child: Container(
-                  width: badgeSize,
-                  height: badgeSize,
-                  decoration: BoxDecoration(
-                    color: sk.actionSoft,
-                    shape: BoxShape.circle,
-                  ),
-                  alignment: Alignment.center,
-                  child: Icon(icon, size: 24, color: iconColour),
-                ),
-              ),
-              const SizedBox(height: SkLayout.lg),
-              ExcludeSemantics(
-                child: Text(
-                  label,
-                  style: SkText.rowLabel.copyWith(
-                    color: sk.ink,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
       ),
     );
   }

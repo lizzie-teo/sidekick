@@ -10,7 +10,10 @@ import 'package:sidekick/app/core/auth_state_service.dart';
 import 'package:sidekick/app/core/feature_module.dart';
 import 'package:sidekick/app/core/logger_service.dart';
 import 'package:sidekick/app/core/service_locator.dart';
+import 'package:sidekick/app/models/guided_intro.dart';
 import 'package:sidekick/data/services/colouring_archive.dart';
+import 'package:sidekick/features/play/models/low_day_script.dart';
+import 'package:sidekick/features/play/models/tighten_script.dart';
 import 'package:sidekick/features/play/services/picture_exporter.dart';
 import 'package:sidekick/features/play/services/picture_repository.dart';
 import 'package:sidekick/features/play/services/picture_stores.dart';
@@ -91,6 +94,23 @@ class PlayModule extends FeatureModule {
   Future<void> onSessionEnded() async {
     await getIt<PictureRepository>().onSessionEnded();
   }
+
+  // The two guided scripts open behind an introduction sheet on the feeling
+  // picker, and each screen starts running the moment it is pushed. The
+  // words are the scripts' own opening lines.
+  @override
+  Map<String, GuidedIntro> get guidedIntros => const <String, GuidedIntro>{
+        Routes.tighten: GuidedIntro(
+          title: TightenScript.title,
+          lines: TightenScript.intro,
+          emphasis: TightenScript.emphasis,
+        ),
+        Routes.lowDay: GuidedIntro(
+          title: LowDayScript.title,
+          lines: LowDayScript.intro,
+          emphasis: LowDayScript.emphasis,
+        ),
+      };
 
   @override
   List<RouteBase> get routes => <RouteBase>[

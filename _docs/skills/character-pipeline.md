@@ -26,8 +26,18 @@ hypothetical. Read this before touching the file, alongside
   the `skin` number on the `Character` view model (0 girl, 1 ragdoll,
   2 rabbit); conditions `skin == N` move between states. Every transition has
   a **100 ms duration** — never 0 (trap 3 below).
+- **Entry goes straight to the right character**, one conditioned transition
+  per state (`skin == N`), not Entry -> Girl -> the rest. Fixed 26 September
+  2026: Entry used to lead only to Girl, so a rabbit or cat user got two
+  swaps in a row, and `SkCharacter`'s 0.2 s settle only covered the first --
+  the girl showed and faded into the rabbit on every screen that opened. A
+  new character needs its own Entry transition, or it brings that back.
 - At rest (statics in the file): the girl's parts are opacity 100, everyone
-  else's 0. So the file opens showing the girl.
+  else's 0. So the file opens showing the girl. On 26 September 2026 the
+  `ragdoll` and `rabbit` nodes were found at 100 too, and `Idle`,
+  `AnswerRight` and `AnswerWrong` held stray opacity keys on those whole
+  nodes. All removed: a whole-character opacity key belongs in a `Skin*`
+  timeline and nowhere else.
 - Taps: ten click listeners per character, each targeting a part and firing a
   trigger. Matching parts fire the **same** trigger on every character
   (face → `tapTorso`; ears → `tapEarLeft` / `tapEarRight`; everything else →

@@ -2,6 +2,7 @@ import 'package:go_router/go_router.dart';
 
 import 'package:sidekick/app/core/app_constants.dart';
 import 'package:sidekick/app/core/feature_module.dart';
+import 'package:sidekick/features/panic/models/breathing_arguments.dart';
 import 'package:sidekick/features/panic/models/sensation.dart';
 import 'package:sidekick/features/panic/views/breathing_view.dart';
 import 'package:sidekick/features/panic/views/feeling_picker_view.dart';
@@ -14,8 +15,8 @@ import 'package:sidekick/features/panic/views/feeling_picker_view.dart';
 // are answered in the same tap.
 //
 // Two ways into the breathing, and they are still different flows. Everything
-// the picker opens starts on an introduction page with a Begin button; the
-// tab-bar panic button goes straight to the pacer and is asked nothing,
+// the picker opens is introduced in a sheet on the picker, with a Begin
+// button there; the tab-bar panic button goes straight to the pacer and is asked nothing,
 // because it is pressed instead of waiting.
 //
 // The recap lands behind the breathing in phase 4; the three Play faces land
@@ -43,12 +44,10 @@ class PanicModule extends FeatureModule {
             sensation: Sensation.values
                 .asNameMap()[state.uri.queryParameters[Routes.sensationQuery]],
 
-            // Present at all is enough. The picker writes `intro=1`, and
-            // anything else arriving here -- a restored route, a deep link, a
-            // hand-typed URL -- opens on the pacer, which is the safer thing
-            // to land on by accident.
-            showsIntro:
-                state.uri.queryParameters.containsKey(Routes.introQuery),
+            // The voice as the introduction sheet left it. Absent from the
+            // tab-bar button and from a restored route, which read the stored
+            // setting instead.
+            isVoiceOn: BreathingArguments.of(state.extra).isVoiceOn,
           ),
         ),
       ];

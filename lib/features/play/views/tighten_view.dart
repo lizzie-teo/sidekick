@@ -12,7 +12,6 @@ import 'package:sidekick/app/widgets/sk_layout.dart';
 import 'package:sidekick/app/widgets/sk_text.dart';
 import 'package:sidekick/app/widgets/sk_text_button.dart';
 import 'package:sidekick/features/play/models/tighten_script.dart';
-import 'package:sidekick/app/widgets/guided_intro.dart';
 import 'package:sidekick/features/play/viewmodels/tighten_viewmodel.dart';
 import 'package:sidekick/features/play/widgets/orb_scene.dart';
 
@@ -167,19 +166,13 @@ import 'package:sidekick/features/play/widgets/orb_scene.dart';
 // TightenViewModel for why Dart owns that clock here when the breathing
 // screen hands it to Rive.
 //
-// **It opens on an introduction page, and the script does not start until
-// Begin.** Until 23 September 2026 `initState` started the clock, so the
-// first thing somebody saw after tapping a face was a line already counting
-// down -- and what the exercise was for arrived over the next fifteen
-// seconds, on a timer, after they had already committed to it. The words on
-// that page are the script's own opening lines, moved rather than rewritten,
-// and they are no longer in the timed script.
-//
-// **The two pages are one screen.** `GuidedIntro` puts its X in the same
-// corner at the same size, so pressing Begin changes the middle of the
-// screen and nothing else. It is not a second route: a route would put the
-// introduction in the back stack, where the system back gesture would drop
-// somebody mid-script onto a page inviting them to start it again.
+// **It is running when it arrives.** What the exercise is for is said
+// first, in a sheet on the feeling picker, and Begin there is what pushes
+// this screen -- so `initState` starts the clock. Until 26 September 2026 the
+// introduction was a page this screen drew in front of itself; that was one
+// page too many on the way in, and it put the character and the orb one tap
+// apart on one screen. A deep link or a restored route lands here running
+// too, which is the safe way round: never on a Begin button.
 //
 class TightenView extends StatefulWidget {
   const TightenView({super.key});
@@ -221,9 +214,10 @@ class _TightenViewState extends State<TightenView>
     // Home's sky for the time of day, read once and never refreshed.
     _viewModel.readSky();
 
-    // Attached now rather than at Begin, because `start()` emits the first
-    // line synchronously and the listener has to already be there.
+    // Attached before `start()`, which emits the first line synchronously.
     _viewModel.state.addListener(_followTension);
+
+    _viewModel.start();
   }
 
   @override
@@ -280,11 +274,6 @@ class _TightenViewState extends State<TightenView>
             duration: _settle, curve: Curves.easeInOut);
     }
   }
-
-  // Begin. The viewmodel emits the first line synchronously, which flips
-  // `hasStarted` and rebuilds this widget onto the script page -- so there is
-  // no `setState` here and no second copy of "has it started".
-  void _begin() => _viewModel.start();
 
   // Same exit shape as the picker and the breathing screen: pop back to
   // wherever the user was, or go home when the screen was opened cold with
@@ -363,26 +352,9 @@ class _TightenViewState extends State<TightenView>
     // `OrbScene`. The words at the top take the sky's `onSky`, and the way out
     // at the foot the colour that reads on the hill's ground.
     //
-    // **The listener wraps the Scaffold rather than sitting inside it**, so
-    // the introduction can be swapped for the script by the same emit that
-    // shows the first line. Inside the Scaffold it would only ever rebuild
-    // the column, and the gate above it would never be read again.
     return ValueListenableBuilder<TightenState>(
       valueListenable: _viewModel.state,
       builder: (BuildContext context, TightenState state, Widget? _) {
-        // The introduction, until Begin. It is a whole page of its own, so
-        // nothing below is built while it is up and the orb's shader never
-        // runs behind it.
-        if (!state.hasStarted) {
-          return GuidedIntro(
-            title: TightenScript.title,
-            lines: TightenScript.intro,
-            emphasis: TightenScript.emphasis,
-            onBegin: _begin,
-            onLeave: _leave,
-          );
-        }
-
         final HomeSkyColors sky =
             HomeSkyColors.of(state.phase, Theme.of(context).brightness);
         final Color onGround =

@@ -1,25 +1,41 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
+import 'package:sidekick/app/core/app_constants.dart';
+import 'package:sidekick/app/core/device_settings_service.dart';
+import 'package:sidekick/app/core/service_locator.dart';
+import 'package:sidekick/app/models/guided_intro.dart';
+import 'package:sidekick/app/widgets/guided_intro_sheet.dart';
+import 'package:sidekick/app/widgets/sk_circle_icon_button.dart';
 import 'package:sidekick/app/widgets/sk_colors.dart';
 import 'package:sidekick/app/widgets/sk_layout.dart';
+import 'package:sidekick/app/widgets/sk_sheet_frame.dart';
 import 'package:sidekick/app/widgets/sk_text.dart';
 import 'package:sidekick/app/widgets/sk_text_button.dart';
+import 'package:sidekick/features/panic/models/breathing_script.dart';
 import 'package:sidekick/features/panic/models/sensation.dart';
-import 'package:sidekick/features/panic/widgets/sensation_pill.dart';
+import 'package:sidekick/features/panic/widgets/sensation_tile.dart';
 
-// What the reader said when the body sheet asked.
+// What the reader said by the time they pressed Begin.
 //
-// A class rather than a nullable `Sensation`, because the sheet has three
-// answers and two of them are "no sensation": naming none of them still means
-// "take me to the breathing", and swiping the sheet away means "I did not
-// mean to open this". Collapsing the two sends somebody who changed their
-// mind into a six-minute script.
+// A class rather than a nullable `Sensation`, because two of the answers are
+// "no sensation": "I'd rather not say" still ends at the breathing, while
+// swiping the sheet away means "I did not mean to open this" and returns no
+// answer at all. Collapsing the two sends somebody who changed their mind
+// into a six-minute script.
 class BodyAnswer {
   // The sensation tapped, or null for "I'd rather not say" -- which is the
   // general script rather than nothing at all.
   final Sensation? sensation;
 
-  const BodyAnswer(this.sensation);
+  // Whether the voice should speak, as the speaker button on the sheet left
+  // it. Handed to the breathing so the first beat already knows: the pacer
+  // starts the moment it arrives, and reading the stored setting there would
+  // let a fraction of a second of voice out after the reader switched it off.
+  final bool isVoiceOn;
+
+  const BodyAnswer(this.sensation, {this.isVoiceOn = true});
 }
 
 // The four body sensations, behind "Can't cope".
@@ -44,7 +60,15 @@ class BodyAnswer {
 // The answer is never stored and never compared across sessions. Logging it
 // would turn normalising into monitoring, which feeds the fear it is there to
 // settle.
-class BodySensationSheet extends StatelessWidget {
+//
+// **One sheet, two steps, from 26 September 2026.** The question first; a
+// tile or "I'd rather not say" then turns the same sheet into the breathing's
+// introduction for that answer, and Begin closes it and pushes the pacer,
+// already running. It used to close here and push a page with the
+// introduction on it. **Never a second sheet on top of this one**: a stack
+// of sheets is two things to swipe away, and the first swipe would land on a
+// question already answered.
+class BodySensationSheet extends StatefulWidget {
   const BodySensationSheet({super.key});
 
   // The question. It is the deleted `BodyView`'s own words, kept because they
@@ -56,147 +80,160 @@ class BodySensationSheet extends StatelessWidget {
   // thing you do to a task, and nothing here is a task.
   static const String skipLabel = "I'd rather not say";
 
+  // Null when the sheet was swiped away or tapped behind, at either step.
   static Future<BodyAnswer?> show(BuildContext context) {
-    return showModalBottomSheet<BodyAnswer>(
-      context: context,
-      isScrollControlled: true,
-      // The root navigator, so the sheet covers the floating tab bar as well
-      // as the page.
-      useRootNavigator: true,
-      backgroundColor: context.sk.canvas,
-      // What a screen reader says when the sheet takes focus, and what a tap
-      // outside it is announced as. The default is "Scrim", which tells
-      // somebody who cannot see the sheet nothing about what just opened.
+    return SkSheetFrame.show<BodyAnswer>(
+      context,
       barrierLabel: 'Close this question',
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
-      ),
-      builder: (BuildContext sheetContext) => const BodySensationSheet(),
+      builder: (BuildContext sheetContext) =>
+          const SkSheetFrame(child: BodySensationSheet()),
     );
   }
 
   @override
+  State<BodySensationSheet> createState() => _BodySensationSheetState();
+}
+
+class _BodySensationSheetState extends State<BodySensationSheet> {
+  // False while the question is up. True once it is answered, when the sheet
+  // shows the introduction for [_sensation].
+  bool _answered = false;
+  Sensation? _sensation;
+
+  // The speaker button's state. On until the stored answer says otherwise --
+  // the same default the breathing screen has always had.
+  bool _isVoiceOn = true;
+
+  // Optional so a widget test with nothing in the container still opens the
+  // sheet; without it the voice is simply on.
+  final DeviceSettingsService? _settings =
+      getIt.isRegistered<DeviceSettingsService>()
+          ? getIt<DeviceSettingsService>()
+          : null;
+
+  @override
+  void initState() {
+    super.initState();
+    unawaited(_readVoice());
+  }
+
+  Future<void> _readVoice() async {
+    final bool? stored =
+        await _settings?.getBool(SettingsKeys.panicVoiceEnabled);
+    if (stored == null || !mounted) return;
+    setState(() => _isVoiceOn = stored);
+  }
+
+  // Remembered the moment it is pressed, the same as the button on the
+  // breathing screen -- it is one setting, and both buttons change it.
+  void _toggleVoice() {
+    final bool next = !_isVoiceOn;
+    setState(() => _isVoiceOn = next);
+    unawaited(_settings?.setBool(SettingsKeys.panicVoiceEnabled, next));
+  }
+
+  void _answer(Sensation? sensation) => setState(() {
+        _answered = true;
+        _sensation = sensation;
+      });
+
+  @override
   Widget build(BuildContext context) {
-    final SkColors sk = context.sk;
-
-    return SafeArea(
-      top: false,
-      child: LayoutBuilder(
-        builder: (BuildContext context, BoxConstraints constraints) {
-          // As tall as what is in it, with the scroll view underneath as the
-          // safety net for 200% text. The sheet is four short pills and a
-          // line, so on an ordinary phone it never scrolls.
-          final double cap = constraints.maxHeight.isFinite
-              ? constraints.maxHeight * 0.92
-              : double.infinity;
-
-          return ConstrainedBox(
-            constraints: BoxConstraints(maxHeight: cap),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: <Widget>[
-                // A picture of a gesture a screen-reader user is not making.
-                ExcludeSemantics(
-                  child: Padding(
-                    padding: const EdgeInsets.only(top: SkLayout.md),
-                    child: Center(
-                      child: Container(
-                        width: 36,
-                        height: 4,
-                        decoration: BoxDecoration(
-                          color: sk.chevron,
-                          borderRadius: BorderRadius.circular(999),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-
-                Flexible(
-                  child: SingleChildScrollView(
-                    padding: EdgeInsets.fromLTRB(
-                      SkLayout.gutter(context),
-                      SkLayout.xl,
-                      SkLayout.gutter(context),
-                      SkLayout.lg,
-                    ),
-                    child: SkLayout.readable(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: <Widget>[
-                          Semantics(
-                            header: true,
-                            child: Text(
-                              heading,
-                              textAlign: TextAlign.center,
-                              style: SkText.sheetHeading.copyWith(
-                                color: sk.ink,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: SkLayout.xl),
-                          _tiles(context),
-                          const SizedBox(height: SkLayout.lg),
-                          SkTextButton(
-                            label: skipLabel,
-                            onPressed: () => Navigator.of(context)
-                                .pop(const BodyAnswer(null)),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              ],
+    // Crossfade, never slide: the sheet is the same sheet, and only what is
+    // in it changes.
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 240),
+      switchInCurve: Curves.easeOut,
+      switchOutCurve: Curves.easeIn,
+      layoutBuilder: (Widget? current, List<Widget> previous) => Stack(
+        alignment: Alignment.bottomCenter,
+        children: <Widget>[...previous, if (current != null) current],
+      ),
+      child: _answered
+          ? KeyedSubtree(
+              key: const ValueKey<String>('intro'),
+              child: _intro(context),
+            )
+          : KeyedSubtree(
+              key: const ValueKey<String>('question'),
+              child: _question(context),
             ),
-          );
-        },
+    );
+  }
+
+  // The breathing's introduction for the answer just given. The words are
+  // `BreathingScript`'s, a tile swapping the first and the last line.
+  Widget _intro(BuildContext context) {
+    final Sensation? sensation = _sensation;
+
+    return GuidedIntroPanel(
+      intro: GuidedIntro(
+        title: BreathingScript.introTitle,
+        lines: BreathingScript.introFor(sensation),
+        emphasis: BreathingScript.introEmphasisFor(sensation),
+      ),
+      onBegin: () => Navigator.of(context)
+          .pop(BodyAnswer(sensation, isVoiceOn: _isVoiceOn)),
+      // **The speaker is here, and that is not decoration.** Somebody who
+      // opened this in an office or on a bus needs the room quiet before the
+      // first beat speaks, and the first beat speaks on the frame the pacer
+      // arrives.
+      leading: SkCircleIconButton(
+        icon: _isVoiceOn ? Icons.volume_up_rounded : Icons.volume_off_rounded,
+        // **The label says what the press will do, not what is true now.**
+        // "Voice on" would leave a reader guessing whether they are being
+        // told the state or offered the switch.
+        label: _isVoiceOn ? 'Turn the voice off' : 'Turn the voice on',
+        color: context.sk.ink,
+        onPressed: _toggleVoice,
       ),
     );
   }
 
-  // Two to a row, one at large text. Four full-width pills are another 250
-  // points of sheet, and the labels are two or three words -- which is what
-  // makes a half-width pill hold them.
-  Widget _tiles(BuildContext context) {
+  // The question: four rows and a way past them. It scrolls inside the
+  // frame's cap at 200% text; on an ordinary phone it never does.
+  //
+  // **Laid out like `GuidedIntroPanel`, from 26 September 2026.** The same
+  // title size, the same padding, the same gap under the title -- this sheet
+  // turns into that one in place, so the two steps must look like one sheet.
+  // The question was `sheetHeading` in a tighter frame and read as a
+  // different kind of sheet from the two it sits beside.
+  Widget _question(BuildContext context) {
+    final SkColors sk = context.sk;
+    final double gutter = SkLayout.gutter(context);
     final List<Sensation> sensations = Sensation.values;
-    final int columns = SkLayout.isLargeText(context) ? 1 : 2;
-    const double gap = SkLayout.sm;
 
-    final List<Widget> rows = <Widget>[];
-
-    for (int start = 0; start < sensations.length; start += columns) {
-      final List<Widget> cells = <Widget>[];
-
-      for (int column = 0; column < columns; column++) {
-        if (column > 0) cells.add(const SizedBox(width: gap));
-
-        final int index = start + column;
-        cells.add(Expanded(
-          child: index < sensations.length
-              ? SensationPill(
-                  sensation: sensations[index],
-                  onPressed: () =>
-                      Navigator.of(context).pop(BodyAnswer(sensations[index])),
-                )
-              : const SizedBox.shrink(),
-        ));
-      }
-
-      if (rows.isNotEmpty) rows.add(const SizedBox(height: gap));
-
-      // Both pills in a row are as tall as the taller one: a longer text size
-      // wraps "Hard to breathe" before it wraps "Dizzy", and a row of two
-      // different heights reads as a mistake.
-      rows.add(IntrinsicHeight(
-        child: Row(
+    return SingleChildScrollView(
+      padding: EdgeInsets.fromLTRB(gutter, SkLayout.xl, gutter, SkLayout.lg),
+      child: SkLayout.readable(
+        child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: cells,
+          children: <Widget>[
+            Semantics(
+              header: true,
+              child: Text(
+                BodySensationSheet.heading,
+                textAlign: TextAlign.center,
+                style: SkLayout.display(context, SkText.sceneLine)
+                    .copyWith(color: sk.ink),
+              ),
+            ),
+            const SizedBox(height: SkLayout.xl),
+            for (int i = 0; i < sensations.length; i++) ...<Widget>[
+              if (i > 0) const SizedBox(height: SkLayout.md),
+              SensationTile(
+                sensation: sensations[i],
+                onPressed: () => _answer(sensations[i]),
+              ),
+            ],
+            const SizedBox(height: SkLayout.lg),
+            SkTextButton(
+              label: BodySensationSheet.skipLabel,
+              onPressed: () => _answer(null),
+            ),
+          ],
         ),
-      ));
-    }
-
-    return Column(children: rows);
+      ),
+    );
   }
 }

@@ -602,7 +602,8 @@ explicit call in the second phase of `setupServiceLocator()`.
 | `lib/features/good_things/models/good_things_arguments.dart` | How another screen pre-fills the first line |
 | `lib/app/widgets/sk_mood_face.dart` | One live head: a skin number and a mood number, falling back to the still faces |
 | `lib/features/panic/widgets/feeling_dial.dart` | The semicircle dial the sidekick stands in |
-| `lib/features/panic/widgets/body_sensation_sheet.dart` | The four body sensations, behind "Can't cope" |
+| `lib/features/panic/widgets/body_sensation_sheet.dart` | The four body sensations, behind "Can't cope", then the breathing's introduction in the same sheet |
+| `lib/app/widgets/guided_intro_sheet.dart` | What an exercise is for, and Begin, in a sheet over the picker |
 | `lib/app/utilities/date_format_utils.dart` | "Today", "Yesterday", "5 September 2025" |
 | `lib/app/widgets/sk_main_tab_bar.dart` | The five slots and where each one goes |
 | `lib/app/widgets/sk_exercise_colors.dart` | The off-white ground every exercise sits on, in every theme |
@@ -672,68 +673,74 @@ The two never share a screen. Two things moving on two clocks is exactly what
 the breathing halo rule exists to prevent, and an eyes-closed script has no
 clock to share.
 
-**Both guided Play faces open on an introduction page, not on a running
-clock.** Added 23 September 2026. `GuidedIntro`
-(`lib/app/widgets/guided_intro.dart` -- it lived in `lib/features/play/widgets/`
-until the breathing screen became the third caller) says what the exercise is for
-and carries a **Begin** button; `TightenViewModel.start()` and
-`LowDayViewModel.start()` are what that button calls, and `hasStarted` on the
-state is what swaps the page.
+**Every guided door on the picker opens an introduction sheet over the
+dial, and the exercise is running when it arrives.** Since 26 September 2026,
+at the user's request. Wound up and Low open `GuidedIntroSheet`
+(`lib/app/widgets/guided_intro_sheet.dart`); "Can't cope" opens the body
+sheet, which turns into the breathing's introduction in place. Begin closes
+the sheet and pushes the screen, and the screen's `initState` calls `start()`.
+From 23 to 26 September the introduction was the `GuidedIntro` widget, a
+page each screen drew in front of itself until Begin -- one page too many on
+the way to an exercise. That widget is deleted (the name now belongs to the
+data class below), and so are `hasStarted` on the three states and
+`Routes.introQuery`.
 
-**The words on it are the scripts' own opening lines, moved rather than
+| Stop | What opens | After Begin |
+| --- | --- | --- |
+| Wound up | `GuidedIntroSheet` on the picker | `Routes.tighten`, already running |
+| Low | `GuidedIntroSheet` on the picker | `Routes.lowDay`, already running |
+| Can't cope | `BodySensationSheet`: the question, then the introduction for the answer, in the same sheet | `Routes.breathe`, already running |
+
+**The picker does not import the play feature to do this.** A feature lists
+the routes that open behind a sheet in `FeatureModule.guidedIntros`, and the
+picker finds them with `guidedIntroFor()` (`lib/app/core/guided_intros.dart`),
+which walks the registry the way the router does. The data is `GuidedIntro`
+in `lib/app/models/`.
+
+**"Can't cope" is one sheet, never two stacked.** A second sheet on top of
+the body question is two things to swipe away, and the first swipe would land
+on a question already answered. The price: there is no step back from the
+introduction to the question -- a mis-tapped tile is a swipe away and a
+second tap on the dial.
+
+**A swipe away, or a tap on the dial behind, is "I changed my mind" at either
+step.** Nothing starts, and the reader is back on the dial. That stays
+separate from "I'd rather not say", which is still a request for the
+breathing.
+
+**Unset is running, on every one of these routes.** A deep link or a
+restored route lands on the running exercise, never on a Begin button. There
+is no longer any parameter that can go missing and put a gate in front of a
+panic attack, because the introduction is not on the screen at all.
+
+**The words are the scripts' own opening lines, moved rather than
 written**, and they are no longer in the timed scripts -- `TightenScript.intro`
-and `LowDayScript.intro`, with the standing permission beside them. Tapping a
-face used to start a six-minute clock and *then* explain itself, four seconds
-at a time, to somebody who had already committed. A page answers first, at the
-reader's own speed. It also took about 20 seconds out of each script, which
-`wound-up-tighten-and-stop.md` had already asked for.
-
-Three rules the page inherits and one it adds:
+and `LowDayScript.intro`. Tapping a face used to start a six-minute clock and
+*then* explain itself, four seconds at a time, to somebody who had already
+committed. The sheet answers first, at the reader's own speed.
 
 | Rule | Why |
 | --- | --- |
 | No duration | A number hands the reader arithmetic -- and it is a promise about how long they have to stay |
-| No count, no record, no "skip next time" | All three are a tally of how often somebody felt bad. The page is the same on the first visit and the fiftieth |
-| The permission is said once | It is the last thing above the button, and "That's enough for now" then stays on screen for the whole script |
-| It is not a second route | A route would put the introduction in the back stack, where the system back gesture drops somebody mid-script onto a page inviting them to start again |
+| No count, no record, no "skip next time" | All three are a tally of how often somebody felt bad. The sheet is the same on the first visit and the fiftieth |
+| One bold phrase | `rowLabel` 17/400 at leading 1.6, one phrase at 600 -- `TightenScript.emphasis`, `LowDayScript.emphasis`, `BreathingScript.introEmphasisFor`. The title is `sceneLine` 24/600 |
+| It is not a route | A route would put the introduction in the back stack, where the system back gesture drops somebody mid-script onto a page inviting them to start again |
+| No status tone | A tinted panel with an icon is the shape of something to *deal with*; the permission line was one for an afternoon on 23 September 2026 and read as a condition attached to starting |
 
-**The sidekick says it, standing over a speech bubble, and the orb is not on
-this page.** That looks like a breach of the eyes-closed rule two paragraphs
-down and is not one: that rule's test is *whether anybody is watching*, and
-its worked answer for these two scripts was "the reader's eyes are shut, so a
-character is a performance to an empty room". Nobody's eyes are shut on an
-introduction page. It is read, with a finger on a button, before any
-instruction exists.
+**The sheet has no character in it -- the user's decision, 26 September
+2026.** It reverses "the sidekick says it, standing over a speech bubble",
+which was the introduction page's shape. The sheet is the title, the lines
+and Begin. **The rule that the character and the orb never share a screen
+still holds**: the sheet has neither, and each script screen has only the
+orb. `test/tighten_view_test.dart` and `test/low_day_view_test.dart` assert
+the orb is there from the first frame and she is not.
 
-**The other half of the rule is kept exactly:** the two never share a screen.
-She is on the introduction, the orb is on the script, and Begin swaps one
-whole page for the other. Two things moving on two clocks cannot happen across
-a swap. `test/tighten_view_test.dart` and `test/low_day_view_test.dart` assert
-both halves.
-
-She is the reader's **own** sidekick (`ThemeService.character`), not a teacher
--- nobody is being taught here -- and her tap reactions are live, the way the
-swap drill's opening page keeps them. The bubble takes `sk.surface` and
-`sk.border` rather than `SkSpeechBubble`'s default `context.exercise` set: the
-exercise ground is deliberately palette-proof, and this page is not a lesson.
-
-**The way out is a quiet line under the bubble, and a boxed version was tried
-and removed.** "You can stop whenever you want. Nothing here has to be
-finished." was an `SkStatusBlock` in the `info` tone for an afternoon on 23
-September 2026. A tinted panel with an icon is the shape this app uses for
-something the reader has to *deal with*, and one sitting between her bubble and
-Begin made the last thing before starting read as a condition attached to
-starting -- when the line is there to take a condition away. It was also the
-only boxed thing on the page. **Do not reach for a status tone here again:** the
-four tones report on something that happened, and nothing has happened yet.
-
-**Inside the bubble it is body text with one bold phrase**, not a block of
-semibold. `rowLabel` 17/400 at leading 1.6, with a single phrase at 600 --
-`TightenScript.emphasis` and `LowDayScript.emphasis`. That is
-`SwapIntroText.emphasis`'s rule reused: bold is worth what it is rationed to,
-so one phrase per page, held as a `String` field rather than markup, and
-proved by a test that it appears across the lines exactly once and is never a
-whole line. The title is `sceneLine` 24/600, one clear step over it.
+**At 200% text the words scroll inside the sheet and Begin stays on
+screen.** `SkSheetFrame` (`lib/app/widgets/sk_sheet_frame.dart`) caps every
+picker sheet at 0.9 of the screen, measured from `View.of(context)` --
+never `MediaQuery.sizeOf`, for the reason `SkFeedbackSheet` found. The 200%
+card list on the picker opens the same sheets.
+`test/feeling_picker_view_test.dart` runs both on the iPhone SE.
 
 **The tighten script is on the orb side, and it took a day to get there.** It
 reads like a posture script -- "lift them up towards your ears" -- and it
@@ -769,7 +776,8 @@ against, and whether it is still here:
 | Nothing moves but the orb | A second clock on an eyes-closed screen | **The fireflies and butterflies move -- the user's decision**, the same one as the breathing screen. The script still drives only the orb |
 
 **No character stands on the hill.** The orb is the subject, and the
-character and the orb never share a screen; `GuidedIntro` still has her.
+character and the orb never share a screen, and the introduction sheet in
+front of each script has neither.
 
 **The orb's ramp ends became settable for this, and it gained a field.**
 `SkBlobOrb.lightEnd` and `darkEnd` default to the old white and black, and
@@ -983,9 +991,10 @@ those asked the reader to compare a page of options; the dial asks them to move
 one thing and watch her answer.
 
 ```
-Picker -> Can't cope      -> the body sheet -> a sensation -> Routes.breathe?intro=1&sensation=<name>
-                                            -> "I'd rather not say" -> Routes.breathe?intro=1
-       -> Wound up / Low / Actually okay -> their own Play screens
+Picker -> Can't cope      -> the body sheet -> a sensation -> its introduction -> Begin -> Routes.breathe?sensation=<name>
+                                            -> "I'd rather not say" -> the general introduction -> Begin -> Routes.breathe
+       -> Wound up / Low -> their introduction sheet -> Begin -> their own Play screens, running
+       -> Actually okay -> its own Play screen
        -> Good / Really good -> Routes.goodThings
 
 Tab bar panic button      -> Routes.breathe          (no intro, no question)
@@ -1152,36 +1161,33 @@ are invitations, "Well done" would be a verdict on a feeling. A test asserts
 the labels are all different, so two stops sharing a door still say two
 different things. `Feeling.ctaLabel`.
 
-**Every door on the picker opens on an introduction page. The tab-bar panic
-button does not.** That is the one rule in this flow with the sharpest edge:
-the tab-bar button is pressed instead of waiting, and a page with a Begin on
-it is exactly the gate the breathing screen is built not to have. The picker
-has already cost a stop and a choice, so a page there is not in anybody's way
--- the same argument that used to put the body question on that path and keep
-it off this one.
+**Every door on the picker is introduced first. The tab-bar panic button is
+not.** That is the one rule in this flow with the sharpest edge: the tab-bar
+button is pressed instead of waiting, and a Begin button in front of it is
+exactly the gate the breathing screen is built not to have. The picker has
+already cost a stop and a choice, so an introduction there is not in anybody's
+way.
 
-| Door | Opens on | Script |
+| Door | Before the pacer | Script |
 | --- | --- | --- |
-| The panic button in the tab bar | The pacer, at once | General |
-| The picker's "Can't cope" | `GuidedIntro`, then the pacer | General |
-| One of the picker's four sensations | `GuidedIntro`, then the pacer | That sensation's |
+| The panic button in the tab bar | Nothing | General |
+| The picker's "Can't cope", then "I'd rather not say" | The introduction, in the body sheet | General |
+| One of the picker's four sensations | The introduction, in the body sheet | That sensation's |
 
-`Routes.introQuery` (`?intro=1`) is what carries it, and **unset is the
-pacer**. A restored route or a deep link that lost its query string lands on
-the breathing itself, which is what somebody came here for; the other way
-round would put a Begin button in front of a panic attack because a parameter
-went missing.
+**The breathing screen always starts at once.** The introduction lives in the
+body sheet on the picker, not on this screen, so a restored route or a deep
+link can only ever land on the pacer. `?intro=1` is gone.
 
-**The lead-in is not moved onto that page and is not shortened.** It looks
+**The lead-in is not moved into the sheet and is not shortened.** It looks
 like the trade the two Play scripts made, where three opening lines came off
-the timer and onto the page, and it is not. Those three said what the exercise
+the timer and into the introduction, and it is not. Those three said what the exercise
 was for, which is a thing to read before committing. These three are a
 countdown into the first breath -- they exist so the breath starts on a
 boundary rather than mid-way. "Small breaths." especially stays: it is the
 last thing said before the first breath on purpose, and a Begin button between
 it and the breath would put an unknown gap there.
 
-**The page is three lines, and a tile swaps the first and the last:**
+**The introduction is three lines, and a tile swaps the first and the last:**
 
 | Line | Says | General | A tile's |
 | --- | --- | --- | --- |
@@ -1224,15 +1230,13 @@ what the body is doing and the second what it is not doing, and noticing a
 sensation without its answer is the loop the whole screen exists to interrupt.
 They also have recordings, read as one performance.
 
-**The speaker button is on the introduction page**, opposite the X, in the
-`GuidedIntro.trailing` slot added for it. The standing rule is that it never
-waits for a stage: with a page in front of the pacer, a speaker that appeared
-only after Begin would appear after the voice did.
-
-**`GuidedIntro` moved to `lib/app/widgets/`** the same day, because a third
-screen opens on it. The two Play scripts are in `lib/features/play/`; the
-breathing is not, and a feature reaching into another feature's widgets is the
-shape the registry exists to prevent.
+**The speaker button is in the sheet, beside Begin**, in
+`GuidedIntroPanel.leading`. The standing rule is that it never waits for a
+stage, and the pacer's first beat speaks on the frame the screen arrives. It
+sits beside Begin rather than in a corner because Begin's band never scrolls,
+so at 200% text it stays on screen. The sheet writes the setting and also
+hands its answer over as `BreathingArguments` (GoRoute `extra`), so the pacer
+never reads the stored value after its first beat has already spoken.
 
 **The four tiles are two or three words.** Shortened on 23 September 2026
 from "My heart is racing", "I can't get a full breath", "I feel like fainting"
@@ -1499,17 +1503,14 @@ the line was wrong the moment the words ran out.
 
 **The sidekick must never shift.** She is the thing the user is breathing
 with; one that slides when a long line arrives has moved while they were
-trying to match her. Both screens are built so she cannot:
+trying to match her. The breathing screen is built so she cannot:
 
 - On the breathing screen every band except hers is a **fixed height** -- the
   text band, the counter's band after the counter has gone, and both button
   bands from the first frame. Her `Expanded` is therefore the same box at
   every moment. Long text scrolls inside its band rather than growing it.
-- On the introduction page she is a **picture at a capped share of the
-  height**, so the words around her double at 200% text and she does not.
-  Everything that can grow is inside the scroll view; Begin is not.
 
-Adding a row to either screen means taking the height out of one of those
+Adding a row to the screen means taking the height out of one of those
 bands, not out of her.
 
 **The script is ten lines and it ends by saying so.** Four groups --
@@ -2206,6 +2207,7 @@ by name with a leading slash, or just describe the job and it loads itself.
 | `/practice-writer` | Writing or editing a lesson that teaches a psychology skill | Anything in `lib/features/practice/` -- assertiveness, saying no, self-compassion drills. **Not** the app's own voice -- that is `_docs/kind-writing-style.md` |
 | `/scene-illustrator` | Painting a scene in the Alto's Odyssey style, and small creatures that move like the real insect | Drawing or changing Home's scene, a card picture or a new scene, or adding a firefly, butterfly, moth, bee, seed or leaf. **Never** the breathing screen or the character |
 | `/lesson-design` | How a lesson is laid out: how much goes on a screen, step or scroll, what may go behind a tap | Building or restructuring a teaching screen, adding a page to a lesson, or any request about accordions, "show more", info icons or a lesson feeling long. **Not** the words -- that is `/practice-writer` |
+| `/ui-motion` | How the app itself moves: pages, tabs, sheets, presses, horizontal rows, swaps, haptics, Reduce Motion. Emil Kowalski's rules, in Flutter | Before adding or changing any animation, curve, duration, spring or haptic on a screen, or "make this feel smoother". **Not** the character (`/rive-animator`), the painted creatures (`/scene-illustrator`), or the breathing screen's timing |
 | `/colouring-page` | Adding a page to the colouring book: the image prompt, checking the drawing, tracing it, finding leaks, registering it | The user wants a new colouring page, a prompt to generate one, or drops a drawing into `assets/colouring/`. **Not** Home's painted scenes -- that is `scene-illustrator` |
 
 This table is maintained by hand, so it can fall behind. Typing `/` in Claude

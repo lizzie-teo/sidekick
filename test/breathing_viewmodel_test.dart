@@ -544,6 +544,27 @@ void main() {
       });
     });
 
+    // The picker's sheet has a speaker of its own, and the pacer starts the
+    // moment Begin pushes it. A stored "off" read back after the first beat
+    // would let that beat speak; the answer handed over is used instead.
+    test('a voice switched off in the sheet never says the first beat', () {
+      fakeAsync((async) {
+        final FakePanicVoice quiet = FakePanicVoice();
+        final BreathingViewModel handed = BreathingViewModel(
+          isVoiceOn: false,
+          voice: quiet,
+          deviceSettingsService: settings,
+        );
+
+        handed.start();
+        async.elapse(BreathingViewModel.leadIn.first.hold);
+
+        expect(quiet.said, isEmpty);
+        expect(handed.state.value.isVoiceOn, isFalse);
+        handed.dispose();
+      });
+    });
+
     test('stops mid-beat when the reader skips the lead-in', () {
       vm.start();
       vm.skipLeadIn();

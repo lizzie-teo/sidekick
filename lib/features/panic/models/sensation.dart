@@ -119,7 +119,7 @@ enum Sensation {
 
   final String label;
 
-  // This sensation's two lines on the introduction page, and the phrase inside
+  // This sensation's two lines on the introduction, and the phrase inside
   // the second of them set in 600.
   //
   // **The page speaks to the tile that was tapped, top to bottom.** It said

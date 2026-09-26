@@ -1,13 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 
 import 'package:sidekick/app/core/app_constants.dart';
 import 'package:sidekick/app/core/service_locator.dart';
 import 'package:sidekick/app/core/theme_service.dart';
+import 'package:sidekick/app/widgets/guided_intro_sheet.dart';
+import 'package:sidekick/app/widgets/sk_blob_orb.dart';
+import 'package:sidekick/app/widgets/sk_character.dart';
 import 'package:sidekick/app/widgets/sk_mood_face.dart';
+import 'package:sidekick/app/widgets/sk_speech_bubble.dart';
 import 'package:sidekick/app/widgets/theme.dart';
+import 'package:sidekick/features/panic/models/breathing_script.dart';
 import 'package:sidekick/features/panic/models/feeling.dart';
 import 'package:sidekick/features/panic/models/sensation.dart';
+import 'package:sidekick/features/panic/viewmodels/breathing_viewmodel.dart';
 import 'package:sidekick/features/panic/views/feeling_picker_view.dart';
 import 'package:sidekick/features/panic/widgets/body_sensation_sheet.dart';
 import 'package:sidekick/features/panic/widgets/feeling_button.dart';
@@ -167,6 +174,8 @@ void main() {
       expect(router.state.uri.path, Routes.panic);
     });
 
+    // One sheet, two steps: the tile turns the question into the breathing's
+    // introduction in place, and only Begin moves anybody.
     testWidgets('a sensation carries its own script to the breathing',
         (tester) async {
       final router =
@@ -176,14 +185,24 @@ void main() {
       await tester.tap(find.text(Sensation.cantBreathe.label));
       await tester.pumpAndSettle();
 
+      // Still on the dial, with the same sheet now holding the introduction.
+      expect(router.state.uri.path, Routes.panic);
+      expect(find.text(BodySensationSheet.heading), findsNothing);
+      expect(_inSheet(BreathingScript.introTitle), findsOneWidget);
+      expect(find.byType(BottomSheet), findsOneWidget,
+          reason: 'a second sheet was stacked on the first');
+
+      await tester.tap(find.text('Begin'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
+
       expect(router.state.uri.path, Routes.breathe);
       expect(router.state.uri.queryParameters[Routes.sensationQuery],
           Sensation.cantBreathe.name);
 
-      // Every door on the picker opens on the introduction page. Only the
-      // tab-bar panic button skips it.
-      expect(router.state.uri.queryParameters.containsKey(Routes.introQuery),
-          isTrue);
+      // Running on arrival: the lead-in's first beat, and no Begin.
+      expect(find.text(BreathingViewModel.leadIn.first.line), findsOneWidget);
+      expect(find.text('Begin'), findsNothing);
     });
 
     testWidgets('naming nothing still breathes, with the general script',
@@ -194,6 +213,14 @@ void main() {
       await pickFeeling(tester, Feeling.cantCope);
       await tester.tap(find.text(BodySensationSheet.skipLabel));
       await tester.pumpAndSettle();
+
+      for (final String line in BreathingScript.introFor(null)) {
+        expect(find.text(line), findsOneWidget, reason: line);
+      }
+
+      await tester.tap(find.text('Begin'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
 
       expect(router.state.uri.path, Routes.breathe);
       expect(router.state.uri.queryParameters[Routes.sensationQuery], isNull);
@@ -215,10 +242,114 @@ void main() {
       expect(find.text(BodySensationSheet.heading), findsNothing);
     });
 
+    // And the same at the second step: an answer given is not a Begin.
+    testWidgets('swiping the introduction away goes nowhere', (tester) async {
+      final router =
+          await pumpApp(tester, location: Routes.panic, isAuthenticated: true);
+
+      await pickFeeling(tester, Feeling.cantCope);
+      await tester.tap(find.text(Sensation.faint.label));
+      await tester.pumpAndSettle();
+
+      await tester.fling(
+        _inSheet(BreathingScript.introTitle),
+        const Offset(0, 600),
+        2000,
+      );
+      await tester.pumpAndSettle();
+
+      expect(router.state.uri.path, Routes.panic);
+      expect(find.byType(GuidedIntroPanel), findsNothing);
+    });
+
+    // Wound up and Low open their introduction in a sheet over the dial.
+    for (final (Feeling, String, List<String>, String) door
+        in <(Feeling, String, List<String>, String)>[
+      (
+        Feeling.woundUp,
+        TightenScript.title,
+        TightenScript.intro,
+        TightenScript.steps.first.line,
+      ),
+      (
+        Feeling.low,
+        LowDayScript.title,
+        LowDayScript.intro,
+        LowDayScript.steps.first.line,
+      ),
+    ]) {
+      final (Feeling feeling, String title, List<String> intro, String first) =
+          door;
+
+      testWidgets('${feeling.label} opens its introduction in a sheet',
+          (tester) async {
+        final router = await pumpApp(tester,
+            location: Routes.panic, isAuthenticated: true);
+
+        await pickFeeling(tester, feeling);
+
+        // Still on the dial. The sheet is the introduction, not a page.
+        expect(router.state.uri.path, Routes.panic);
+        expect(find.text(title), findsOneWidget);
+        for (final String line in intro) {
+          expect(find.text(line), findsOneWidget, reason: line);
+        }
+
+        // **No character in the sheet**, from 26 September 2026: the title,
+        // the words and Begin. And no speaker -- these scripts have no voice.
+        expect(
+          find.descendant(
+            of: find.byType(GuidedIntroPanel),
+            matching: find.byType(SkCharacter),
+          ),
+          findsNothing,
+        );
+        expect(find.byType(SkSpeechBubble), findsNothing);
+        expect(find.byIcon(Icons.volume_up_rounded), findsNothing);
+      });
+
+      testWidgets('${feeling.label}: swiping the sheet away starts nothing',
+          (tester) async {
+        final router = await pumpApp(tester,
+            location: Routes.panic, isAuthenticated: true);
+
+        await pickFeeling(tester, feeling);
+        await tester.tapAt(const Offset(10, 10));
+        await tester.pumpAndSettle();
+
+        expect(router.state.uri.path, Routes.panic);
+        expect(find.text(title), findsNothing);
+
+        // Long enough for several lines to have gone by, were anything
+        // running somewhere.
+        await tester.pump(const Duration(seconds: 30));
+        expect(find.text(first), findsNothing);
+      });
+
+      testWidgets('${feeling.label}: Begin lands on a running screen',
+          (tester) async {
+        final router = await pumpApp(tester,
+            location: Routes.panic, isAuthenticated: true);
+
+        await pickFeeling(tester, feeling);
+        await tester.tap(find.text('Begin'));
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 500));
+
+        expect(router.state.uri.path, feeling.route);
+        expect(find.text(first), findsWidgets);
+        expect(find.text('Begin'), findsNothing);
+        expect(find.byType(SkBlobOrb), findsOneWidget);
+      });
+    }
+
     testWidgets('the others go straight to their own screen',
         (tester) async {
       for (final Feeling feeling in Feeling.values) {
         if (feeling == Feeling.cantCope) continue;
+        if (feeling.route == Routes.tighten || feeling.route == Routes.lowDay) {
+          continue;
+        }
 
         final router = await pumpApp(tester,
             location: Routes.panic, isAuthenticated: true);
@@ -228,6 +359,73 @@ void main() {
         expect(router.state.uri.path, feeling.route,
             reason: '${feeling.label} went somewhere else');
       }
+    });
+  });
+
+  // The style guide's one test, on the sheet. The card list is what the
+  // picker becomes at 200%, and it has to open the same sheet.
+  group('the sheet at 200% text on an iPhone SE', () {
+    Future<GoRouter> openAtLargeText(WidgetTester tester) async {
+      await tester.binding.setSurfaceSize(const Size(375, 667));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+
+      return pumpApp(
+        tester,
+        location: Routes.panic,
+        isAuthenticated: true,
+        textScaler: const TextScaler.linear(2),
+      );
+    }
+
+    Future<void> tapCard(WidgetTester tester, Feeling feeling) async {
+      final Finder card = find.widgetWithText(FeelingButton, feeling.label);
+      await tester.scrollUntilVisible(card, 120);
+      await tester.pumpAndSettle();
+      // Near its top edge: at this size a card is taller than the room left
+      // above the ground band, so its centre can sit under "Just looking".
+      await tester.tapAt(tester.getRect(card).topCenter + const Offset(0, 24));
+      await tester.pumpAndSettle();
+    }
+
+    // Begin is outside the scroll view, so it has to be on the screen.
+    void expectBeginOnScreen(WidgetTester tester) {
+      expect(tester.takeException(), isNull, reason: 'the sheet overflowed');
+      final Rect begin = tester.getRect(find.text('Begin'));
+      expect(begin.bottom, lessThanOrEqualTo(667),
+          reason: 'Begin is off the bottom of the screen');
+    }
+
+    testWidgets('a card opens the same sheet, and Begin stays on screen',
+        (tester) async {
+      final router = await openAtLargeText(tester);
+
+      await tapCard(tester, Feeling.woundUp);
+
+      expect(find.text(TightenScript.title), findsOneWidget);
+      expectBeginOnScreen(tester);
+
+      await tester.tap(find.text('Begin'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
+      expect(router.state.uri.path, Routes.tighten);
+    });
+
+    testWidgets("Can't cope's two steps both fit", (tester) async {
+      await openAtLargeText(tester);
+
+      await tapCard(tester, Feeling.cantCope);
+      expect(tester.takeException(), isNull);
+
+      await tester.ensureVisible(find.text(Sensation.tingling.label));
+      await tester.tap(find.text(Sensation.tingling.label));
+      await tester.pumpAndSettle();
+
+      expect(find.text(Sensation.tingling.introBodyLine), findsOneWidget);
+      expectBeginOnScreen(tester);
+
+      // The speaker sits beside Begin, so it is on screen too.
+      final Rect speaker = tester.getRect(find.byIcon(Icons.volume_up_rounded));
+      expect(speaker.bottom, lessThanOrEqualTo(667));
     });
   });
 
@@ -461,3 +659,10 @@ void main() {
 
 SkMoodFace _head(WidgetTester tester) =>
     tester.widget<SkMoodFace>(find.byType(SkMoodFace));
+
+// Words inside the introduction sheet. The tab bar under it carries
+// "Breathe with me" too, as the panic button's label.
+Finder _inSheet(String text) => find.descendant(
+      of: find.byType(GuidedIntroPanel),
+      matching: find.text(text),
+    );

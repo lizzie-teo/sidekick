@@ -11,13 +11,10 @@ import 'package:sidekick/app/models/day_phase.dart';
 import 'package:sidekick/app/models/moon_phase.dart';
 import 'package:sidekick/app/widgets/home_sky.dart';
 import 'package:sidekick/app/widgets/sk_circle_icon_button.dart';
-import 'package:sidekick/app/widgets/sk_colors.dart';
 import 'package:sidekick/app/widgets/sk_outline_button.dart';
 import 'package:sidekick/app/widgets/sk_layout.dart';
 import 'package:sidekick/app/widgets/sk_text.dart';
 import 'package:sidekick/app/widgets/sk_text_button.dart';
-import 'package:sidekick/app/widgets/guided_intro.dart';
-import 'package:sidekick/features/panic/models/breathing_script.dart';
 import 'package:sidekick/features/panic/models/sensation.dart';
 import 'package:sidekick/features/panic/services/panic_voice.dart';
 import 'package:sidekick/features/panic/viewmodels/breathing_viewmodel.dart';
@@ -52,42 +49,40 @@ import 'package:sidekick/features/panic/widgets/breath_ring.dart';
 // in the flow with trial evidence behind it; the reasoning is on
 // BreathingViewModel.leadIn.
 //
-// Nothing is asked on this screen once it is running. It has two kinds of
-// door, and they differ in one thing only -- whether an introduction page
-// stands in front of the pacer:
+// Nothing is asked on this screen, and nothing stands in front of it. It
+// starts on the frame it is built, from every door:
 //
-// | Door | Opens on | Script |
+// | Door | Before this screen | Script |
 // | --- | --- | --- |
-// | The tab-bar panic button | The pacer, at once | General |
-// | The picker's "Can't cope" | `GuidedIntro`, then the pacer | General |
-// | One of the picker's four sensations | `GuidedIntro`, then the pacer | That sensation's |
+// | The tab-bar panic button | Nothing | General |
+// | The picker's "Can't cope", then "I'd rather not say" | The introduction, in the picker's sheet | General |
+// | The picker's "Can't cope", then one of the four sensations | The introduction, in the picker's sheet | That sensation's |
 //
-// **The tab-bar button never gets the page.** It is pressed instead of
+// **The tab-bar button never gets an introduction.** It is pressed instead of
 // waiting, and a Begin button in front of it is the gate this screen is built
-// not to have. The picker's doors have already cost a screen and a choice, so
-// a page there is not in anybody's way -- the argument that used to put
-// `BodyView` on that path and keep it off this one.
+// not to have. The picker's door has already cost a stop and a choice, so a
+// sheet there is not in anybody's way.
+//
+// **The introduction lived on this screen until 26 September 2026**, as a
+// page in front of the pacer that `?intro=1` switched on. It moved into the
+// body sheet on the picker, and the parameter went with it -- so there is no
+// way left for a lost parameter to put a Begin button in front of a panic
+// attack.
 //
 // `sensation` says which tile was tapped, and all it changes is one line on
 // the introduction and the script's opening -- that sensation's two lines
 // instead of the general ones, read once the counted breaths are done.
 class BreathingView extends StatefulWidget {
-  const BreathingView({super.key, this.sensation, this.showsIntro = false});
+  const BreathingView({super.key, this.sensation, this.isVoiceOn});
 
   // Set only when arriving from one of the picker's four sensation tiles. The
   // default is the general script, so a restored route or a deep link never
   // opens on words that belong to a tile nobody tapped.
   final Sensation? sensation;
 
-  // Whether to open on the introduction page. Set by the picker's doors and
-  // unset by the tab-bar panic button -- see the table above the class.
-  //
-  // **Off is the default, and that is the safe way round.** A restored route
-  // or a deep link that lost its parameters lands on the pacer, which is the
-  // thing somebody came here for. The other way round would put a page with a
-  // Begin button in front of a panic attack because a query string went
-  // missing.
-  final bool showsIntro;
+  // Whether the voice speaks, as the picker's sheet left it. Null from the
+  // tab-bar button and from a restored route, which read the stored setting.
+  final bool? isVoiceOn;
 
   @override
   State<BreathingView> createState() => _BreathingViewState();
@@ -111,7 +106,7 @@ class _BreathingViewState extends State<BreathingView> {
   // teardown.
   late final BreathingViewModel _viewModel = BreathingViewModel(
     sensation: widget.sensation,
-    showsIntro: widget.showsIntro,
+    isVoiceOn: widget.isVoiceOn,
     voice: JustAudioPanicVoice(loggerService: getIt<LoggerService>()),
     deviceSettingsService: getIt<DeviceSettingsService>(),
     // Guarded the way Home guards it, so a widget test with no place in the
@@ -131,14 +126,12 @@ class _BreathingViewState extends State<BreathingView> {
   void initState() {
     super.initState();
 
-    // Home's sky for the time of day, behind both pages.
+    // Home's sky for the time of day.
     _viewModel.readSky();
 
-    // With an introduction there is nothing to start yet: Begin is what calls
-    // this, and until then the pacer, the lead-in timers and the voice are all
-    // asleep. Without one the pacer begins on the frame the screen is built,
-    // because the reader pressed a button rather than waiting.
-    if (!widget.showsIntro) _viewModel.start();
+    // The pacer begins on the frame the screen is built. Every door here has
+    // already been pressed; there is nothing left to wait for.
+    _viewModel.start();
   }
 
   @override
@@ -182,7 +175,6 @@ class _BreathingViewState extends State<BreathingView> {
 
   @override
   Widget build(BuildContext context) {
-    final SkColors sk = context.sk;
     // The panel pads for the status bar itself; the home indicator at the
     // bottom is ours to clear, and SafeArea cannot do it without cutting the
     // gradient short.
@@ -266,45 +258,6 @@ class _BreathingViewState extends State<BreathingView> {
         final Color line = sceneIsLight
             ? Color.lerp(sky.onSky, sky.horizon, 0.35)!
             : sky.onSky;
-
-        // The introduction, until Begin. A whole page of its own, so the scene
-        // gradient, the rings and the Rive character are not built behind it
-        // -- and the sidekick on it is standing still rather than pacing.
-        //
-        // **It sits on `sk.canvas` while the pacer sits on the scene
-        // gradient**, which is the one thing about this screen that does move
-        // at Begin. `GuidedIntro` is a page of reading, and the gradient is
-        // the room the breathing happens in. The two controls that survive
-        // Begin -- the X and the speaker -- do not move: same corners, same
-        // 52 circle, same order.
-        if (!state.hasStarted) {
-          return GuidedIntro(
-            title: BreathingScript.introTitle,
-            lines: BreathingScript.introFor(widget.sensation),
-            emphasis: BreathingScript.introEmphasisFor(widget.sensation),
-            onBegin: _viewModel.start,
-            onLeave: _leave,
-
-            // **The speaker is on this page, and that is not decoration.**
-            // The standing rule is that it never waits for a stage: somebody
-            // who opened this in an office or on a bus needs the room quiet
-            // before the first line speaks. With a page in front of the
-            // pacer, the first frame is this one -- so a speaker that only
-            // appeared after Begin would appear after the voice did.
-            trailing: SkCircleIconButton(
-              icon: state.isVoiceOn
-                  ? Icons.volume_up_rounded
-                  : Icons.volume_off_rounded,
-              // **The label says what the press will do, not what is true
-              // now.** "Voice on" would leave a reader guessing whether they
-              // are being told the state or offered the switch.
-              label:
-                  state.isVoiceOn ? 'Turn the voice off' : 'Turn the voice on',
-              color: sk.ink,
-              onPressed: _viewModel.toggleVoice,
-            ),
-          );
-        }
 
         return Scaffold(
           body: _Place(
