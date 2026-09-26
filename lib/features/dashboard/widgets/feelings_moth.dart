@@ -35,7 +35,8 @@ import 'package:sidekick/app/widgets/home_sky.dart';
 // | Wings | Fore and hind flap as one surface a side, the hind a beat behind. 110 degrees about the root at 8 a second -- a real moth's 25 is a blur. The downstroke is 55% of the beat and fastest mid-stroke; the wing turns over at the top and bottom; the tip draws a loose figure 8; the trailing edge lags; faint ghosts behind it show the speed |
 // | Body | Rises on each downstroke and sinks on each upstroke. The abdomen swings against a turn and lags it, like a rudder |
 // | Path | Never straight: a slow wander all the time, and a sudden dart, drop or swerve every 1 to 4 seconds. It never glides |
-// | Rest | It lands on her left shoulder with its wings folded back like a roof, shivers them for a second before it goes, and bursts off |
+// | Rest | It lands on her with its wings folded back like a roof, shivers them for a second before it goes, and bursts off |
+// | Route | A different way round her, and a different place to land, each flight. See `_Flight` |
 // | Idle | While it sits the wings are never quite still: a slow, shallow breathing of the fold, and twice a rest it opens them half way and closes them again. Added 26 September 2026, at the user's request |
 //
 // **The last item on the brief -- turning its back to the moon, circling,
@@ -87,8 +88,30 @@ class FeelingsMoth extends StatefulWidget {
   static const double restAcross = -34;
   static const double restRise = 92;
 
+  // **Where else it lands, from 26 September 2026, at the user's request.**
+  // It always came back to the same shoulder, the same way round, and read
+  // as a thing on a track. Measured off the rabbit on the running app, as
+  // (across, rise) like the shoulder above. All three characters share one
+  // rig, so the places carry over; the head is the one to look at again on
+  // the girl and the cat.
+  //
+  // The first is the shoulder, and it stays first: every visit starts there,
+  // the landings that say "Hi" land there, and the screen reader finds it
+  // there. The rest come after, one chosen per flight and never the place it
+  // has just left.
+  static const List<Offset> landings = <Offset>[
+    Offset(restAcross, restRise), // her left shoulder
+    Offset(35, 91), // her right shoulder
+    Offset(0, 196), // the top of her head, between the ears
+    Offset(-46, 61), // her left hand
+    Offset(46, 61), // her right hand
+  ];
+
+  // Which of `landings` it sits on for a loop of the flight.
+  static int landingFor(int loop) => _Flight.landingFor(loop);
+
   // One loop: a long sit on her shoulder, then a flight round her and back.
-  // Must equal restSeconds plus the 13 seconds of `_Flight._keys`.
+  // Must equal restSeconds plus the 13 seconds of a flight in `_Flight`.
   static const Duration flight = Duration(seconds: 28);
 
   // How long it sits at the start of each loop. The words live inside this,
@@ -243,82 +266,208 @@ class MothPose {
       this.across, this.rise, this.scale, this.alpha, this.flying, this.behind);
 }
 
-// The planned flight, as keys of (seconds, across, rise, scale, alpha). The
-// curve runs smoothly through every key. Seconds count from take-off, so the
-// time it sits can change without moving a single key.
+// One point the planned flight passes through: when, where, how near, how
+// much can be seen, and which point of the ring round her it is (-1 when it
+// is not on the ring).
+class _Key {
+  final double t;
+  final double across;
+  final double rise;
+  final double scale;
+  final double alpha;
+  final int ring;
+
+  const _Key(this.t, this.across, this.rise, this.scale, this.alpha,
+      [this.ring = -1]);
+}
+
+// A way on or off a landing place: a point just beside it, and the point of
+// the ring it joins.
+class _Door {
+  final int ring;
+  final double across;
+  final double rise;
+  final double scale;
+
+  const _Door(this.ring, this.across, this.rise, [this.scale = 1.05]);
+}
+
+// **The planned flight is built fresh for every loop, from 26 September
+// 2026, at the user's request.** It used to be one fixed list of keys, so
+// every flight left the same shoulder the same way and came back the same
+// way. Now a loop picks where it lands, which way it leaves, which way it
+// arrives and which way round her it goes -- from a seeded random, so each
+// flight differs and every run of the app is the same, which keeps it
+// testable.
 //
-// **It passes behind her, never across her face.** Going behind is where it
-// shrinks and fades -- that is the disappearing -- and crossing in front of
-// her low, by her legs, is where it is nearest and largest. It stays below
-// the quote the whole way round.
+// A flight is four parts, and 13 seconds whatever it holds:
+//
+// | Part | What it is |
+// | --- | --- |
+// | Burst | Off the landing through one of its two doors, in 0.4 seconds |
+// | Ring | Round her through the points of `_ring`, one way or the other |
+// | Arrival | In through one of the new landing's two doors |
+// | Settle | A last dip onto it over 0.6 seconds, as the wings fold |
+//
+// **It passes behind her, never across her face.** The ring is the old path
+// cut into points: out high on her left, behind her head (where it shrinks
+// and fades -- the disappearing), round her right, and low across the front
+// by her legs, where it is nearest and largest. Every door joins the ring
+// from outside her outline, and the head's doors come in from above, so no
+// route crosses her face. It stays below the quote the whole way round.
 abstract final class _Flight {
-  static const List<(double, double, double, double, double)> _keys =
-      <(double, double, double, double, double)>[
-    (0.0, -34, 92, 1.0, 1),
-    // The burst off her shoulder: up and out, fast.
-    (0.4, -72, 150, 1.05, 1),
-    (1.6, -140, 175, 0.85, 1),
-    (2.8, -110, 214, 0.58, 0.7),
-    (3.8, -20, 228, 0.45, 0),
-    (5.2, 90, 215, 0.45, 0),
-    (6.1, 136, 188, 0.6, 1),
-    (7.4, 150, 130, 1.1, 1),
-    (8.6, 82, 70, 1.3, 1),
-    (9.8, 0, 46, 1.35, 1),
-    (10.9, -62, 70, 1.15, 1),
-    (11.8, -48, 108, 1.05, 1),
-    (12.4, -35, 97, 1.0, 1),
-    (13.0, -34, 92, 1.0, 1),
+  static const List<_Key> _ring = <_Key>[
+    _Key(0, -140, 175, 0.85, 1, 0), // out high on her left
+    _Key(0, -110, 214, 0.58, 0.7, 1), // going behind, on the left
+    _Key(0, -20, 228, 0.45, 0, 2), // behind her head
+    _Key(0, 90, 215, 0.45, 0, 3), // behind, on the right
+    _Key(0, 136, 188, 0.6, 1, 4), // out on her right
+    _Key(0, 150, 130, 1.1, 1, 5), // low on her right
+    _Key(0, 82, 70, 1.3, 1, 6), // in front, right of her legs
+    _Key(0, 0, 46, 1.35, 1, 7), // in front of her legs
+    _Key(0, -62, 70, 1.15, 1, 8), // in front, left of her legs
   ];
 
-  // The stretch spent behind her. It changes sides at two places where it
-  // is clear of her outline, so the swap is never seen.
-  static const double behindFrom = FeelingsMoth.restSeconds + 2.9;
-  static const double behindUntil = FeelingsMoth.restSeconds + 6.1;
+  // Two doors per landing, in the order of `FeelingsMoth.landings`. Each
+  // joins the ring on the landing's own side, one high and one low; the
+  // head's two are above it, one either side, clear of the ears.
+  static const List<List<_Door>> _doors = <List<_Door>>[
+    <_Door>[_Door(0, -72, 150), _Door(8, -48, 108)],
+    <_Door>[_Door(4, 72, 150), _Door(6, 50, 106)],
+    <_Door>[_Door(0, -28, 256, 0.95), _Door(4, 28, 256, 0.95)],
+    <_Door>[_Door(0, -84, 92), _Door(7, -34, 36)],
+    <_Door>[_Door(5, 84, 92), _Door(7, 34, 36)],
+  ];
+
+  // It changes sides only between these ring points, where it is faded and
+  // clear of her outline, so the swap is never seen.
+  static bool _behindBetween(int a, int b) =>
+      a >= 1 && a <= 4 && b >= 1 && b <= 4 && (a - b).abs() == 1;
 
   // It lands over the last 0.6 seconds: the wings stop and fold.
   static const double landFrom = FeelingsMoth.restSeconds + 12.4;
 
   static double get total => FeelingsMoth.flight.inMilliseconds / 1000;
 
-  static MothPose poseAt(double t) {
-    t = t % total;
-    // Seconds since take-off, which is what the keys count in.
-    final double f = math.max(t - FeelingsMoth.restSeconds, 0.0);
+  static final Map<int, int> _landings = <int, int>{};
 
-    int i = 0;
-    while (i < _keys.length - 2 && f >= _keys[i + 1].$1) {
-      i++;
-    }
-    final (double, double, double, double, double) k0 =
-        _keys[math.max(i - 1, 0)];
-    final (double, double, double, double, double) k1 = _keys[i];
-    final (double, double, double, double, double) k2 = _keys[i + 1];
-    final (double, double, double, double, double) k3 =
-        _keys[math.min(i + 2, _keys.length - 1)];
+  static int landingFor(int loop) {
+    if (loop < FeelingsMoth.landingsThatSpeak) return 0;
+    return _landings.putIfAbsent(loop, () {
+      final int last = landingFor(loop - 1);
+      final math.Random random = math.Random(loop * 104729 + 3);
+      final int pick =
+          random.nextInt(FeelingsMoth.landings.length - 1);
+      return pick >= last ? pick + 1 : pick;
+    });
+  }
+
+  static final Map<int, List<_Key>> _routes = <int, List<_Key>>{};
+
+  static List<_Key> _routeFor(int loop) => _routes.putIfAbsent(loop, () {
+        final math.Random random = math.Random(loop * 6151 + 29);
+        final int from = landingFor(loop);
+        final int to = landingFor(loop + 1);
+        final Offset start = FeelingsMoth.landings[from];
+        final Offset end = FeelingsMoth.landings[to];
+        final _Door out = _doors[from][random.nextInt(2)];
+        final _Door into = _doors[to][random.nextInt(2)];
+
+        // Which way round. The same ring point in and out is a whole lap;
+        // otherwise the longer way, so a flight is never a short hop, and
+        // either way when the two are close to even.
+        final int n = _ring.length;
+        int wrap(int i) => (i % n + n) % n;
+        int step(int d) => wrap((into.ring - out.ring) * d);
+        final int direction;
+        if (out.ring == into.ring) {
+          direction = random.nextBool() ? 1 : -1;
+        } else if ((step(1) - step(-1)).abs() <= 1) {
+          direction = random.nextBool() ? 1 : -1;
+        } else {
+          direction = step(1) > step(-1) ? 1 : -1;
+        }
+        final int hops = out.ring == into.ring ? n : step(direction);
+        final List<_Key> ring = <_Key>[
+          for (int i = 0; i <= hops; i++) _ring[wrap(out.ring + i * direction)],
+        ];
+
+        // The middle is timed by distance, so it flies at an even pace
+        // between the burst at 0.4 seconds and the arrival door at 11.8.
+        final List<_Key> middle = <_Key>[
+          _Key(0, out.across, out.rise, out.scale, 1),
+          ...ring,
+          _Key(0, into.across, into.rise, into.scale, 1),
+        ];
+        final List<double> lengths = <double>[0];
+        for (int i = 1; i < middle.length; i++) {
+          lengths.add(lengths.last +
+              (Offset(middle[i].across, middle[i].rise) -
+                      Offset(middle[i - 1].across, middle[i - 1].rise))
+                  .distance);
+        }
+        const double first = 0.4;
+        const double last = 11.8;
+
+        // The settle comes down onto the place from the side the door is
+        // on, a little above it.
+        final double side = (into.across - end.dx).sign;
+        return <_Key>[
+          _Key(0, start.dx, start.dy, 1, 1),
+          for (int i = 0; i < middle.length; i++)
+            _Key(
+              first + (last - first) * lengths[i] / lengths.last,
+              middle[i].across,
+              middle[i].rise,
+              middle[i].scale,
+              middle[i].alpha,
+              middle[i].ring,
+            ),
+          _Key(12.4, end.dx + side, end.dy + 5, 1, 1),
+          _Key(13.0, end.dx, end.dy, 1, 1),
+        ];
+      });
+
+  static MothPose poseAt(double t) {
+    final int loop = (t / total).floor();
+    t = t - loop * total;
+    final List<_Key> keys = _routeFor(loop);
+    final Offset rest = FeelingsMoth.landings[landingFor(loop)];
 
     // Held still while it sits: a spline through the take-off would drift
-    // it off her shoulder before it has left.
-    final bool sitting = t < FeelingsMoth.restSeconds;
-    final double u =
-        sitting ? 0 : ((f - k1.$1) / (k2.$1 - k1.$1)).clamp(0.0, 1.0);
+    // it off the place before it has left.
+    if (t < FeelingsMoth.restSeconds) {
+      return MothPose(rest.dx, rest.dy, 1, 1, 0, false);
+    }
+
+    // Seconds since take-off, which is what the keys count in.
+    final double f = t - FeelingsMoth.restSeconds;
+
+    int i = 0;
+    while (i < keys.length - 2 && f >= keys[i + 1].t) {
+      i++;
+    }
+    final _Key k0 = keys[math.max(i - 1, 0)];
+    final _Key k1 = keys[i];
+    final _Key k2 = keys[i + 1];
+    final _Key k3 = keys[math.min(i + 2, keys.length - 1)];
+    final double u = ((f - k1.t) / (k2.t - k1.t)).clamp(0.0, 1.0);
 
     double at(double a, double b, double c, double d) =>
         _catmullRom(a, b, c, d, u);
 
-    // Sitting at both ends of the loop, flying in between. Take-off is
-    // instant -- a burst -- and landing takes the last 0.6 seconds.
-    final double flying = t < FeelingsMoth.restSeconds
-        ? 0
-        : 1 - _smooth(((t - landFrom) / (total - landFrom)).clamp(0.0, 1.0));
+    // Flying in between; take-off is instant -- a burst -- and landing takes
+    // the last 0.6 seconds.
+    final double flying =
+        1 - _smooth(((t - landFrom) / (total - landFrom)).clamp(0.0, 1.0));
 
     return MothPose(
-      at(k0.$2, k1.$2, k2.$2, k3.$2),
-      at(k0.$3, k1.$3, k2.$3, k3.$3),
-      at(k0.$4, k1.$4, k2.$4, k3.$4),
-      at(k0.$5, k1.$5, k2.$5, k3.$5).clamp(0.0, 1.0),
+      at(k0.across, k1.across, k2.across, k3.across),
+      at(k0.rise, k1.rise, k2.rise, k3.rise),
+      at(k0.scale, k1.scale, k2.scale, k3.scale),
+      at(k0.alpha, k1.alpha, k2.alpha, k3.alpha).clamp(0.0, 1.0),
       flying,
-      t >= behindFrom && t < behindUntil,
+      _behindBetween(k1.ring, k2.ring),
     );
   }
 

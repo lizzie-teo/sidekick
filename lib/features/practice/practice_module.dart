@@ -1,5 +1,6 @@
 import 'package:go_router/go_router.dart';
 
+import 'package:sidekick/app/core/tab_page.dart';
 import 'package:sidekick/app/core/app_constants.dart';
 import 'package:sidekick/app/core/feature_module.dart';
 import 'package:sidekick/features/practice/views/practice_view.dart';
@@ -35,7 +36,8 @@ class PracticeModule extends FeatureModule {
         GoRoute(
           path: Routes.practice,
           name: 'practice',
-          builder: (context, state) => const PracticeView(),
+          pageBuilder: (context, state) =>
+              TabPage.forState(state, const PracticeView()),
         ),
         GoRoute(
           path: Routes.swapDrill,

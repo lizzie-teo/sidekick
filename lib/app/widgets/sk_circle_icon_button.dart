@@ -4,8 +4,16 @@ import 'package:sidekick/app/widgets/sk_colors.dart';
 import 'package:sidekick/app/widgets/sk_disabled.dart';
 import 'package:sidekick/app/widgets/sk_pressable.dart';
 
-// Breathing-flow chrome: close and mute. A 52 circle on a 12% wash of the
-// foreground colour, so it reads on any surface including the scene gradient.
+// The app's one icon-only button: back, close, the voice on and off. A 52
+// circle on a 12% wash of the foreground colour, so it reads on any surface
+// including the scene gradient.
+//
+// **Every icon-only button is this one, from 26 September 2026, at the
+// user's request.** The practice lessons had their own rounded-square tile
+// for back and close; the round one from the guided screens was preferred,
+// and a lesson is not a different product from a meditation. Pass `color`
+// where the page does not follow the palette -- an exercise passes
+// `context.exercise.ink`.
 class SkCircleIconButton extends StatelessWidget {
   // Its width and height. The breathing screen works out where her band is
   // from this, so it is a name rather than a number at the use site.
@@ -29,12 +37,22 @@ class SkCircleIconButton extends StatelessWidget {
   // to know what pressing it does.
   final String label;
 
+  // Whether the circle is drawn behind the icon.
+  //
+  // **Off on a practice lesson, at the user's request, 26 September 2026.**
+  // The circle is there so the icon reads on a moving sky; a lesson page is a
+  // plain, still ground, so the icon alone reads and the circle was only
+  // weight. The button keeps its full 52 and its round press wash either way,
+  // so it is still the same size to a finger and still one component.
+  final bool filled;
+
   const SkCircleIconButton({
     super.key,
     required this.icon,
     required this.onPressed,
     required this.label,
     this.color,
+    this.filled = true,
   });
 
   @override
@@ -52,7 +70,7 @@ class SkCircleIconButton extends StatelessWidget {
           width: size,
           height: size,
           decoration: BoxDecoration(
-            color: fg.withValues(alpha: 0.12),
+            color: filled ? fg.withValues(alpha: 0.12) : null,
             shape: BoxShape.circle,
           ),
           // The icon is the picture of the label above it, so it is not read

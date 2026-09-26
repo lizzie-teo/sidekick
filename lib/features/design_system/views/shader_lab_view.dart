@@ -8,6 +8,7 @@ import 'package:sidekick/app/widgets/sk_character.dart';
 import 'package:sidekick/app/widgets/sk_colors.dart';
 import 'package:sidekick/app/widgets/sk_segmented.dart';
 import 'package:sidekick/app/widgets/sk_text.dart';
+import 'package:sidekick/app/widgets/sk_text_button.dart';
 import 'package:sidekick/app/widgets/sk_contrast.dart';
 
 // A workbench for the breathing halo. **Debug builds only** -- the route is
@@ -323,9 +324,9 @@ class _ShaderLabViewState extends State<ShaderLabView>
         // maybePop rather than context.pop: the lab is reachable from the
         // router in a debug build AND from lib/preview.dart, which has no
         // GoRouter at all. This is the one call that works in both.
-        TextButton(
+        SkTextButton(
+          label: 'Done',
           onPressed: () => Navigator.of(context).maybePop(),
-          child: const Text('Done'),
         ),
       ],
     );
@@ -336,7 +337,7 @@ class _ShaderLabViewState extends State<ShaderLabView>
       padding: const EdgeInsets.only(bottom: 8),
       child: Text(
         text.toUpperCase(),
-        style: SkText.sectionHeader
+        style: SkText.label
             .copyWith(color: SkContrast.captionOn(sk.canvas)),
       ),
     );
@@ -378,7 +379,7 @@ class _ShaderLabViewState extends State<ShaderLabView>
             ],
           ),
           Text(hint,
-              style: SkText.tabLabel
+              style: SkText.label
                   .copyWith(color: SkContrast.captionOn(sk.canvas))),
           Slider.adaptive(
             value: value.clamp(min, max),
@@ -414,7 +415,7 @@ class _ShaderLabViewState extends State<ShaderLabView>
         children: <Widget>[
           Text(
             'THESE NUMBERS',
-            style: SkText.sectionHeader
+            style: SkText.label
                 .copyWith(color: SkContrast.captionOn(sk.canvas)),
           ),
           const SizedBox(height: 8),

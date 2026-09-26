@@ -1,7 +1,8 @@
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
 
 import 'package:sidekick/app/widgets/sk_colors.dart';
 import 'package:sidekick/app/widgets/sk_disabled.dart';
+import 'package:sidekick/app/widgets/sk_layout.dart';
 import 'package:sidekick/app/widgets/sk_pressable.dart';
 import 'package:sidekick/app/widgets/sk_text.dart';
 
@@ -18,11 +19,18 @@ class SkPrimaryButton extends StatelessWidget {
   final VoidCallback? onPressed;
   final bool compact;
 
+  // An action is running: a spinner stands where the label was. The pill
+  // keeps its size and its colour -- it is busy, not disabled -- and the
+  // label is still announced. Blocking a second tap is not this widget's
+  // job; `AsyncButton` owns that, and passes this in.
+  final bool busy;
+
   const SkPrimaryButton({
     super.key,
     required this.label,
     required this.onPressed,
     this.compact = false,
+    this.busy = false,
   });
 
   @override
@@ -30,7 +38,7 @@ class SkPrimaryButton extends StatelessWidget {
     final SkColors sk = context.sk;
 
     final Widget pill = Container(
-      constraints: BoxConstraints(minHeight: compact ? 50 : 56),
+      constraints: BoxConstraints(minHeight: SkLayout.buttonHeight),
       width: compact ? null : double.infinity,
       padding: EdgeInsets.symmetric(horizontal: compact ? 26 : 24),
       alignment: Alignment.center,
@@ -38,13 +46,34 @@ class SkPrimaryButton extends StatelessWidget {
         color: sk.action,
         borderRadius: BorderRadius.circular(999),
       ),
-      child: Text(
-        label,
-        // Compact shrinks the pill, never the label. The two used to move
-        // together, which dropped the scene CTA to 17 -- under the soft
-        // buttons below it and under the invite card below those, so the one
-        // action the screen is built around was the smallest thing on it.
-        style: SkText.button.copyWith(color: sk.onAction),
+      // The label stays laid out under the spinner, only hidden, so the pill
+      // is the same width and height busy or not and nothing around it moves.
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          Opacity(
+            opacity: busy ? 0 : 1,
+            child: Text(
+              label,
+              // Compact shrinks the pill, never the label. The two used to
+              // move together, which dropped the scene CTA to 17 -- under the
+              // soft buttons below it and under the invite card below those,
+              // so the one action the screen is built around was the smallest
+              // thing on it.
+              style: SkText.button.copyWith(color: sk.onAction),
+            ),
+          ),
+          if (busy)
+            ExcludeSemantics(
+              child: SizedBox.square(
+                dimension: SkLayout.xl,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: sk.onAction,
+                ),
+              ),
+            ),
+        ],
       ),
     );
 

@@ -2,7 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:sidekick/app/core/app_constants.dart';
+import 'package:sidekick/app/widgets/sk_colors.dart';
+import 'package:sidekick/app/widgets/sk_layout.dart';
+import 'package:sidekick/app/widgets/sk_primary_button.dart';
+import 'package:sidekick/app/widgets/sk_text.dart';
+import 'package:sidekick/app/widgets/sk_text_button.dart';
 
+// A placeholder for onboarding, which is not built yet. Nothing routes here:
+// the app opens on Home, and the only door in is the Design system lab.
+// `_docs/build-plan.md`, phase 6, says what replaces it.
+//
 // No viewmodel: this screen holds no state and does no async work, so there is
 // nothing for one to own. Add one when it needs to load something.
 class WelcomeView extends StatelessWidget {
@@ -10,6 +19,8 @@ class WelcomeView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final SkColors sk = context.sk;
+
     return Scaffold(
       // **The body is inside a SafeArea.** A Scaffold does not inset its
       // body for the status bar or the home indicator unless an AppBar is
@@ -18,33 +29,39 @@ class WelcomeView extends StatelessWidget {
       // reaches the top edge on every phone.
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+          padding: EdgeInsets.symmetric(
+            horizontal: SkLayout.gutter(context),
+            vertical: SkLayout.xxxl,
+          ),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               //
 
-              Text(
-                'Sidekick',
-                style: Theme.of(context).textTheme.displaySmall,
-                textAlign: TextAlign.center,
+              Semantics(
+                header: true,
+                child: Text(
+                  'Sidekick',
+                  style: SkText.h1.copyWith(color: sk.ink),
+                  textAlign: TextAlign.center,
+                ),
               ),
 
               const SizedBox(height: 48),
 
               // Plain button, not AsyncButton: navigation is synchronous, so there
               // is no in-flight state to guard against.
-              FilledButton(
+              SkPrimaryButton(
+                label: 'Get started',
                 onPressed: () => context.go(Routes.connect),
-                child: const Text('Get started'),
               ),
 
-              const SizedBox(height: 8),
+              const SizedBox(height: SkLayout.sm),
 
-              TextButton(
+              SkTextButton(
+                label: 'Design system',
                 onPressed: () => context.go(Routes.designSystem),
-                child: const Text('Design system'),
               ),
             ],
           ),

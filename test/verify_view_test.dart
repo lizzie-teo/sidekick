@@ -3,6 +3,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:sidekick/app/core/app_constants.dart';
+import 'package:sidekick/app/widgets/sk_text_button.dart';
 import 'package:sidekick/features/authentication/viewmodels/verify_viewmodel.dart';
 
 import 'support/fakes.dart';
@@ -22,8 +23,8 @@ void main() {
     await pumpApp(tester, location: verifyLocation);
 
     expect(find.textContaining('Resend in'), findsOneWidget);
-    expect(
-        tester.widget<TextButton>(find.byType(TextButton)).onPressed, isNull);
+    expect(tester.widget<SkTextButton>(find.byType(SkTextButton)).onPressed,
+        isNull);
   });
 
   testWidgets('resend re-enables once the cooldown expires', (tester) async {

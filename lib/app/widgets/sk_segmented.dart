@@ -58,16 +58,16 @@ class SkSegmented extends StatelessWidget {
                       : null,
                   child: Text(
                     labels[i],
-                    // **`chipLabel`, not `caption` with two overrides.** The
-                    // two overrides were 14/600 -- which is `chipLabel`
-                    // exactly, so the style already existed and this was a
-                    // copy of it with the size hidden in a widget.
+                    // **`label`, not `caption` with two overrides.** The
+                    // two overrides were 14/600 -- which is `label` exactly,
+                    // so the style already existed and this was a copy of it
+                    // with the size hidden in a widget.
                     //
                     // The unselected label was `muted`, which no text in this
                     // app may use: it measures under 3.3:1 on every light
                     // canvas, and an unselected segment is still a word
                     // somebody reads to decide what to press.
-                    style: SkText.chipLabel.copyWith(
+                    style: SkText.label.copyWith(
                       color: i == selected
                           ? sk.ink
                           : SkContrast.captionOn(sk.surfaceMuted),

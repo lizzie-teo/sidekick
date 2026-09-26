@@ -17,7 +17,7 @@ void main() {
 
     expect(router.state.uri.path, Routes.home);
 
-    await tapTab(tester, 'Good things');
+    await tapTab(tester, 'Unwind');
     expect(router.state.uri.path, Routes.goodThings);
 
     await tapTab(tester, 'Practice');

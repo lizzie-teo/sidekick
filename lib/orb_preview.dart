@@ -81,7 +81,7 @@ class _OrbPreviewAppState extends State<OrbPreviewApp> {
         children: <Widget>[
           Text(
             'PALETTE',
-            style: SkText.sectionHeader
+            style: SkText.label
                 .copyWith(color: SkContrast.captionOn(sk.canvas)),
           ),
           const SizedBox(height: 8),
@@ -107,7 +107,7 @@ class _OrbPreviewAppState extends State<OrbPreviewApp> {
                     ),
                     child: Text(
                       SkPalettes.all[i].name,
-                      style: SkText.tabLabel.copyWith(
+                      style: SkText.label.copyWith(
                         color: i == _palette
                             ? sk.ink
                             : SkContrast.captionOn(sk.canvas),

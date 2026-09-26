@@ -5,6 +5,7 @@ import 'package:sidekick/app/widgets/sk_outline_button.dart';
 import 'package:sidekick/app/widgets/sk_primary_button.dart';
 import 'package:sidekick/app/widgets/sk_text.dart';
 import 'package:sidekick/app/widgets/sk_contrast.dart';
+import 'package:sidekick/app/widgets/sk_sheet_frame.dart';
 
 // The one account ask in the product, shown once, after the first save.
 //
@@ -37,18 +38,14 @@ class GoodThingsAccountOffer extends StatelessWidget {
     required VoidCallback onAccept,
     required VoidCallback onDecline,
   }) {
-    return showModalBottomSheet<void>(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: context.sk.canvas,
+    return SkSheetFrame.show<void>(
+      context,
+      useRootNavigator: false,
       // **What the dark area behind the sheet is called.** Without it a
       // screen reader announces the barrier as "Scrim", which names a paint
       // effect rather than the way out -- and swiping this sheet away counts
       // as an answer, so the way out has to be findable.
       barrierLabel: 'Close this offer',
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
-      ),
       builder: (BuildContext sheetContext) => GoodThingsAccountOffer(
         onAccept: onAccept,
         onDecline: onDecline,

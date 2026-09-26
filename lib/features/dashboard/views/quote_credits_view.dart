@@ -33,7 +33,7 @@ class QuoteCreditsView extends StatelessWidget {
           header: true,
           child: Text(
             'Quotes on Home',
-            style: SkText.cardTitle.copyWith(color: sk.ink),
+            style: SkText.h1.copyWith(color: sk.ink),
           ),
         ),
       ),

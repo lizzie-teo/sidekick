@@ -9,6 +9,7 @@ import 'package:sidekick/app/core/app_constants.dart';
 import 'package:sidekick/app/core/service_locator.dart';
 import 'package:sidekick/app/core/theme_service.dart';
 import 'package:sidekick/app/widgets/sk_character.dart';
+import 'package:sidekick/app/widgets/sk_circle_icon_button.dart';
 import 'package:sidekick/app/widgets/sk_colors.dart';
 import 'package:sidekick/app/widgets/sk_exercise_colors.dart';
 import 'package:sidekick/app/widgets/sk_feedback_sheet.dart';
@@ -218,7 +219,8 @@ class _SwapDrillViewState extends State<SwapDrillView> {
   // sizing to its content the gap is real, which is what `_Controls` has
   // always said it was for.
   static double _controlsHeight(BuildContext context) =>
-      MediaQuery.textScalerOf(context).scale(56) + SkLayout.lg;
+      MediaQuery.textScalerOf(context).scale(SkLayout.buttonHeight) +
+      SkLayout.lg;
 
   // The row the two tiles sit in. Same reasoning: the tiles themselves are a
   // fixed tap target, but the row has to clear them at every text size.
@@ -263,8 +265,12 @@ class _SwapDrillViewState extends State<SwapDrillView> {
                           maintainSize: true,
                           maintainAnimation: true,
                           maintainState: true,
-                          child: _NavTile(
+                          child: SkCircleIconButton(
                             icon: Icons.arrow_back,
+                            // The exercise's own ink, not the palette's: the
+                            // page ignores the palette, so its chrome does too.
+                            color: context.exercise.ink,
+                            filled: false,
                             label: 'Back',
                             // **On the explanation page it closes the page,
                             // not the step.** The reader came forward from
@@ -277,8 +283,10 @@ class _SwapDrillViewState extends State<SwapDrillView> {
                           ),
                         ),
                         const Spacer(),
-                        _NavTile(
+                        SkCircleIconButton(
                           icon: Icons.close,
+                          color: context.exercise.ink,
+                          filled: false,
                           label: 'Close',
                           onPressed: _leave,
                         ),
@@ -531,9 +539,9 @@ class _OutlineButton extends StatelessWidget {
       borderRadius: BorderRadius.circular(999),
       child: Container(
         width: double.infinity,
-        // 56, the same as `_Pill`. The two are a pair and must not be two
-        // heights.
-        constraints: const BoxConstraints(minHeight: 56),
+        // `SkLayout.buttonHeight`, the same as `_Pill`. The two are a pair and
+        // must not be two heights.
+        constraints: const BoxConstraints(minHeight: SkLayout.buttonHeight),
         padding: const EdgeInsets.symmetric(
           horizontal: SkLayout.xxl,
           vertical: SkLayout.md,
@@ -575,7 +583,7 @@ class _Tell extends StatelessWidget {
 
     return Text.rich(
       TextSpan(
-        style: SkText.tabLabel.copyWith(color: ink, height: 1.45),
+        style: SkText.caption.copyWith(color: ink),
         children: <InlineSpan>[
           TextSpan(text: '${SwapDrillScript.tellLead} '),
           TextSpan(
@@ -584,45 +592,6 @@ class _Tell extends StatelessWidget {
           ),
           const TextSpan(text: '.'),
         ],
-      ),
-    );
-  }
-}
-
-// One of the two rounded square buttons at the top.
-class _NavTile extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final VoidCallback onPressed;
-
-  const _NavTile({
-    required this.icon,
-    required this.label,
-    required this.onPressed,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Semantics(
-      button: true,
-      label: label,
-      // **48, not 42.** It was 42 for a day, which is under
-      // `SkLayout.tapTarget` and therefore under the minimum every control in
-      // this app has to clear -- and back and close are the two controls
-      // somebody reaches for when they have had enough.
-      child: SkPressable(
-        onPressed: onPressed,
-        wash: context.exercise.ink,
-        borderRadius: BorderRadius.circular(SkLayout.lg - 1),
-        child: Container(
-          width: SkLayout.tapTarget,
-          height: SkLayout.tapTarget,
-          decoration: BoxDecoration(
-            color: context.exercise.tile,
-            borderRadius: BorderRadius.circular(SkLayout.lg - 1),
-          ),
-          child: Icon(icon, size: SkLayout.xl, color: context.exercise.ink),
-        ),
       ),
     );
   }
@@ -651,12 +620,12 @@ class _NavTile extends StatelessWidget {
 // the reasoning; the label is `surface` either way, so the polarity here is
 // the same in both modes and the same as the toned pill's.
 //
-// **56, which is what every other button in the app already is.**
-// `SkPrimaryButton` and `SkOutlineButton` are both `minHeight: 56`, and the
-// guided screens' forward control measures a true 56 on the running app. A
-// lesson is not a different product from a meditation, and a button that is
-// one size here and another there is the kind of difference nobody can name
-// and everybody feels.
+// **50, which is what every other button in the app already is.**
+// `SkPrimaryButton` and `SkOutlineButton` are both `SkLayout.buttonHeight` tall
+// since 26 September 2026 -- they were 56 before -- and so is the guided
+// screens' forward control. A lesson is not a different product from a
+// meditation, and a button that is one size here and another there is the
+// kind of difference nobody can name and everybody feels.
 //
 // It was *rendering* at 72 until 21 September 2026 -- see the `alignment`
 // note below, which is the real reason it read as too big. 48 was tried in
@@ -693,10 +662,10 @@ class _Pill extends StatelessWidget {
     // renders.
     final Widget pill = Container(
       width: double.infinity,
-      // 56, the same as `SkPrimaryButton` and `SkOutlineButton`. A literal
-      // rather than a `SkLayout` step, because those are gaps and this is the
-      // app's button height -- the same literal the two widgets above carry.
-      constraints: const BoxConstraints(minHeight: 56),
+      // `SkLayout.buttonHeight`, the same as `SkPrimaryButton` and
+      // `SkOutlineButton`: every button in the app is the same height,
+      // since 26 September 2026.
+      constraints: const BoxConstraints(minHeight: SkLayout.buttonHeight),
       padding: const EdgeInsets.symmetric(
         horizontal: SkLayout.xxl,
         vertical: SkLayout.md,
@@ -937,7 +906,7 @@ class _Introduction extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
-        // **`_Heading`, the same 24/600 every other step uses.** It was
+        // **`_Heading`, the same 24/400 every other step uses.** It was
         // `cardTitle` at 18 until 21 September 2026, which put the drill's
         // two reading pages -- the ones with the most text and the least to
         // do -- six points below the heading on every step that asks a
@@ -967,12 +936,12 @@ class _Introduction extends StatelessWidget {
             child: _Heading(page.title),
           ),
 
-        // **24 since 24 September 2026, up from 12.** The first block under a
-        // title is usually a beat marker, and at 12 a 24pt title and a 20pt
-        // marker sat on top of each other as one two-line lump. A chapter
-        // opener gets air under it; this is the same gap the marker takes over
-        // a group, one step down.
-        const SizedBox(height: SkLayout.xxl),
+        // **`SkLayout.titleGap`, 24 since 24 September 2026, up from 12.**
+        // The first block under a title is usually a beat marker, and at 12 a
+        // 24pt title and a 20pt marker sat on top of each other as one
+        // two-line lump. It stays under the gap between two sections, because
+        // the title owns all of them.
+        const SizedBox(height: SkLayout.titleGap),
 
         for (int b = 0; b < shown; b++) ...<Widget>[
           // The gap over a beat is the gap its first block would have had
@@ -1016,21 +985,18 @@ class _Introduction extends StatelessWidget {
   // anything with an edge.
   static double _gap(SwapIntroBlock above, SwapIntroBlock below) {
     // **A beat label and the block under it are one group, and the gap above
-    // the label is the one that separates the groups.** 8 under, 24 over --
-    // the guide's rule that the gap inside a group is smaller than the gap
+    // the label is the one that separates the groups.** Small under, large
+    // over -- the guide's rule that the gap inside a group is smaller than the gap
     // around it. These two checks come first because a label can sit above an
     // example or a paragraph, and the rules below would otherwise push the
     // label away from the thing it names.
-    // **`SkLayout.markerGap` under and 32 over.** The gap under went 8 -> 12
-    // -> 8 across 24 and 25 September 2026: 12 was the right distance for the
-    // 13pt uppercase eyebrow, and the wrong one for the 20/400 line of text
-    // that replaced it, which is the top of the paragraph rather than a tag
-    // floating over it. The number is `SkLayout.markerGap` rather than a step
-    // named here because the closing step sets the same marker over the same
-    // kind of block. The nesting still holds: 8 inside the group, 20 between
-    // paragraphs, 32 around the group.
-    if (above is SwapIntroBeat) return SkLayout.markerGap;
-    if (below is SwapIntroBeat) return SkLayout.xxxl;
+    // **`SkLayout.headingGap` under and `groupGap` over** -- the app's own
+    // heading and group gaps, not numbers of this page's. The gap under was
+    // 8 until 26 September 2026 and read as tight; it is 12 now, everywhere a
+    // heading sits over its text. The nesting still holds: 12 inside the
+    // group, 20 between paragraphs, 32 around the group.
+    if (above is SwapIntroBeat) return SkLayout.headingGap;
+    if (below is SwapIntroBeat) return SkLayout.groupGap;
 
     // **Two examples in a row sit closer together than anything else on a
     // page.** On the last page they are one swap shown twice, not two separate
@@ -1085,7 +1051,7 @@ class _Introduction extends StatelessWidget {
     // stayed at 20 when the body's leading came back down to 1.5: a clear
     // paragraph break is what the tighter leading needs to stay readable, and
     // it is the cheaper of the two ways to buy one.
-    return SkLayout.xl;
+    return SkLayout.paragraphGap;
   }
 }
 
@@ -1235,18 +1201,18 @@ SkTone _toneFor(String label) => label == SwapDrillScript.criticismLabel
 
 // The name of one beat of the page, over the group it belongs to.
 //
-// **`SkText.lessonBeat` -- 20/500, sentence case, in `ink`.** It was
+// **`SkText.h2` -- 20/400, sentence case, in `ink`.** It was
 // `sectionHeader` in the caption colour -- 13/600, uppercase, letter-spaced --
 // until 24 September 2026, and it was reported as not reading like a page of
 // a book. It was not one: that style is the iOS grouped-list header, app
 // furniture set over a list of controls, and these pages are prose. The long
-// version is on `SkText.lessonBeat`. See `SwapIntroBeat` for why the words are
+// version is on `SkText.h2`. See `SwapIntroBeat` for why the words are
 // the reader's rather than the frame's.
 //
 // **The old note said a label bigger than the body would be a second rank,
 // and that is exactly what this is now** -- deliberately. `/lesson-design`
 // rule 5 gives a page one *heading*, and the page still has one: the title, at
-// 24/600, the only bold thing on the screen. An 18/500 marker under it is a
+// 24/400, the largest thing on the screen. An 18/500 marker under it is a
 // rank below the heading rather than a rival to it, which is the ladder a
 // printed page runs on: medium is the step between a paragraph and a
 // heading, and 600 stays the title's alone.
@@ -1268,7 +1234,7 @@ class _Beat extends StatelessWidget {
   Widget build(BuildContext context) {
     return Text(
       label,
-      style: SkText.lessonBeat.copyWith(color: context.exercise.ink),
+      style: SkText.h2.copyWith(color: context.exercise.ink),
     );
   }
 }
@@ -1297,7 +1263,7 @@ class _Beat extends StatelessWidget {
 // top of a bubble that is two or three lines anyway.
 //
 // **What keeps it from reading as the first line of her speech**: it is 14/600
-// against the sentence's `lessonSpoken` 17/600, and it is the only coloured
+// against the sentence's `script` 17/600, and it is the only coloured
 // text in the bubble. If it ever does read as speech on a real screen, the next thing to
 // try is `sectionHeader` uppercase -- the shape `_Beat` uses three blocks
 // above it -- and **not** putting it back outside.
@@ -1320,7 +1286,7 @@ class _ExampleLabel extends StatelessWidget {
   Widget build(BuildContext context) {
     return Text(
       label,
-      style: SkText.chipLabel.copyWith(
+      style: SkText.label.copyWith(
         color: context.exercise.softStatusOf(_toneFor(label)).text,
       ),
     );
@@ -1501,7 +1467,7 @@ class _FaceExample extends StatelessWidget {
                 // coloured box.
                 Text(
                   '"$said"',
-                  style: SkText.lessonSpoken.copyWith(color: soft.body),
+                  style: SkText.script.copyWith(color: soft.body),
                 ),
               ],
             ),
@@ -1514,7 +1480,7 @@ class _FaceExample extends StatelessWidget {
 
 // One paragraph of a reading page -- the introduction, or the closing step.
 //
-// **`SkText.lessonBody` -- 16/400 at 1.5 leading.** It was `caption` at 16
+// **`SkText.body` -- 16/400 at 1.5 leading.** It was `caption` at 16
 // until 21 September 2026, then `rowLabel` at 17 with the leading set here.
 // `caption` is the style for subtitles and metadata under a title; these are
 // paragraphs somebody reads, and a caption style on body text puts the page's
@@ -1522,7 +1488,7 @@ class _FaceExample extends StatelessWidget {
 //
 // **It stopped being `rowLabel` on 24 September 2026, and the reason is the
 // leading rather than the size.** `rowLabel` is 17/1.4, which is right for a
-// row read at a glance and tight for five lines of prose. `lessonBody` is the
+// row read at a glance and tight for five lines of prose. `body` is the
 // same 17 at 1.5, and having it named is what stops the next person setting a
 // paragraph in a row style.
 //
@@ -1545,7 +1511,7 @@ class _Paragraph extends StatelessWidget {
   final String? emphasis;
 
   // One point of a bulleted list rather than a paragraph. Same size, tighter
-  // leading -- see `SkText.lessonPoint` for why a list is set closer than
+  // leading -- see `SkText.body` for why a list is set closer than
   // prose.
   final bool point;
 
@@ -1559,7 +1525,8 @@ class _Paragraph extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final TextStyle style =
-        (point ? SkText.lessonPoint : SkText.lessonBody).copyWith(
+        SkText.body.copyWith(
+      height: point ? SkText.bodyListHeight : null,
       color: quiet ? context.exercise.caption : context.exercise.ink,
     );
 
@@ -1662,9 +1629,8 @@ class _Chain extends StatelessWidget {
           child: Padding(
             // Half a point above the middle of the first line box, so the
             // dot reads as level with the x-height rather than with the
-            // whole line. **Tuned to `SkText.lessonPoint`'s leading** -- it
-            // was 9 while the line ran at 1.5, and it moves whenever that
-            // style's height does.
+            // whole line. **Tuned to `SkText.bodyListHeight`** -- it
+            // moves whenever that number does.
             padding: EdgeInsets.only(
               top: MediaQuery.textScalerOf(context).scale(8),
               right: SkLayout.md,
@@ -1682,7 +1648,7 @@ class _Chain extends StatelessWidget {
         Expanded(
           child: Text(
             item,
-            // **`lessonPoint`: the body's size at the list's own leading.**
+            // **`body`: the body's size at the list's own leading.**
             // It was `caption` with a 1.5 override written here, which is
             // prose leading -- and these are three one-line consequences, not
             // paragraphs, so that air landed between the lines rather than
@@ -1690,7 +1656,8 @@ class _Chain extends StatelessWidget {
             // runs on bans the chain reading as a *footnote*, and equal size
             // is not that -- the dots and the indent are what say it is a
             // list.
-            style: SkText.lessonPoint.copyWith(
+            style: SkText.body.copyWith(
+              height: SkText.bodyListHeight,
               color: context.exercise.ink,
             ),
           ),
@@ -1716,10 +1683,10 @@ class _Chain extends StatelessWidget {
 // label is `_ExampleLabel` over the bubble. See `SwapIntroExample` for why a
 // page with a speaker on it should not print its speech in a box.
 //
-// The one thing that changed with it: the sentence is `SkText.lessonSpoken`
-// in `ink` rather than `SkText.quote` in `caption`. That was always the rule
+// The one thing that changed with it: the sentence is `SkText.script`
+// in `ink` rather than `SkText.script` in `caption`. That was always the rule
 // -- `quote`'s own note says 400 is for a quote in a tile and 600 is for a
-// bubble, "where the bubble already says who is talking", and `lessonSpoken`
+// bubble, "where the bubble already says who is talking", and `script`
 // is that second half, named on 25 September 2026 after it spent a while
 // borrowing `cardTitle`. The quote marks came off for the same reason. `ink`
 // on a tone fill is a wider gap than the `caption` it replaces, so nothing
@@ -2049,7 +2016,7 @@ class _Said extends StatelessWidget {
       skin: skin,
       child: Text(
         quoted ? '“$said”' : said,
-        style: SkText.lessonSpoken.copyWith(color: context.exercise.ink),
+        style: SkText.script.copyWith(color: context.exercise.ink),
       ),
     );
   }
@@ -2195,8 +2162,8 @@ class _Quiet extends StatelessWidget {
   }
 }
 
-// The question above a set of option cards. One line, quiet, under whatever
-// the step is asking about.
+// The line under a heading that says what to do on the step. Reading text,
+// so it is `body` in `ink`, like every other paragraph in the lesson.
 class _Ask extends StatelessWidget {
   final String question;
 
@@ -2206,10 +2173,7 @@ class _Ask extends StatelessWidget {
   Widget build(BuildContext context) {
     return Text(
       question,
-      style: SkText.caption.copyWith(
-        color: context.exercise.caption,
-        height: 1.5,
-      ),
+      style: SkText.body.copyWith(color: context.exercise.ink),
     );
   }
 }
@@ -2229,7 +2193,7 @@ class _Heading extends StatelessWidget {
       header: true,
       child: Text(
         text,
-        style: SkText.sceneLine.copyWith(color: context.exercise.ink),
+        style: SkText.h1.copyWith(color: context.exercise.ink),
       ),
     );
   }
@@ -2238,13 +2202,13 @@ class _Heading extends StatelessWidget {
 // A heading over one section of the closing step, under that step's own
 // heading.
 //
-// **`SkText.lessonBeat` -- the same 20/500 the introduction's beat markers
+// **`SkText.h2` -- the same 20/400 the introduction's beat markers
 // take.** It was `cardTitle` 18/600, which was a real step over a 17pt body
-// and was no step at all over `lessonBody` the afternoon that style was 18.
+// and was no step at all over `body` the afternoon that style was 18.
 // Rather than make it bolder,
 // it takes the marker style the rest of the lesson now uses: a section marker
 // should look the same wherever in the lesson it appears, and the page keeps
-// one bold thing on it -- its own title, at 24/600.
+// one largest thing on it -- its own title, at 24/400.
 //
 // Hierarchy here is size first and weight second, never colour: it is `ink`,
 // the same as the body under it, because a heading told apart only by its
@@ -2266,7 +2230,7 @@ class _SectionHeading extends StatelessWidget {
       header: true,
       child: Text(
         text,
-        style: SkText.lessonBeat.copyWith(color: context.exercise.ink),
+        style: SkText.h2.copyWith(color: context.exercise.ink),
       ),
     );
   }
@@ -2320,10 +2284,9 @@ class _Points extends StatelessWidget {
                     color: context.exercise.caption,
                     // **Tuned to the point's own line box, not chosen.** The
                     // dot has to sit on the first line's x-height, so its
-                    // line box runs a little taller than the words' -- it was
-                    // 1.6 against a 1.5 paragraph and came down with the list
-                    // to `SkText.lessonPoint`'s 1.35. Moving that style means
-                    // moving this.
+                    // line box runs a little taller than the words' -- 1.45
+                    // against `SkText.bodyListHeight`'s 1.35. Moving that
+                    // number means moving this.
                     height: 1.45,
                   ),
                 ),
@@ -2912,7 +2875,7 @@ class _PartLines extends StatelessWidget {
 // nobody holding it up. In the bubble the step reads exactly like a sorting
 // step, which is what it is: a sentence, and something to do about it.
 //
-// **`lessonSpoken`, the style every other bubble in the lesson takes.** It
+// **`script`, the style every other bubble in the lesson takes.** It
 // was `cardTitle` at 18 in the old box -- a card heading, sized against
 // Home's rows. Inside a bubble the sentence has to be in step with her six,
 // or the reader's own sentence is set larger than the ones they were taught
@@ -2934,7 +2897,7 @@ class _SentenceSoFar extends StatelessWidget {
     return Semantics(
       label: _sentenceLabel(state),
       child: ExcludeSemantics(
-        child: Text.rich(_sentenceSpan(state, SkText.lessonSpoken, ex)),
+        child: Text.rich(_sentenceSpan(state, SkText.script, ex)),
       ),
     );
   }
@@ -3031,13 +2994,11 @@ class _Tile extends StatelessWidget {
           ),
           child: Text(
             label,
-            style: SkText.caption.copyWith(
+            style: SkText.optionLabel.copyWith(
               // The spent tile drops to the caption colour rather than to a
               // grey or to an opacity: it is the same ground's own quieter
               // ink, and it still clears 4.5:1 on `tile` in both sets.
               color: used ? ex.caption : ex.ink,
-              fontWeight: FontWeight.w500,
-              height: 1.35,
             ),
           ),
         ),
@@ -3197,8 +3158,8 @@ class _BeforeYouTry extends StatelessWidget {
         // **Smaller than the gap under her**, which is the builder's own
         // arrangement and the nesting rule: the title and the line she says
         // are one group, and the three sections are the next. Everywhere else
-        // on the page the same rule does the work -- `sm` inside a section,
-        // `xxl` between them, so three sections read as three and not as six
+        // on the page the same rule does the work -- `headingGap` inside a
+        // section, `groupGap` between them, so three sections read as three and not as six
         // paragraphs.
         const SizedBox(height: SkLayout.lg),
 
@@ -3218,20 +3179,20 @@ class _BeforeYouTry extends StatelessWidget {
 
         for (int i = 0; i < SwapDrillScript.closing.length; i++) ...<Widget>[
           _SectionHeading(SwapDrillScript.closing[i].heading),
-          // **The list's own gap, not the marker's.** It was
-          // `SkLayout.markerGap` -- 8 -- against 12 between the points, so the
-          // heading sat closer to point one than the points sat to each other
-          // and read as glued to it. The two numbers are the same 8 again now
-          // that the list has tightened, and the constant is still what keeps
-          // them equal: raising one raises the other. See `SkLayout.listGap`,
-          // which `_Points` reads as well so the two cannot drift.
-          const SizedBox(height: SkLayout.listGap),
+          // The app's heading gap, the same as the introduction's markers.
+          // It is never smaller than the gap between the points, so the
+          // heading cannot read as glued to point one. See
+          // `SkLayout.headingGap`.
+          const SizedBox(height: SkLayout.headingGap),
           _Points(
             SwapDrillScript.closing[i].points,
             emphasis: SwapDrillScript.closing[i].emphasis,
           ),
+          // The app's section gap, the same as the introduction's. It was
+          // 24 here and 32 there until 26 September 2026 -- one lesson, two
+          // numbers for one job.
           if (i != SwapDrillScript.closing.length - 1)
-            const SizedBox(height: SkLayout.xxl),
+            const SizedBox(height: SkLayout.groupGap),
         ],
       ],
     );

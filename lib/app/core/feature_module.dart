@@ -2,6 +2,7 @@ import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:sidekick/app/models/guided_intro.dart';
+import 'package:sidekick/app/models/tab_section.dart';
 
 // The contract every feature implements.
 //
@@ -30,6 +31,11 @@ abstract class FeatureModule {
   // each one starts running the moment it is pushed; the sheet is where the
   // reader decides. See `guidedIntroFor`.
   Map<String, GuidedIntro> get guidedIntros => const <String, GuidedIntro>{};
+
+  // Parts this feature adds to another feature's tab, keyed by that tab's
+  // route. The tab shows them behind its toggle. See `tabSectionsFor`.
+  Map<String, List<TabSection>> get tabSections =>
+      const <String, List<TabSection>>{};
 
   // Optional async work at startup, run after all services are registered.
   Future<void> onAppStart() async {}

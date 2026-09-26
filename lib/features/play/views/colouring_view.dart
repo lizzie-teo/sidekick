@@ -89,7 +89,14 @@ class _ColouringViewState extends State<ColouringView> {
     if (router.canPop()) {
       router.pop();
     } else {
-      router.go(Routes.scribble);
+      router.go(
+        Uri(
+          path: Routes.goodThings,
+          queryParameters: <String, String>{
+            Routes.goodThingsSectionQuery: GoodThingsSections.colouring,
+          },
+        ).toString(),
+      );
     }
   }
 
@@ -134,7 +141,7 @@ class _ColouringViewState extends State<ColouringView> {
                             state.scene?.title ?? '',
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
-                            style: SkText.cardTitle.copyWith(color: sk.ink),
+                            style: SkText.h1.copyWith(color: sk.ink),
                           ),
                         ),
                       ),

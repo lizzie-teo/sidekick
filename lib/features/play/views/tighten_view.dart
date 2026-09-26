@@ -294,7 +294,7 @@ class _TightenViewState extends State<TightenView>
   // of it.
   static const double _closeBand = 52;
 
-  // Tall enough for the longest line in the script at homeQuote size, so a
+  // Tall enough for the longest line in the script at skyText size, so a
   // longer line scrolls inside the band rather than growing it.
   static const double _wordsBand = 140;
 
@@ -420,7 +420,7 @@ class _TightenViewState extends State<TightenView>
                               state.line,
                               textAlign: TextAlign.center,
                               style:
-                                  SkText.homeQuote.copyWith(color: sky.onSky),
+                                  SkText.skyText.copyWith(color: sky.onSky),
                             ),
                           ),
                         ),

@@ -1,4 +1,6 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
+
+import 'package:sidekick/app/widgets/sk_primary_button.dart';
 
 // A button that owns its own in-flight state.
 //
@@ -8,15 +10,16 @@ import 'package:flutter/material.dart';
 // isLoading flag for each one.
 //
 // While the action runs, further taps are ignored and a spinner replaces the
-// label. Errors are not swallowed -- they propagate to the caller, so the
+// label. It draws `SkPrimaryButton` -- this widget adds the in-flight state
+// and nothing else, so there is one primary button in the app, not two. Errors are not swallowed -- they propagate to the caller, so the
 // viewmodel method being called stays responsible for handling them.
 class AsyncButton extends StatefulWidget {
-  final Widget child;
+  final String label;
   final Future<void> Function()? onPressed;
 
   const AsyncButton({
     super.key,
-    required this.child,
+    required this.label,
     this.onPressed,
   });
 
@@ -48,25 +51,10 @@ class _AsyncButtonState extends State<AsyncButton> {
 
   @override
   Widget build(BuildContext context) {
-    return FilledButton(
+    return SkPrimaryButton(
+      label: widget.label,
       onPressed: widget.onPressed == null ? null : _handlePressed,
-      // Fixed height so the button does not resize when the label is swapped
-      // for the spinner.
-      child: SizedBox(
-        height: 20,
-        child: Center(
-          child: _isInFlight
-              ? SizedBox(
-                  width: 16,
-                  height: 16,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    color: Theme.of(context).colorScheme.onPrimary,
-                  ),
-                )
-              : widget.child,
-        ),
-      ),
+      busy: _isInFlight,
     );
   }
 }

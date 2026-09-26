@@ -241,21 +241,26 @@ a purpose word from Step 1.
 
 ### Switching tabs
 
-Every tab is a `GoRoute` inside one `ShellRoute`, and a tab tap is a
-`context.go`. **Check what that looks like on the phone before changing it.**
-A tab is not a place you travel *to* -- iOS tabs change with no slide -- so if a
-tab tap slides in from the right, the fix is a quick crossfade (150–200ms,
-`easeOutQuint`) or none, on the tab routes only. Pushed pages keep the slide.
+**Done 26 September 2026.** A tab tap used to slide the new tab in from the
+right like a pushed page, and slide the old one off left -- even going back to
+a tab on the left. Now the tab bar passes `TabTap` as the route's `extra`, and
+each tab's `pageBuilder` returns `TabPage.forState` (`lib/app/core/tab_page.dart`):
+a 180ms fade on `easeOutQuint`, with the old tab standing still under it.
+
+- **Only a tab tap fades.** Good things is also pushed, and a push keeps the
+  Cupertino slide and its back swipe. A new tab route must use
+  `TabPage.forState`, never a `TabPage` on its own.
+- A page pushed over a tab still slides, and the tab under it still drifts
+  left, as on iOS.
+- `test/tab_switch_test.dart` pins both.
 
 ### A bottom sheet
 
-Every picker sheet opens through `SkSheetFrame.show`. Five other sheets still
-call `showModalBottomSheet` themselves -- `affirmation_sheet.dart`,
-`good_things_account_offer.dart`, `good_things_why_sheet.dart`,
-`scribble_view.dart`, `colouring_tray.dart`. **Motion for sheets lives in one
-place**: give `SkSheetFrame.show` a `sheetAnimationStyle` (about 320ms in on
-the drawer curve, about 220ms out) and move the others onto it rather than
-styling five copies.
+**Done 26 September 2026.** Every sheet opens through `SkSheetFrame.show`, and
+its `motion` sets 320ms in on the drawer curve and 220ms out. Under Reduce
+Motion the sheet is simply there. **Do not call `showModalBottomSheet`
+directly** -- a new sheet goes through `SkSheetFrame.show`, with
+`useRootNavigator: false` only if it has a reason to sit inside the shell.
 
 ### A button
 

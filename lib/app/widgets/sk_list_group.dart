@@ -39,8 +39,8 @@ class SkListGroup extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.only(left: 4, bottom: 8),
             child: Text(
-              header!.toUpperCase(),
-              style: SkText.sectionHeader.copyWith(
+              header!,
+              style: SkText.label.copyWith(
                 color: SkContrast.captionOn(sk.canvas),
               ),
             ),
@@ -63,7 +63,6 @@ class SkListGroup extends StatelessWidget {
               footer!,
               style: SkText.caption.copyWith(
                 color: SkContrast.captionOn(sk.canvas),
-                height: 1.45,
               ),
             ),
           ),

@@ -12,8 +12,8 @@ import 'package:sidekick/app/widgets/sk_character.dart';
 import 'package:sidekick/app/widgets/sk_colors.dart';
 import 'package:sidekick/app/widgets/sk_layout.dart';
 import 'package:sidekick/app/widgets/sk_main_tab_bar.dart';
-import 'package:sidekick/app/widgets/sk_raised_tile.dart';
 import 'package:sidekick/app/widgets/sk_text.dart';
+import 'package:sidekick/app/widgets/sk_tile_grid.dart';
 import 'package:sidekick/features/dashboard/models/daily_quotes.dart';
 import 'package:sidekick/app/core/home_place_service.dart';
 import 'package:sidekick/features/dashboard/viewmodels/dashboard_viewmodel.dart';
@@ -30,7 +30,7 @@ import 'package:sidekick/features/dashboard/widgets/pause_sheet.dart';
 // The land runs on under the rest of the page, where the canvas used to be.
 //
 // The three glass pills and the dashed invitation became one row of
-// tiles under "Now for you". Meditate went with them: it opened nothing, and
+// tiles under "Take a moment". Meditate went with them: it opened nothing, and
 // a door that looks like it worked is worse than no door.
 //
 // Home, turned over on 24 September 2026. The sidekick used to stand on the
@@ -68,7 +68,13 @@ class DashboardView extends StatefulWidget {
   const DashboardView({super.key});
 
   // The heading over the row of tiles.
-  static const String tilesHeading = 'Now for you';
+  static const String tilesHeading = 'Take a moment';
+
+  // A fixed clock for tests, so a test can open Home on the day of a
+  // particular quote. Null in the app, where the viewmodel reads the real
+  // clock.
+  @visibleForTesting
+  static DateTime Function()? debugNow;
 
   // The tile that opens the feeling picker, beside the moth.
   static const String howIFeel = 'How I feel';
@@ -79,6 +85,12 @@ class DashboardView extends StatefulWidget {
   // Her height on the hill. Fixed, so a quote that grows at 200% text moves
   // the whole band down rather than squeezing her.
   static const double characterHeight = HomeStage.characterHeight;
+
+  // Her band's height: her, and a step of sky above her head.
+  static const double stageHeight = characterHeight + SkLayout.lg;
+
+  static const String dailyMeditation = 'Daily meditation';
+  static const String notReady = 'Not ready yet';
 
   @override
   State<DashboardView> createState() => _DashboardViewState();
@@ -95,6 +107,7 @@ class _DashboardViewState extends State<DashboardView> {
     placeService: getIt.isRegistered<HomePlaceService>()
         ? getIt<HomePlaceService>()
         : null,
+    now: DashboardView.debugNow,
   );
 
   @override
@@ -112,8 +125,13 @@ class _DashboardViewState extends State<DashboardView> {
     _viewModel.init();
   }
 
+  // Read by the parallax on her band. Widget-owned: how far the page has
+  // scrolled is this screen's business, not the viewmodel's.
+  final ScrollController _scroll = ScrollController();
+
   @override
   void dispose() {
+    _scroll.dispose();
     _viewModel.openExplanation.removeListener(_openExplanation);
     _viewModel.dispose();
     super.dispose();
@@ -155,6 +173,7 @@ class _DashboardViewState extends State<DashboardView> {
           // glass rather than stopping at a solid band.
           Positioned.fill(
             child: CustomScrollView(
+              controller: _scroll,
               slivers: <Widget>[
                 // The date and the quote, on the sky.
                 SliverToBoxAdapter(
@@ -178,178 +197,217 @@ class _DashboardViewState extends State<DashboardView> {
                   ),
                 ),
 
-                // Her band: the sun or moon, the hill, and her standing on it.
-                SliverToBoxAdapter(
-                  child: ValueListenableBuilder<DashboardViewModelState>(
-                    valueListenable: _viewModel.state,
-                    builder: (context, state, child) {
-                      // The sidekick, drawn live by the Rive runtime. The
-                      // artboard carries her behaviour: she idles quietly,
-                      // her ears twitch when tapped, and tapping her body
-                      // starts a full breathing cycle -- so the screen is
-                      // calm until the user reaches for her.
-                      return HomeStage(
-                        phase: state.phase,
-                        moon: state.moon,
-                        height: DashboardView.characterHeight + SkLayout.lg,
-                        // The door to the feeling picker: her moth, flying
-                        // round her. It holds her, because it passes behind
-                        // her for part of the way and in front for the rest.
-                        //
-                        // Lifted 6 off the band's foot, at the user's
-                        // request on 26 September 2026 -- off the four-point
-                        // grid on purpose, because 6 is the number they
-                        // chose by eye. The moth moves with her, because its
-                        // landing spot is measured from the same foot.
-                        child: Padding(
-                          padding: const EdgeInsets.only(bottom: 6),
-                          child: SizedBox.expand(
-                            child: FeelingsMoth(
-                              phase: state.phase,
-                              // Pushed, so "Just looking" comes straight back
-                              // to Home.
-                              onPressed: () => context.push(Routes.panic),
-                              child: SkCharacter(
-                                height: DashboardView.characterHeight,
-                                skin: state.character.skin,
+                // Her band and the rest of the hill, in one sliver so the
+                // panel paints over her band. A viewport paints its first
+                // sliver on top, so as two slivers the band would slide over
+                // the panel rather than under it.
+                //
+                // `hasScrollBody: false` is what makes it take the rest of
+                // the viewport and grow past it when the content is taller --
+                // which is what 200% text does to it.
+                SliverFillRemaining(
+                  hasScrollBody: false,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: <Widget>[
+                      // Her band: the sun or moon, the hill, and her
+                      // standing on it. A fixed height, so the sliver can
+                      // measure the column without asking the Rive widget.
+                      //
+                      // **It scrolls at half speed and the panel covers
+                      // it**, at the user's request, 26 September 2026.
+                      SizedBox(
+                        height: DashboardView.stageHeight,
+                        child: _Parallax(
+                          controller: _scroll,
+                          child:
+                              ValueListenableBuilder<DashboardViewModelState>(
+                            valueListenable: _viewModel.state,
+                            builder: (context, state, child) {
+                              // The sidekick, drawn live by the Rive runtime. The
+                              // artboard carries her behaviour: she idles quietly,
+                              // her ears twitch when tapped, and tapping her body
+                              // starts a full breathing cycle -- so the screen is
+                              // calm until the user reaches for her.
+                              return HomeStage(
+                                phase: state.phase,
+                                moon: state.moon,
+                                height: DashboardView.stageHeight,
+                                // The door to the feeling picker: her moth, flying
+                                // round her. It holds her, because it passes behind
+                                // her for part of the way and in front for the rest.
+                                //
+                                // Lifted 6 off the band's foot, at the user's
+                                // request on 26 September 2026 -- off the four-point
+                                // grid on purpose, because 6 is the number they
+                                // chose by eye. The moth moves with her, because its
+                                // landing spot is measured from the same foot.
+                                child: Padding(
+                                  padding: const EdgeInsets.only(bottom: 6),
+                                  child: SizedBox.expand(
+                                    child: FeelingsMoth(
+                                      phase: state.phase,
+                                      // Pushed, so "Just looking" comes straight back
+                                      // to Home.
+                                      onPressed: () =>
+                                          context.push(Routes.panic),
+                                      child: SkCharacter(
+                                        height: DashboardView.characterHeight,
+                                        skin: state.character.skin,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                      ),
+                      //
+                      // **A panel in the palette's canvas, under the scene.** The
+                      // scene is the time of day's colours and the controls are
+                      // the palette's, and the two do not mix: the old Tap me fill
+                      // measured as low as 1.02:1 on a violet hill.
+                      //
+                      // **Rounded top corners, with the ground's own colour
+                      // behind them,** so the panel reads as lying on the
+                      // hill. Blue once showed on the cream here; that was the
+                      // scene's trees painting below its foot, not the corners,
+                      // and `HomeStage` now clips its foot. A straight edge was
+                      // tried for a few minutes and the rounded one preferred.
+                      Expanded(
+                        child: ValueListenableBuilder<DashboardViewModelState>(
+                          valueListenable: _viewModel.state,
+                          builder: (context, state, child) => ColoredBox(
+                            color: HomeSkyColors.of(
+                              state.phase,
+                              Theme.of(context).brightness,
+                            ).ground,
+                            child: child,
+                          ),
+                          child: DecoratedBox(
+                            decoration: BoxDecoration(
+                              color: sk.canvas,
+                              borderRadius: const BorderRadius.vertical(
+                                top: Radius.circular(SkLayout.xxxl),
+                              ),
+                            ),
+                            child: Padding(
+                              padding: EdgeInsets.fromLTRB(
+                                  gutter, SkLayout.xxl, gutter, 0),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: <Widget>[
+                                  _HomeSection(
+                                    heading: DashboardView.tilesHeading,
+                                    child: SkTileGrid(
+                                      // No Breathe tile. It opened the panic pacer,
+                                      // which the tab bar's panic button and the
+                                      // fluffball's "Can't cope" already reach -- and
+                                      // its first line is "When you panic", which is
+                                      // the wrong welcome for somebody calm who wanted
+                                      // to breathe. A calm breathing exercise belongs
+                                      // on the Meditate tab. Removed 25 September 2026.
+                                      //
+                                      // **The order is rarest door first**, set 26
+                                      // September 2026, when the tiles were one row
+                                      // that scrolled and the last was cut at the
+                                      // edge. They are a 2x2 grid now and all four
+                                      // show, so the order only decides which sit on
+                                      // top. A door that exists only here goes before
+                                      // one the reader can reach another way:
+                                      //
+                                      // | Tile | Also reached by |
+                                      // | --- | --- |
+                                      // | How I feel | The moth, which is often in flight and hard to hit |
+                                      // | Mindfulness | Nothing |
+                                      // | Scribble | The picker's Wound up stop |
+                                      // | What went well | Its own tab, and the picker's two good stops |
+                                      children: <Widget>[
+                                        // The plain door to the feeling picker. The
+                                        // moth is the charming one, but it flies
+                                        // round her most of the time and says "How
+                                        // are you?" only on its first two landings,
+                                        // so somebody on a hard day may never find
+                                        // it. Not "How are you feeling?": that is the
+                                        // moth's spoken label, and two controls with
+                                        // one name on one screen are one too many.
+                                        SkTile(
+                                          icon: Icons.favorite_rounded,
+                                          label: DashboardView.howIFeel,
+                                          // Pushed, like the moth, so "Just looking"
+                                          // comes straight back to Home.
+                                          onPressed: () =>
+                                              context.push(Routes.panic),
+                                        ),
+                                        // The day's one small thing, on a card. The
+                                        // prompt is read at the tap, so the tile
+                                        // itself never rebuilds.
+                                        SkTile(
+                                          icon: Icons.spa_rounded,
+                                          label: PauseSheet.buttonLabel,
+                                          onPressed: () {
+                                            final String prompt =
+                                                _viewModel.state.value.prompt;
+                                            if (prompt.isEmpty) return;
+                                            PauseSheet.show(context, prompt);
+                                          },
+                                        ),
+                                        SkTile(
+                                          icon: Icons.gesture_rounded,
+                                          label: 'Scribble',
+                                          // The pad lives on the Good things tab
+                                          // since 26 September 2026, so this goes to
+                                          // that tab, open on its Scribble part.
+                                          onPressed: () => context.go(
+                                            Uri(
+                                              path: Routes.goodThings,
+                                              queryParameters: <String, String>{
+                                                Routes.goodThingsSectionQuery:
+                                                    GoodThingsSections.scribble,
+                                              },
+                                            ).toString(),
+                                          ),
+                                        ),
+                                        // The door the dashed invitation used to be.
+                                        // Not "Good things": that is a tab, and two
+                                        // controls with one name on one screen are one
+                                        // too many for a screen reader.
+                                        SkTile(
+                                          icon: Icons.edit_note_rounded,
+                                          label: DashboardView.whatWentWell,
+                                          onPressed: () =>
+                                              context.go(Routes.goodThings),
+                                        ),
+                                        // The day's audio meditation. Not built yet, so it says so and
+                                        // takes no taps -- the same tile as on Practice's Meditations. Last
+                                        // and the full width, as the odd tile out. Added 26 September 2026.
+                                        const SkTile(
+                                          icon: Icons.headphones_rounded,
+                                          label: DashboardView.dailyMeditation,
+                                          note: DashboardView.notReady,
+                                          onPressed: null,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+
+                                  // Clear space under the floating tab bar, so the
+                                  // last row stays reachable. `clearanceOf`, not
+                                  // `heightOf`: the panic button rises above the
+                                  // bar, and with the tiles in a grid the bottom
+                                  // row sat right against it.
+                                  SizedBox(
+                                      height:
+                                          SkMainTabBar.clearanceOf(context) +
+                                              SkLayout.xxl),
+                                ],
                               ),
                             ),
                           ),
                         ),
-                      );
-                    },
-                  ),
-                ),
-
-                // The rest of the hill. `hasScrollBody: false` is what makes
-                // it take the rest of the viewport and grow past it when the
-                // content is taller -- which is what 200% text does to it.
-                SliverFillRemaining(
-                  hasScrollBody: false,
-                  //
-                  // **A panel in the palette's canvas, under the scene.** The
-                  // scene is the time of day's colours and the controls are
-                  // the palette's, and the two do not mix: the old Tap me fill
-                  // measured as low as 1.02:1 on a violet hill.
-                  //
-                  // **Rounded top corners, with the ground's own colour
-                  // behind them,** so the panel reads as lying on the
-                  // hill. Blue once showed on the cream here; that was the
-                  // scene's trees painting below its foot, not the corners,
-                  // and `HomeStage` now clips its foot. A straight edge was
-                  // tried for a few minutes and the rounded one preferred.
-                  child: ValueListenableBuilder<DashboardViewModelState>(
-                    valueListenable: _viewModel.state,
-                    builder: (context, state, child) => ColoredBox(
-                      color: HomeSkyColors.of(
-                        state.phase,
-                        Theme.of(context).brightness,
-                      ).ground,
-                      child: child,
-                    ),
-                    child: DecoratedBox(
-                      decoration: BoxDecoration(
-                        color: sk.canvas,
-                        borderRadius: const BorderRadius.vertical(
-                          top: Radius.circular(SkLayout.xxxl),
-                        ),
                       ),
-                      child: Padding(
-                        padding: EdgeInsets.fromLTRB(
-                            gutter, SkLayout.xxl, gutter, 0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: <Widget>[
-                            Semantics(
-                              header: true,
-                              child: Text(
-                                DashboardView.tilesHeading,
-                                style:
-                                    SkText.sheetHeading.copyWith(color: sk.ink),
-                              ),
-                            ),
-                            const SizedBox(height: SkLayout.md),
-                            _Tiles(
-                              // No Breathe tile. It opened the panic pacer,
-                              // which the tab bar's panic button and the
-                              // fluffball's "Can't cope" already reach -- and
-                              // its first line is "When you panic", which is
-                              // the wrong welcome for somebody calm who wanted
-                              // to breathe. A calm breathing exercise belongs
-                              // on the Meditate tab. Removed 25 September 2026.
-                              //
-                              // **The order is rarest door first**, set 26
-                              // September 2026. The row scrolls, and on a
-                              // phone the last tile is cut at the edge, so
-                              // the first tiles are the ones everybody sees.
-                              // A door that exists only here goes before one
-                              // the reader can reach another way:
-                              //
-                              // | Tile | Also reached by |
-                              // | --- | --- |
-                              // | How I feel | The moth, which is often in flight and hard to hit |
-                              // | Mindfulness | Nothing |
-                              // | Scribble | The picker's Wound up stop |
-                              // | What went well | Its own tab, and the picker's two good stops |
-                              children: <Widget>[
-                                // The plain door to the feeling picker. The
-                                // moth is the charming one, but it flies
-                                // round her most of the time and says "How
-                                // are you?" only on its first two landings,
-                                // so somebody on a hard day may never find
-                                // it. Not "How are you feeling?": that is the
-                                // moth's spoken label, and two controls with
-                                // one name on one screen are one too many.
-                                _Tile(
-                                  icon: Icons.favorite_rounded,
-                                  label: DashboardView.howIFeel,
-                                  // Pushed, like the moth, so "Just looking"
-                                  // comes straight back to Home.
-                                  onPressed: () => context.push(Routes.panic),
-                                ),
-                                // The day's one small thing, on a card. The
-                                // prompt is read at the tap, so the tile
-                                // itself never rebuilds.
-                                _Tile(
-                                  icon: Icons.spa_rounded,
-                                  label: PauseSheet.buttonLabel,
-                                  onPressed: () {
-                                    final String prompt =
-                                        _viewModel.state.value.prompt;
-                                    if (prompt.isEmpty) return;
-                                    PauseSheet.show(context, prompt);
-                                  },
-                                ),
-                                _Tile(
-                                  icon: Icons.gesture_rounded,
-                                  label: 'Scribble',
-                                  // Pushed, so both of the pad's doors come
-                                  // back here.
-                                  onPressed: () =>
-                                      context.push(Routes.scribble),
-                                ),
-                                // The door the dashed invitation used to be.
-                                // Not "Good things": that is a tab, and two
-                                // controls with one name on one screen are one
-                                // too many for a screen reader.
-                                _Tile(
-                                  icon: Icons.edit_note_rounded,
-                                  label: DashboardView.whatWentWell,
-                                  onPressed: () =>
-                                      context.go(Routes.goodThings),
-                                ),
-                              ],
-                            ),
-
-                            // Clear space under the floating tab bar, so the
-                            // last row stays reachable.
-                            SizedBox(
-                                height: SkMainTabBar.heightOf(context) +
-                                    SkLayout.lg),
-                          ],
-                        ),
-                      ),
-                    ),
+                    ],
                   ),
                 ),
               ],
@@ -407,10 +465,10 @@ class _DailyQuoteBlock extends StatelessWidget {
             onTap: () => AffirmationSheet.show(context, state.line),
             child: Text(
               state.line,
-              style: SkText.homeQuote.copyWith(color: ink),
+              style: SkText.skyText.copyWith(color: ink),
             ),
           )
-        : Text(quote.text, style: SkText.homeQuote.copyWith(color: ink));
+        : Text(quote.text, style: SkText.skyText.copyWith(color: ink));
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -468,96 +526,76 @@ class _DailyQuoteBlock extends StatelessWidget {
   }
 }
 
-// The row of tiles. A row that scrolls sideways, so a fifth door can join
-// without a redesign, and a column at 200% text -- `SkLayout.isLargeText`,
-// the same answer the feeling dial and the topic grid give: change shape
-// rather than shrink the words.
-class _Tiles extends StatelessWidget {
-  final List<Widget> children;
+// One section of the panel on the hill: a heading, then what it names.
+//
+// Added 26 September 2026 so a section added later is one widget in the
+// panel's column, with the heading size and the gap under it already
+// decided. Between two sections goes `SkLayout.groupGap` (32), the app's
+// section gap; under a heading, `SkLayout.headingGap` (12).
+//
+// `h2`, not `h1`: the date and the quote are the top of this page. The
+// heading was `sheetHeading` 16/600 until the same day, and read as a label
+// rather than a heading.
+class _HomeSection extends StatelessWidget {
+  final String heading;
+  final Widget child;
 
-  const _Tiles({required this.children});
+  const _HomeSection({required this.heading, required this.child});
 
   @override
   Widget build(BuildContext context) {
-    if (SkLayout.isLargeText(context)) {
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: <Widget>[
-          for (int i = 0; i < children.length; i++) ...<Widget>[
-            if (i > 0) const SizedBox(height: SkLayout.md),
-            children[i],
-          ],
-        ],
-      );
-    }
-
-    // Bleeds to the screen's edges so a tile slides out of sight rather
-    // than being cut at the gutter, and the cut tile is what says "more".
-    final double gutter = SkLayout.gutter(context);
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      clipBehavior: Clip.none,
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          for (int i = 0; i < children.length; i++) ...<Widget>[
-            if (i > 0) const SizedBox(width: SkLayout.md),
-            // A floor, not a fixed width: the row scrolls, so a tile is
-            // offered all the width it wants and hugs its label on one line.
-            // "Mindfulness" ran onto a second line in a fixed 132.
-            ConstrainedBox(
-              constraints: const BoxConstraints(minWidth: _Tile.width),
-              child: children[i],
-            ),
-          ],
-          SizedBox(width: gutter),
-        ],
-      ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: <Widget>[
+        Semantics(
+          header: true,
+          child: Text(
+            heading,
+            style: SkText.h2.copyWith(color: context.sk.ink),
+          ),
+        ),
+        const SizedBox(height: SkLayout.headingGap),
+        child,
+      ],
     );
   }
 }
 
-// One door on the hill: an icon over a label, on a soft raised tile. The
-// face is `SkRaisedTile`, shared with the body sheet behind "Can't cope".
-class _Tile extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final VoidCallback onPressed;
+// Her band, scrolling at half the page's speed, so the panel under it rises
+// over her rather than the two leaving together. Depth, said by speed.
+//
+// It follows the scroll, so there is no curve and no duration: the offset is
+// the finger. Only downward: a pull past the top on iOS leaves her where she
+// is rather than lifting her off the hill. Reduce Motion turns it off, and
+// the band then scrolls with the page as it did before.
+//
+// `Transform` moves where she is drawn and where she is tapped together, so
+// the moth stays under the finger that reaches for it.
+class _Parallax extends StatelessWidget {
+  final ScrollController controller;
+  final Widget child;
 
-  // The narrowest a tile gets in the row, so a short label does not make a
-  // small tile. A longer label widens its own tile rather than wrapping.
-  static const double width = 132;
-  static const double minHeight = 104;
+  // How much of the scroll she keeps back.
+  static const double lag = 0.5;
 
-  const _Tile({
-    required this.icon,
-    required this.label,
-    required this.onPressed,
-  });
+  const _Parallax({required this.controller, required this.child});
 
   @override
   Widget build(BuildContext context) {
-    return SkRaisedTile(
-      onPressed: onPressed,
-      semanticLabel: label,
-      minHeight: minHeight,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: <Widget>[
-          SkIconBadge(icon),
-          const SizedBox(height: SkLayout.lg),
-          ExcludeSemantics(
-            child: Text(
-              label,
-              style: SkText.rowLabel.copyWith(
-                color: context.sk.ink,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-        ],
-      ),
+    if (MediaQuery.disableAnimationsOf(context)) return child;
+
+    return AnimatedBuilder(
+      animation: controller,
+      child: child,
+      builder: (context, child) {
+        final double offset = controller.hasClients
+            ? controller.offset.clamp(0.0, double.infinity)
+            : 0;
+        return Transform.translate(
+          offset: Offset(0, offset * lag),
+          child: child,
+        );
+      },
     );
   }
 }

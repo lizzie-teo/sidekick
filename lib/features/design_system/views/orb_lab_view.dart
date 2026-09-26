@@ -265,7 +265,7 @@ class _OrbLabViewState extends State<OrbLabView>
                       'The ramp is black, Edge, Core, white. The two ends are '
                       'fixed: they are what let the orb reach real shadow and '
                       'real highlight. Edge is the darker of the two.',
-                      style: SkText.tabLabel
+                      style: SkText.label
                           .copyWith(color: SkContrast.captionOn(sk.canvas)),
                     ),
                     const SizedBox(height: 10),
@@ -368,7 +368,7 @@ class _OrbLabViewState extends State<OrbLabView>
                     slot.label,
                     textAlign: TextAlign.center,
                     maxLines: 2,
-                    style: SkText.tabLabel.copyWith(
+                    style: SkText.label.copyWith(
                       fontSize: 9,
                       color: slot == current
                           ? sk.ink
@@ -388,7 +388,7 @@ class _OrbLabViewState extends State<OrbLabView>
       padding: const EdgeInsets.only(bottom: 8),
       child: Text(
         text.toUpperCase(),
-        style: SkText.sectionHeader
+        style: SkText.label
             .copyWith(color: SkContrast.captionOn(sk.canvas)),
       ),
     );
@@ -430,7 +430,7 @@ class _OrbLabViewState extends State<OrbLabView>
             ],
           ),
           Text(hint,
-              style: SkText.tabLabel
+              style: SkText.label
                   .copyWith(color: SkContrast.captionOn(sk.canvas))),
           Slider.adaptive(
             value: value.clamp(min, max),
@@ -470,7 +470,7 @@ class _OrbLabViewState extends State<OrbLabView>
         children: <Widget>[
           Text(
             'THESE NUMBERS',
-            style: SkText.sectionHeader
+            style: SkText.label
                 .copyWith(color: SkContrast.captionOn(sk.canvas)),
           ),
           const SizedBox(height: 8),

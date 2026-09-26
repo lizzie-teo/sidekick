@@ -3,6 +3,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/widgets.dart';
 
 import 'package:sidekick/app/widgets/sk_colors.dart';
+import 'package:sidekick/app/widgets/sk_layout.dart';
 import 'package:sidekick/app/widgets/sk_contrast.dart';
 import 'package:sidekick/app/widgets/sk_disabled.dart';
 import 'package:sidekick/app/widgets/sk_pressable.dart';
@@ -100,7 +101,7 @@ class SkGlassButton extends StatelessWidget {
         border: Border.all(color: backdrop.withValues(alpha: rimAlpha)),
       ),
       child: Container(
-        constraints: BoxConstraints(minHeight: compact ? 50 : 56),
+        constraints: BoxConstraints(minHeight: SkLayout.buttonHeight),
         width: compact ? null : double.infinity,
         padding: EdgeInsets.symmetric(horizontal: compact ? 26 : 24),
         alignment: Alignment.center,

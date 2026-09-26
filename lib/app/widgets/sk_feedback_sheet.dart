@@ -240,9 +240,8 @@ class SkFeedbackSheet extends StatelessWidget {
                               const SizedBox(height: SkLayout.md),
                               Text(
                                 body!,
-                                style: SkText.caption.copyWith(
+                                style: SkText.body.copyWith(
                                   color: style.body,
-                                  height: 1.55,
                                 ),
                               ),
                             ],

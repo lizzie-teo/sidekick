@@ -356,6 +356,21 @@ exist first.
 There is no day 7 prompt. It was cut: the median user is gone before it
 would fire, and the ask now lives at the first Save instead.
 
+**`/welcome` is where 6.1 goes, and it is a placeholder today.** Noted 26
+September 2026. `WelcomeView` is a title and two buttons, left over from when
+it was the gate in front of sign-in. Nothing sends anyone there now -- the app
+opens on Home, and the only door in is the Design system lab. So a new install
+has no onboarding at all. Building this phase means:
+
+- Replacing `WelcomeView` with the carousel, or deleting it and giving the
+  carousel its own route.
+- Adding the onboarding guard to the redirect in `app_router.dart`, which
+  already marks where it goes (after auth).
+- Recording that onboarding was seen in `DeviceSettingsService`, with its key
+  in `SettingsKeys`, so it shows once per install.
+- Taking the "Design system" button off it: that door is for the developer,
+  not the first thing a new user sees.
+
 ## Phase 7 — Journal
 
 | Step | What |

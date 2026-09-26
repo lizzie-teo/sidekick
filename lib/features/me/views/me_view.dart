@@ -17,6 +17,8 @@ import 'package:sidekick/app/widgets/sk_list_group.dart';
 import 'package:sidekick/app/widgets/sk_rive_face.dart';
 import 'package:sidekick/app/widgets/sk_segmented.dart';
 import 'package:sidekick/app/widgets/sk_main_tab_bar.dart';
+import 'package:sidekick/app/widgets/sk_layout.dart';
+import 'package:sidekick/app/widgets/sk_pinned_header.dart';
 import 'package:sidekick/app/widgets/sk_text.dart';
 import 'package:sidekick/app/widgets/sk_toggle.dart';
 import 'package:sidekick/features/me/services/data_export_service.dart';
@@ -131,311 +133,321 @@ class _MeViewState extends State<MeView> {
           Positioned.fill(
             child: SafeArea(
               bottom: false,
-              child: SingleChildScrollView(
-                padding: EdgeInsets.fromLTRB(
-                    20, 24, 20, 24 + SkMainTabBar.heightOf(context)),
-                child: ValueListenableBuilder<MeViewModelState>(
-                  valueListenable: _viewModel.state,
-                  builder: (context, state, child) {
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        //
-
-                        // The page's own name, marked as a heading so
-                        // "next heading" lands on it. A screen reader skims
-                        // by heading; a title that is only the largest text
-                        // on the page is a title to the eye and nothing at
-                        // all to the ear.
-                        Semantics(
-                          header: true,
-                          child: Text('Me',
-                              style: SkText.largeTitle.copyWith(color: sk.ink)),
-                        ),
-
-                        const SizedBox(height: 22),
-
-                        // The card is the sidekick, never the user. There is
-                        // no name to take initials from -- the app asks for
-                        // one nowhere -- and an email is optional by design,
-                        // so most people have none. A grey circle with a
-                        // letter or a question mark would then be the normal
-                        // state, and an empty-looking avatar reads as a
-                        // prompt to sign up, which is the nagging this
-                        // product decided against. The account has its own
-                        // two signals further down the page.
-                        SkListCard(
-                          leading: _SidekickAvatar(
-                            character: state.character,
+              child: SkPinnedHeader(
+                // The page's own name, marked as a heading so "next
+                // heading" lands on it. A screen reader skims by heading;
+                // a title that is only the largest text on the page is a
+                // title to the eye and nothing at all to the ear.
+                header: Padding(
+                  padding: EdgeInsets.fromLTRB(
+                    SkLayout.gutter(context),
+                    SkLayout.xxl,
+                    SkLayout.gutter(context),
+                    0,
+                  ),
+                  child: Semantics(
+                    header: true,
+                    child: Text('Me', style: SkText.h1.copyWith(color: sk.ink)),
+                  ),
+                ),
+                body: SingleChildScrollView(
+                  padding: EdgeInsets.fromLTRB(
+                      SkLayout.gutter(context),
+                      SkLayout.md,
+                      SkLayout.gutter(context),
+                      SkLayout.xxl + SkMainTabBar.clearanceOf(context)),
+                  child: ValueListenableBuilder<MeViewModelState>(
+                    valueListenable: _viewModel.state,
+                    builder: (context, state, child) {
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          // The card is the sidekick, never the user. There is
+                          // no name to take initials from -- the app asks for
+                          // one nowhere -- and an email is optional by design,
+                          // so most people have none. A grey circle with a
+                          // letter or a question mark would then be the normal
+                          // state, and an empty-looking avatar reads as a
+                          // prompt to sign up, which is the nagging this
+                          // product decided against. The account has its own
+                          // two signals further down the page.
+                          SkListCard(
+                            leading: _SidekickAvatar(
+                              character: state.character,
+                            ),
+                            title: 'Mochi',
+                            caption: state.sidekickCaption,
+                            onTap: () {},
                           ),
-                          title: 'Mochi',
-                          caption: state.sidekickCaption,
-                          onTap: () {},
-                        ),
 
-                        const SizedBox(height: 22),
+                          const SizedBox(height: 22),
 
-                        SkListGroup(
-                          header: 'When you panic',
-                          children: [
-                            SkRow(
-                              label: 'Panic button on lock screen',
-                              trailing: SkToggle(
-                                value: _lockScreen,
-                                onChanged: (v) =>
-                                    setState(() => _lockScreen = v),
-                              ),
-                            ),
-                            SkRow(
-                              label: 'Vibrate with the breathing',
-                              trailing: SkToggle(
-                                value: _vibrate,
-                                onChanged: (v) => setState(() => _vibrate = v),
-                              ),
-                            ),
-                          ],
-                        ),
-
-                        const SizedBox(height: 22),
-
-                        SkListGroup(
-                          header: 'Every day',
-                          children: [
-                            SkRow(
-                              label: 'Check in with me',
-                              caption: state.errors['checkIn'],
-                              trailing: SkToggle(
-                                value: state.checkInEnabled,
-                                onChanged: _viewModel.setCheckInEnabled,
-                              ),
-                            ),
-                            // The time row is shown only while its reminder is
-                            // on. A time for an alert that will not fire is a
-                            // setting with nothing behind it.
-                            if (state.checkInEnabled)
+                          SkListGroup(
+                            header: 'When you panic',
+                            children: [
                               SkRow(
-                                label: 'At',
-                                value: _clock(state.checkInMinutes),
-                                chevron: true,
-                                onTap: () => _pickTime(
-                                  state.checkInMinutes,
-                                  _viewModel.setCheckInMinutes,
+                                label: 'Panic button on lock screen',
+                                trailing: SkToggle(
+                                  value: _lockScreen,
+                                  onChanged: (v) =>
+                                      setState(() => _lockScreen = v),
                                 ),
                               ),
-                            SkRow(
-                              label: 'Nudge me for good things',
-                              caption: state.errors['goodThings'],
-                              trailing: SkToggle(
-                                value: state.goodThingsEnabled,
-                                onChanged: _viewModel.setGoodThingsEnabled,
-                              ),
-                            ),
-                            // Its own time, not the check-in's. The two are
-                            // not the same errand -- one is read on the lock
-                            // screen and needs nothing, the other asks for a
-                            // line to be written -- and two alerts in the same
-                            // minute is one too many.
-                            if (state.goodThingsEnabled)
                               SkRow(
-                                label: 'At',
-                                value: _clock(state.goodThingsMinutes),
-                                chevron: true,
-                                onTap: () => _pickTime(
-                                  state.goodThingsMinutes,
-                                  _viewModel.setGoodThingsMinutes,
+                                label: 'Vibrate with the breathing',
+                                trailing: SkToggle(
+                                  value: _vibrate,
+                                  onChanged: (v) =>
+                                      setState(() => _vibrate = v),
                                 ),
                               ),
-                          ],
-                        ),
+                            ],
+                          ),
 
-                        const SizedBox(height: 22),
+                          const SizedBox(height: 22),
 
-                        SkListGroup(
-                          header: 'How it looks',
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 16, vertical: 12),
-                              child: Row(
-                                children: [
-                                  Text('Light or dark',
-                                      style: SkText.rowLabel
-                                          .copyWith(color: sk.ink)),
-                                  const SizedBox(width: 12),
-                                  Expanded(
-                                    child: SkSegmented(
-                                      labels: const ['Light', 'Dark', 'Auto'],
-                                      selected: _modes.indexOf(state.mode),
-                                      onChanged: (i) =>
-                                          _viewModel.setMode(_modes[i]),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            // Its own block rather than a trailing: seven
-                            // dots do not fit beside a label on a narrow
-                            // phone, and the Wrap lets the set keep growing.
-                            Padding(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 16, vertical: 12),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text('Colour',
-                                      style: SkText.rowLabel
-                                          .copyWith(color: sk.ink)),
-                                  const SizedBox(height: 10),
-                                  _PaletteDots(
-                                    selectedId: state.paletteId,
-                                    onChanged: _viewModel.setPalette,
-                                  ),
-                                ],
-                              ),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 16, vertical: 12),
-                              child: Row(
-                                children: [
-                                  Text('Your sidekick',
-                                      style: SkText.rowLabel
-                                          .copyWith(color: sk.ink)),
-                                  const SizedBox(width: 12),
-                                  Expanded(
-                                    child: SkSegmented(
-                                      // Read off the enum so the names live in
-                                      // one place and cannot drift from the
-                                      // order the tap is resolved against.
-                                      labels: <String>[
-                                        for (final SidekickCharacter c
-                                            in SidekickCharacter.values)
-                                          c.label,
-                                      ],
-                                      selected: state.character.index,
-                                      onChanged: (i) => _viewModel.setCharacter(
-                                          SidekickCharacter.values[i]),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            SkRow(
-                              label: 'Show the date on Home',
-                              trailing: SkToggle(
-                                value: state.homeDateShown,
-                                onChanged: _viewModel.setHomeDateShown,
-                              ),
-                            ),
-                          ],
-                        ),
-
-                        const SizedBox(height: 22),
-
-                        SkListGroup(
-                          header: 'Your stuff',
-                          // This used to say "Everything you write stays on
-                          // this phone", which was not true: good things go
-                          // to the account so they survive a new phone, and
-                          // only the settings are phone-only. A privacy line
-                          // that overclaims is worse than none at all, so it
-                          // now says what is actually kept and what is not.
-                          //
-                          // Colouring pictures joined the list on 26
-                          // September 2026, and "Nothing else is kept" would
-                          // have been the same overclaim the other way round.
-                          footer: 'Your good things are saved to your '
-                              'account, so they survive a new phone. Your '
-                              'colouring is kept on this phone, and in your '
-                              'account too once it has an email. Nothing '
-                              'else is kept: breathing, the panic screen and '
-                              'the feeling you pick all record nothing. '
-                              'Deleting is immediate and can\'t be undone.',
-                          children: [
-                            SkRow(
-                              key: _exportRowKey,
-                              label: 'Send me a copy of everything',
-                              // One caption doing two jobs, never both at
-                              // once: what is happening now, or why the last
-                              // try failed.
-                              caption: state.isExporting
-                                  ? 'Getting it ready...'
-                                  : state.errors['export'],
-                              chevron: true,
-                              onTap: state.isExporting ? null : _sendCopy,
-                            ),
-                            SkRow(
-                              label: 'Delete everything',
-                              destructive: true,
-                              onTap: () {},
-                            ),
-                          ],
-                        ),
-
-                        const SizedBox(height: 22),
-
-                        SkListGroup(
-                          footer: state.hasAccount
-                              ? (state.email.isNotEmpty
-                                  ? 'Signed in as ${state.email}'
-                                  : null)
-                              : 'An account is only needed to keep your good '
-                                  'things safe beyond this phone.',
-                          children: [
-                            SkRow(
-                              label: 'Tell us what\'s not working',
-                              chevron: true,
-                              onTap: () {},
-                            ),
-                            SkRow(
-                              label: 'Crisis lines near you',
-                              chevron: true,
-                              onTap: () {},
-                            ),
-                            SkRow(
-                              label: 'Who the quotes on Home are from',
-                              chevron: true,
-                              onTap: () => context.push(Routes.quoteCredits),
-                            ),
-                            // Signing out navigates nowhere: the session
-                            // ends, the watch() in the viewmodel notices,
-                            // and this row becomes the create-account one.
-                            if (state.hasAccount)
+                          SkListGroup(
+                            header: 'Every day',
+                            children: [
                               SkRow(
-                                label: 'Sign out',
-                                onTap: _viewModel.signOut,
-                              )
-                            else
+                                label: 'Check in with me',
+                                caption: state.errors['checkIn'],
+                                trailing: SkToggle(
+                                  value: state.checkInEnabled,
+                                  onChanged: _viewModel.setCheckInEnabled,
+                                ),
+                              ),
+                              // The time row is shown only while its reminder is
+                              // on. A time for an alert that will not fire is a
+                              // setting with nothing behind it.
+                              if (state.checkInEnabled)
+                                SkRow(
+                                  label: 'At',
+                                  value: _clock(state.checkInMinutes),
+                                  chevron: true,
+                                  onTap: () => _pickTime(
+                                    state.checkInMinutes,
+                                    _viewModel.setCheckInMinutes,
+                                  ),
+                                ),
                               SkRow(
-                                label: 'Create an account',
+                                label: 'Nudge me for good things',
+                                caption: state.errors['goodThings'],
+                                trailing: SkToggle(
+                                  value: state.goodThingsEnabled,
+                                  onChanged: _viewModel.setGoodThingsEnabled,
+                                ),
+                              ),
+                              // Its own time, not the check-in's. The two are
+                              // not the same errand -- one is read on the lock
+                              // screen and needs nothing, the other asks for a
+                              // line to be written -- and two alerts in the same
+                              // minute is one too many.
+                              if (state.goodThingsEnabled)
+                                SkRow(
+                                  label: 'At',
+                                  value: _clock(state.goodThingsMinutes),
+                                  chevron: true,
+                                  onTap: () => _pickTime(
+                                    state.goodThingsMinutes,
+                                    _viewModel.setGoodThingsMinutes,
+                                  ),
+                                ),
+                            ],
+                          ),
+
+                          const SizedBox(height: 22),
+
+                          SkListGroup(
+                            header: 'How it looks',
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 16, vertical: 12),
+                                child: Row(
+                                  children: [
+                                    Text('Light or dark',
+                                        style: SkText.rowLabel
+                                            .copyWith(color: sk.ink)),
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: SkSegmented(
+                                        labels: const ['Light', 'Dark', 'Auto'],
+                                        selected: _modes.indexOf(state.mode),
+                                        onChanged: (i) =>
+                                            _viewModel.setMode(_modes[i]),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              // Its own block rather than a trailing: seven
+                              // dots do not fit beside a label on a narrow
+                              // phone, and the Wrap lets the set keep growing.
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 16, vertical: 12),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text('Colour',
+                                        style: SkText.rowLabel
+                                            .copyWith(color: sk.ink)),
+                                    const SizedBox(height: 10),
+                                    _PaletteDots(
+                                      selectedId: state.paletteId,
+                                      onChanged: _viewModel.setPalette,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 16, vertical: 12),
+                                child: Row(
+                                  children: [
+                                    Text('Your sidekick',
+                                        style: SkText.rowLabel
+                                            .copyWith(color: sk.ink)),
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: SkSegmented(
+                                        // Read off the enum so the names live in
+                                        // one place and cannot drift from the
+                                        // order the tap is resolved against.
+                                        labels: <String>[
+                                          for (final SidekickCharacter c
+                                              in SidekickCharacter.values)
+                                            c.label,
+                                        ],
+                                        selected: state.character.index,
+                                        onChanged: (i) =>
+                                            _viewModel.setCharacter(
+                                                SidekickCharacter.values[i]),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              SkRow(
+                                label: 'Show the date on Home',
+                                trailing: SkToggle(
+                                  value: state.homeDateShown,
+                                  onChanged: _viewModel.setHomeDateShown,
+                                ),
+                              ),
+                            ],
+                          ),
+
+                          const SizedBox(height: 22),
+
+                          SkListGroup(
+                            header: 'Your stuff',
+                            // This used to say "Everything you write stays on
+                            // this phone", which was not true: good things go
+                            // to the account so they survive a new phone, and
+                            // only the settings are phone-only. A privacy line
+                            // that overclaims is worse than none at all, so it
+                            // now says what is actually kept and what is not.
+                            //
+                            // Colouring pictures joined the list on 26
+                            // September 2026, and "Nothing else is kept" would
+                            // have been the same overclaim the other way round.
+                            footer: 'Your good things are saved to your '
+                                'account, so they survive a new phone. Your '
+                                'colouring is kept on this phone, and in your '
+                                'account too once it has an email. Nothing '
+                                'else is kept: breathing, the panic screen and '
+                                'the feeling you pick all record nothing. '
+                                'Deleting is immediate and can\'t be undone.',
+                            children: [
+                              SkRow(
+                                key: _exportRowKey,
+                                label: 'Send me a copy of everything',
+                                // One caption doing two jobs, never both at
+                                // once: what is happening now, or why the last
+                                // try failed.
+                                caption: state.isExporting
+                                    ? 'Getting it ready...'
+                                    : state.errors['export'],
                                 chevron: true,
-                                onTap: _goConnect,
+                                onTap: state.isExporting ? null : _sendCopy,
                               ),
-                          ],
-                        ),
+                              SkRow(
+                                label: 'Delete everything',
+                                destructive: true,
+                                onTap: () {},
+                              ),
+                            ],
+                          ),
 
-                        if (state.errors['general'] != null) ...[
-                          const SizedBox(height: 12),
+                          const SizedBox(height: 22),
+
+                          SkListGroup(
+                            footer: state.hasAccount
+                                ? (state.email.isNotEmpty
+                                    ? 'Signed in as ${state.email}'
+                                    : null)
+                                : 'An account is only needed to keep your good '
+                                    'things safe beyond this phone.',
+                            children: [
+                              SkRow(
+                                label: 'Tell us what\'s not working',
+                                chevron: true,
+                                onTap: () {},
+                              ),
+                              SkRow(
+                                label: 'Crisis lines near you',
+                                chevron: true,
+                                onTap: () {},
+                              ),
+                              SkRow(
+                                label: 'Who the quotes on Home are from',
+                                chevron: true,
+                                onTap: () => context.push(Routes.quoteCredits),
+                              ),
+                              // Signing out navigates nowhere: the session
+                              // ends, the watch() in the viewmodel notices,
+                              // and this row becomes the create-account one.
+                              if (state.hasAccount)
+                                SkRow(
+                                  label: 'Sign out',
+                                  onTap: _viewModel.signOut,
+                                )
+                              else
+                                SkRow(
+                                  label: 'Create an account',
+                                  chevron: true,
+                                  onTap: _goConnect,
+                                ),
+                            ],
+                          ),
+
+                          if (state.errors['general'] != null) ...[
+                            const SizedBox(height: 12),
+                            Text(
+                              state.errors['general']!,
+                              textAlign: TextAlign.center,
+                              style: SkText.caption.copyWith(
+                                color: SkContrast.readable(
+                                    sk.destructive, sk.canvas),
+                              ),
+                            ),
+                          ],
+
+                          const SizedBox(height: 16),
+
                           Text(
-                            state.errors['general']!,
+                            'Sidekick 1.0',
                             textAlign: TextAlign.center,
-                            style:
-                                SkText.caption.copyWith(color: sk.destructive),
+                            style: SkText.caption.copyWith(
+                              color: SkContrast.captionOn(sk.canvas),
+                            ),
                           ),
                         ],
-
-                        const SizedBox(height: 16),
-
-                        Text(
-                          'Sidekick 1.0',
-                          textAlign: TextAlign.center,
-                          style: SkText.caption.copyWith(
-                            color: SkContrast.captionOn(sk.canvas),
-                          ),
-                        ),
-                      ],
-                    );
-                  },
+                      );
+                    },
+                  ),
                 ),
               ),
             ),

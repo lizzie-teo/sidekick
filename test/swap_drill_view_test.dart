@@ -1151,7 +1151,7 @@ void main() {
 
       // **It rendered at 72 and said 56**, because a `Container` carrying an
       // `alignment` grows to fill whatever room it is given. It is a real 56
-      // now -- the same height as `SkPrimaryButton`, `SkOutlineButton` and
+      // now -- 50 since 26 September 2026, `SkLayout.buttonHeight` -- the same height as `SkPrimaryButton`, `SkOutlineButton` and
       // the guided screens' forward control, so a lesson's button and a
       // meditation's button are the same object.
       // Measured on the rounded box itself, not on an ancestor: the pill is
@@ -1164,9 +1164,9 @@ void main() {
                 BorderRadius.circular(999),
       );
 
-      expect(tester.getSize(rounded).height, 56);
+      expect(tester.getSize(rounded).height, SkLayout.buttonHeight);
 
-      // And it still clears the tap-target floor, whatever that 56 becomes.
+      // And it still clears the tap-target floor, whatever that height becomes.
       expect(
         tester.getSize(rounded).height,
         greaterThanOrEqualTo(SkLayout.tapTarget),

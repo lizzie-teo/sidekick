@@ -40,7 +40,10 @@ class SkRaisedTile extends StatelessWidget {
   });
 
   final Widget child;
-  final VoidCallback onPressed;
+
+  // Null for a door that is not open yet. `SkPressable` then takes no taps
+  // and tells a screen reader the tile is disabled.
+  final VoidCallback? onPressed;
 
   // What a screen reader says. The child's own words should be wrapped in
   // `ExcludeSemantics`, or the label is announced twice.

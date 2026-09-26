@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:sidekick/app/core/app_constants.dart';
@@ -108,12 +109,11 @@ class FeelingPickerView extends StatefulWidget {
   // n words", and a newline inside the string would be right at exactly one
   // text size and wrong at every other.
   //
-  // **280 is measured, not chosen.** On an iPhone SE it is the widest cap
-  // that still breaks the question into two, and it is a step narrower than
-  // the 300 that produced the same two lines -- so the break survives a small
-  // change of font or a slightly wider phone. Below 260 it goes to three
-  // lines and pushes her head down the screen.
-  static const double titleWidth = 280;
+  // **320 is measured, not chosen.** It was 280 while `h1` was 24.
+  // At 26 the question needs more room to stay on two lines: at 300 it still
+  // makes two at normal text, but at 200% it runs one line longer and pushes
+  // the last card under the buttons on an iPhone SE. 320 passes both.
+  static const double titleWidth = 320;
 
   // How far down the screen her answer may reach, as a share of its
   // height. `onSky` reads at 3:1 or better on every sky down to here -- the
@@ -142,6 +142,13 @@ class _FeelingPickerViewState extends State<FeelingPickerView> {
   // reader over time; this is a frame counter that dies with the screen and is
   // never shown, compared or saved.
   int _celebrations = 0;
+
+  // How long the page has been open. The parts of the page arrive once, on
+  // the first open, and anything built after that -- a card scrolled into
+  // view at 200%, the dial coming back from the card list -- is simply there.
+  // A page that keeps performing every time a part is rebuilt is a page that
+  // asks to be watched.
+  final Stopwatch _open = Stopwatch()..start();
 
   // The time of day the sky shows. The clock's guess on the first frame,
   // corrected to the real sun once the time zone is read -- the same shape as
@@ -400,7 +407,7 @@ class _FeelingPickerViewState extends State<FeelingPickerView> {
                   ? Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: <Widget>[
-                        _title(context),
+                        _arrive(context, 0, _title(context)),
                         Expanded(child: _cards(context, character)),
                       ],
                     )
@@ -508,10 +515,14 @@ class _FeelingPickerViewState extends State<FeelingPickerView> {
             // hello" could leave the screen instead. `sm` between the two
             // keeps the pair one group.
             const SizedBox(height: SkLayout.sm),
-            SkTextButton(
-              label: 'Just looking',
-              color: HomeSkyColors.wordsOn(deep),
-              onPressed: _leave,
+            _arrive(
+              context,
+              3,
+              SkTextButton(
+                label: 'Just looking',
+                color: HomeSkyColors.wordsOn(deep),
+                onPressed: _leave,
+              ),
             ),
           ],
         ),
@@ -548,46 +559,50 @@ class _FeelingPickerViewState extends State<FeelingPickerView> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
-          _title(context),
+          _arrive(context, 0, _title(context)),
           const SizedBox(height: SkLayout.xxl),
-          SizedBox(
-            width: width,
-            child: FeelingDial(
-              stops: Feeling.values
-                  .map((Feeling feeling) => feeling.label)
-                  .toList(),
-              selected: picked?.index,
-              onChanged: (int index) => _pick(Feeling.values[index]),
-              // The leftmost stop is the panic door, so the arc behind it and
-              // the knob on it wear the panic colour. It is the one hue that
-              // does not move between the six palettes or the two modes, which
-              // is what makes that end of the dial findable without reading.
-              // Every other stop takes the reader's own palette.
-              activeColor:
-                  picked != null && picked.isPanic ? sk.panic : sk.action,
-              // The sky's word colour, and a ring of its opposite round each
-              // dot. The dial is on the sky now, but on a short phone the
-              // mountains come up behind the ends of the arc, and one of the
-              // two colours always stands off whatever is behind.
-              trackColor: sky.onSky.withValues(alpha: 0.35),
-              stopColor: sky.onSky,
-              stopRing: HomeSkyColors.wordsOn(sky.onSky),
-              character: (BuildContext context, double size) => SkMoodFace(
-                artboard: FeelingPickerView.moodArtboard,
-                size: size,
-                skin: character.skin,
-                mood: picked?.index.toDouble(),
-                stillArtboard: picked?.artboardFor(character),
-                stillFallbackArtboard:
-                    picked?.artboardFor(SidekickCharacter.girl),
-                idleArtboard: Feeling.restingArtboardFor(character),
-                idleFallbackArtboard:
-                    Feeling.restingArtboardFor(SidekickCharacter.girl),
+          _arrive(
+            context,
+            1,
+            SizedBox(
+              width: width,
+              child: FeelingDial(
+                stops: Feeling.values
+                    .map((Feeling feeling) => feeling.label)
+                    .toList(),
+                selected: picked?.index,
+                onChanged: (int index) => _pick(Feeling.values[index]),
+                // The leftmost stop is the panic door, so the arc behind it and
+                // the knob on it wear the panic colour. It is the one hue that
+                // does not move between the six palettes or the two modes, which
+                // is what makes that end of the dial findable without reading.
+                // Every other stop takes the reader's own palette.
+                activeColor:
+                    picked != null && picked.isPanic ? sk.panic : sk.action,
+                // The sky's word colour, and a ring of its opposite round each
+                // dot. The dial is on the sky now, but on a short phone the
+                // mountains come up behind the ends of the arc, and one of the
+                // two colours always stands off whatever is behind.
+                trackColor: sky.onSky.withValues(alpha: 0.35),
+                stopColor: sky.onSky,
+                stopRing: HomeSkyColors.wordsOn(sky.onSky),
+                character: (BuildContext context, double size) => SkMoodFace(
+                  artboard: FeelingPickerView.moodArtboard,
+                  size: size,
+                  skin: character.skin,
+                  mood: picked?.index.toDouble(),
+                  stillArtboard: picked?.artboardFor(character),
+                  stillFallbackArtboard:
+                      picked?.artboardFor(SidekickCharacter.girl),
+                  idleArtboard: Feeling.restingArtboardFor(character),
+                  idleFallbackArtboard:
+                      Feeling.restingArtboardFor(SidekickCharacter.girl),
+                ),
               ),
             ),
           ),
           const SizedBox(height: SkLayout.md),
-          _answer(context, sky.onSky),
+          _arrive(context, 2, _answer(context, sky.onSky)),
         ],
       ),
     );
@@ -610,7 +625,7 @@ class _FeelingPickerViewState extends State<FeelingPickerView> {
             textAlign: TextAlign.center,
             style: SkLayout.display(
               context,
-              SkText.sceneLine.copyWith(color: _sky.onSky),
+              SkText.h1.copyWith(color: _sky.onSky),
             ),
           ),
         ),
@@ -626,7 +641,7 @@ class _FeelingPickerViewState extends State<FeelingPickerView> {
   double _titleHeight(BuildContext context) => _measure(
         context,
         FeelingPickerView.title,
-        SkLayout.display(context, SkText.sceneLine),
+        SkLayout.display(context, SkText.h1),
         FeelingPickerView.titleWidth,
       );
 
@@ -667,8 +682,8 @@ class _FeelingPickerViewState extends State<FeelingPickerView> {
     return AnimatedSwitcher(
       // Crossfade, never slide. The reader moves the knob both ways, so a
       // direction would be a lie half the time.
-      duration: const Duration(milliseconds: 240),
-      switchInCurve: Curves.easeOut,
+      duration: const Duration(milliseconds: 200),
+      switchInCurve: Curves.easeOutQuint,
       switchOutCurve: Curves.easeIn,
       child: Text(
         picked?.label ?? FeelingPickerView.prompt,
@@ -694,17 +709,68 @@ class _FeelingPickerViewState extends State<FeelingPickerView> {
   Widget _forward(BuildContext context) {
     final Feeling? picked = _picked;
 
-    return Visibility(
-      visible: picked != null,
-      maintainSize: true,
-      maintainAnimation: true,
-      maintainState: true,
-      child: SkPrimaryButton(
-        label: picked?.ctaLabel ?? '',
-        onPressed: picked == null ? null : () => _go(picked),
+    //
+    // **It fades in rather than appearing.** It is the first thing on the
+    // page that was not there when it opened, and a pill that snaps in under
+    // the dial reads as something going wrong. Fade only, no rise: it keeps
+    // its room either way, so there is nothing to rise from.
+    return IgnorePointer(
+      ignoring: picked == null,
+      child: ExcludeSemantics(
+        excluding: picked == null,
+        child: AnimatedOpacity(
+          opacity: picked == null ? 0 : 1,
+          duration: const Duration(milliseconds: 220),
+          curve: Curves.easeOutQuint,
+          child: SkPrimaryButton(
+            label: picked?.ctaLabel ?? '',
+            onPressed: picked == null ? null : () => _go(picked),
+          ),
+        ),
       ),
     );
   }
+
+  // One part of the page arriving on the first open: a fade and a small rise,
+  // each part a beat after the one above, so the eye is walked down the page
+  // -- the question, then her and the dial, then her answer, then the way
+  // out.
+  //
+  // **Quiet on purpose.** This is the door to the panic path, so there is no
+  // bounce and no delight tier: a strong ease-out, under 300ms a part, and
+  // 60ms between parts. The last part is in by about half a second, which is
+  // before a reader has finished the question. It never blocks a tap -- a
+  // part that is still fading in already works.
+  //
+  // Under Reduce Motion every part fades in together and nothing rises.
+  Widget _arrive(BuildContext context, int order, Widget child) {
+    const Duration duration = Duration(milliseconds: 280);
+    // Five parts at most get their own beat. Past that the rest come with the
+    // fifth, or a list of six cards would still be arriving at 400ms.
+    final int beat = math.min(order, 4);
+    final bool opened = _open.elapsedMilliseconds > _arrivalWindow;
+
+    if (MediaQuery.disableAnimationsOf(context)) {
+      return child
+          .animate(value: opened ? 1 : null)
+          .fadeIn(duration: duration, curve: Curves.easeOutQuint);
+    }
+
+    return child
+        .animate(
+          value: opened ? 1 : null,
+          delay: Duration(milliseconds: _stagger * beat),
+        )
+        .fadeIn(duration: duration, curve: Curves.easeOutQuint)
+        .slideY(begin: 0.04, end: 0, curve: Curves.easeOutQuint);
+  }
+
+  // The gap between one part of the page arriving and the next.
+  static const int _stagger = 60;
+
+  // How long after opening a part still arrives rather than just being
+  // there. Longer than the last beat, shorter than a reader's first drag.
+  static const int _arrivalWindow = 600;
 
   // The 200% fallback: the faces as a column of cards, panic first, each
   // one going straight where it goes. No dial, and no second tap -- a list is
@@ -723,15 +789,19 @@ class _FeelingPickerViewState extends State<FeelingPickerView> {
           itemBuilder: (BuildContext context, int index) {
             final Feeling feeling = Feeling.values[index];
 
-            return FeelingButton(
-              feeling: feeling,
-              character: character,
-              faceSize: faceSize,
-              isSelected: _picked == feeling,
-              onPressed: () {
-                _pick(feeling);
-                _go(feeling);
-              },
+            return _arrive(
+              context,
+              1 + index,
+              FeelingButton(
+                feeling: feeling,
+                character: character,
+                faceSize: faceSize,
+                isSelected: _picked == feeling,
+                onPressed: () {
+                  _pick(feeling);
+                  _go(feeling);
+                },
+              ),
             );
           },
         );

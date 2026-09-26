@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:sidekick/app/core/tab_page.dart';
 import 'package:sidekick/app/core/app_constants.dart';
 import 'package:sidekick/app/widgets/sk_tab_bar.dart';
 
@@ -16,7 +17,7 @@ import 'package:sidekick/app/widgets/sk_tab_bar.dart';
 // SkTabBar is the presentation; this is where the labels, the icons and the
 // destinations live, so a screen only says which slot it is.
 class SkMainTabBar extends StatelessWidget {
-  // Index into Routes.tabs: 0 Home, 1 Good things, 2 Practice, 3 Me.
+  // Index into Routes.tabs: 0 Home, 1 Unwind, 2 Practice, 3 Me.
   final int selected;
 
   const SkMainTabBar({super.key, required this.selected});
@@ -31,9 +32,15 @@ class SkMainTabBar extends StatelessWidget {
   // bar, where somebody who could not wait can reach it.
   //
   // `_docs/briefs/practice-tab-layout.md` holds the decision.
+  //
+  // **Slot 1 was "Good things" until 26 September 2026.** It holds colouring
+  // and scribbling now as well as the good things form, and "Unwind" covers
+  // all three. "Feel better" was considered and turned down: the dial's Good
+  // and Really good faces lead here, and it would tell somebody on a good day
+  // that they need to feel better.
   static const List<SkTabItem> _items = <SkTabItem>[
     SkTabItem(icon: Icons.home_rounded, label: 'Home'),
-    SkTabItem(icon: Icons.auto_awesome, label: 'Good things'),
+    SkTabItem(icon: Icons.auto_awesome, label: 'Unwind'),
     SkTabItem(icon: Icons.self_improvement, label: 'Practice'),
     SkTabItem(icon: Icons.person_outline_rounded, label: 'Me'),
   ];
@@ -42,13 +49,20 @@ class SkMainTabBar extends StatelessWidget {
   // last row is not left under the glass.
   static double heightOf(BuildContext context) => SkTabBar.heightOf(context);
 
+  // The room under a scrolling page's last row, clear of the panic button
+  // that rises above the bar. Lists and forms pad by this.
+  static double clearanceOf(BuildContext context) =>
+      SkTabBar.clearanceOf(context);
+
   void _go(BuildContext context, String path) {
     // The design system preview harness has no router; taps are inert there
     // rather than throwing.
     final GoRouter? router = GoRouter.maybeOf(context);
     if (router == null) return;
 
-    router.go(path);
+    // Marked as a tab tap, so the tab fades in rather than sliding -- see
+    // `TabPage`.
+    router.go(path, extra: const TabTap());
   }
 
   // The panic route is pushed, not gone to, because it is not a tab: it opens

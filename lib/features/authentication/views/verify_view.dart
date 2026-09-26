@@ -8,6 +8,13 @@ import 'package:sidekick/app/core/logger_service.dart';
 import 'package:sidekick/app/core/service_locator.dart';
 import 'package:sidekick/app/utilities/time_format_utils.dart';
 import 'package:sidekick/app/widgets/async_button.dart';
+import 'package:sidekick/app/widgets/sk_circle_icon_button.dart';
+import 'package:sidekick/app/widgets/sk_colors.dart';
+import 'package:sidekick/app/widgets/sk_layout.dart';
+import 'package:sidekick/app/widgets/sk_status.dart';
+import 'package:sidekick/app/widgets/sk_text.dart';
+import 'package:sidekick/app/widgets/sk_text_button.dart';
+import 'package:sidekick/app/widgets/sk_text_field.dart';
 import 'package:sidekick/data/services/configuration_service.dart';
 import 'package:sidekick/features/authentication/viewmodels/verify_viewmodel.dart';
 
@@ -81,11 +88,15 @@ class _VerifyViewState extends State<VerifyView> {
 
   @override
   Widget build(BuildContext context) {
+    final SkColors sk = context.sk;
+    final Color errorColour =
+        SkStatusStyle.of(context, SkTone.destructive, sk.canvas).text;
+
     return Scaffold(
       appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.chevron_left),
-          tooltip: 'Back',
+        leading: SkCircleIconButton(
+          icon: Icons.chevron_left,
+          label: 'Back',
           onPressed: _back,
         ),
       ),
@@ -98,7 +109,10 @@ class _VerifyViewState extends State<VerifyView> {
           behavior: HitTestBehavior.opaque,
           child: Center(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+              padding: EdgeInsets.symmetric(
+                horizontal: SkLayout.gutter(context),
+                vertical: SkLayout.xxxl,
+              ),
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 400),
                 child: ValueListenableBuilder<VerifyViewModelState>(
@@ -110,26 +124,30 @@ class _VerifyViewState extends State<VerifyView> {
                       children: [
                         //
 
-                        Text(
-                          'Enter your code',
-                          style: Theme.of(context).textTheme.headlineMedium,
-                          textAlign: TextAlign.center,
+                        Semantics(
+                          header: true,
+                          child: Text(
+                            'Enter your code',
+                            style: SkText.h1.copyWith(color: sk.ink),
+                            textAlign: TextAlign.center,
+                          ),
                         ),
 
-                        const SizedBox(height: 8),
+                        const SizedBox(height: SkLayout.sm),
 
                         Text(
                           'Sent to ${widget.email}',
-                          style: Theme.of(context).textTheme.bodyMedium,
+                          style: SkText.rowLabel.copyWith(color: sk.ink),
                           textAlign: TextAlign.center,
                         ),
 
-                        const SizedBox(height: 32),
+                        const SizedBox(height: SkLayout.xxxl),
 
                         // Focused on arrival: the user came here to type six
                         // digits and nothing else on the screen takes input.
-                        TextField(
+                        SkTextField(
                           controller: _controller,
+                          hint: 'Code',
                           keyboardType: TextInputType.number,
                           autocorrect: false,
                           autofocus: true,
@@ -140,55 +158,45 @@ class _VerifyViewState extends State<VerifyView> {
                           ],
                           textInputAction: TextInputAction.go,
                           onSubmitted: (_) => _verify(),
-                          decoration: InputDecoration(
-                            labelText: 'Code',
-                            border: const OutlineInputBorder(),
-                            errorText: state.errors['code'],
-                            counterText: '',
-                          ),
+                          errorText: state.errors['code'],
                         ),
 
                         if (state.errors['general'] != null) ...[
-                          const SizedBox(height: 12),
+                          const SizedBox(height: SkLayout.md),
                           Text(
                             state.errors['general']!,
-                            style: Theme.of(context)
-                                .textTheme
-                                .bodyMedium
-                                ?.copyWith(
-                                  color: Theme.of(context).colorScheme.error,
-                                ),
+                            style: SkText.rowLabel.copyWith(
+                              color: errorColour,
+                            ),
                             textAlign: TextAlign.center,
                           ),
                         ],
 
                         if (state.messages['general'] != null) ...[
-                          const SizedBox(height: 12),
+                          const SizedBox(height: SkLayout.md),
                           Text(
                             state.messages['general']!,
-                            style: Theme.of(context).textTheme.bodyMedium,
+                            style: SkText.rowLabel.copyWith(color: sk.ink),
                             textAlign: TextAlign.center,
                           ),
                         ],
 
-                        const SizedBox(height: 24),
+                        const SizedBox(height: SkLayout.xxl),
 
                         AsyncButton(
                           onPressed: _verify,
-                          child: const Text('Verify'),
+                          label: 'Verify',
                         ),
 
-                        const SizedBox(height: 12),
+                        const SizedBox(height: SkLayout.md),
 
-                        TextButton(
+                        SkTextButton(
                           onPressed:
                               state.canResend ? _viewModel.resendCode : null,
-                          child: Text(
-                            state.canResend
-                                ? 'Resend code'
-                                : 'Resend in '
-                                    '${TimeFormatUtils.formatCountdown(state.resendCooldown)}',
-                          ),
+                          label: state.canResend
+                              ? 'Resend code'
+                              : 'Resend in '
+                                  '${TimeFormatUtils.formatCountdown(state.resendCooldown)}',
                         ),
                       ],
                     );

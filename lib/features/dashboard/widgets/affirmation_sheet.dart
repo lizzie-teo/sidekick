@@ -6,6 +6,7 @@ import 'package:sidekick/app/widgets/sk_contrast.dart';
 import 'package:sidekick/app/widgets/sk_layout.dart';
 import 'package:sidekick/app/widgets/sk_outline_button.dart';
 import 'package:sidekick/app/widgets/sk_text.dart';
+import 'package:sidekick/app/widgets/sk_sheet_frame.dart';
 import 'package:sidekick/features/dashboard/models/affirmation_explanations.dart';
 
 // The line, explained.
@@ -107,22 +108,16 @@ class AffirmationSheet extends StatelessWidget {
 
     if (explanation == null) return Future<void>.value();
 
-    return showModalBottomSheet<void>(
-      context: context,
-      isScrollControlled: true,
-      // The root navigator, so the sheet covers the floating tab bar as well
-      // as the page. Shown on the shell's inner navigator it would sit inside
-      // a box that is not the screen, and the Close button lands below the
-      // fold on a short phone.
-      useRootNavigator: true,
-      backgroundColor: context.sk.canvas,
+    // On the root navigator -- `SkSheetFrame.show`'s default -- so the sheet
+    // covers the floating tab bar as well as the page. Shown on the shell's
+    // inner navigator it would sit inside a box that is not the screen, and
+    // the Close button lands below the fold on a short phone.
+    return SkSheetFrame.show<void>(
+      context,
       // What a screen reader says when the sheet takes focus, and what tapping
       // outside it is announced as. The default is "Scrim", which tells
       // somebody who cannot see the sheet nothing about what just opened.
       barrierLabel: 'Close this explanation',
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
-      ),
       builder: (BuildContext sheetContext) =>
           AffirmationSheet(line: line, explanation: explanation),
     );
@@ -456,7 +451,7 @@ class _Part extends StatelessWidget {
                   SkText.sheetHeading.copyWith(color: SkContrast.captionOn(on)),
             ),
           ),
-          const SizedBox(height: SkLayout.sm),
+          const SizedBox(height: SkLayout.headingGap),
           // **The writing is the card's own darkest tint, not `sk.ink`.**
           // Changed 24 September 2026, with the rule that text on a coloured
           // ground belongs to that ground -- the heading above it already

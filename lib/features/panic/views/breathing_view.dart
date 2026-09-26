@@ -162,7 +162,7 @@ class _BreathingViewState extends State<BreathingView> {
   // That is why the words and the cue share one band instead of stacking, and
   // why the two button bands are there from the start.
 
-  // Tall enough for the longest line in the script at homeQuote size. The
+  // Tall enough for the longest line in the script at skyText size. The
   // text scrolls inside it rather than overflowing, so a larger system font
   // cannot push her either.
   static const double _wordsBand = 160;
@@ -364,7 +364,7 @@ class _BreathingViewState extends State<BreathingView> {
                                       ? state.line ?? ''
                                       : state.cue,
                                   textAlign: TextAlign.center,
-                                  style: SkText.homeQuote
+                                  style: SkText.skyText
                                       .copyWith(color: sky.onSky),
                                 ),
                               ),

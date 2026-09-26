@@ -1,5 +1,6 @@
 import 'package:go_router/go_router.dart';
 
+import 'package:sidekick/app/core/tab_page.dart';
 import 'package:sidekick/app/core/app_constants.dart';
 import 'package:sidekick/app/core/feature_module.dart';
 import 'package:sidekick/features/dashboard/views/dashboard_view.dart';
@@ -19,7 +20,8 @@ class DashboardModule extends FeatureModule {
         GoRoute(
           path: Routes.home,
           name: 'dashboard',
-          builder: (context, state) => const DashboardView(),
+          pageBuilder: (context, state) =>
+              TabPage.forState(state, const DashboardView()),
         ),
         GoRoute(
           path: Routes.quoteCredits,

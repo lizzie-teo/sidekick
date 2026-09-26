@@ -46,7 +46,7 @@ class DesignSystemView extends StatelessWidget {
               //
 
               Text('Design system',
-                  style: SkText.largeTitle.copyWith(color: sk.ink)),
+                  style: SkText.h1.copyWith(color: sk.ink)),
 
               const SizedBox(height: 8),
 
@@ -116,7 +116,7 @@ class DesignSystemView extends StatelessWidget {
                 title: 'Type',
                 description: 'Poppins for everything, display and body.',
                 children: [
-                  Text('Me', style: SkText.largeTitle.copyWith(color: sk.ink)),
+                  Text('Me', style: SkText.h1.copyWith(color: sk.ink)),
                   const SizedBox(height: 8),
                   Text('You\'re doing better than you think.',
                       style: SkText.sceneLine.copyWith(color: sk.ink)),
@@ -124,20 +124,16 @@ class DesignSystemView extends StatelessWidget {
                   Text('Carry on with Mountain',
                       style: SkText.cardTitle.copyWith(color: sk.ink)),
                   const SizedBox(height: 8),
-                  // The two button sizes sit next to the card title on
-                  // purpose: 19 / 18 / 17 is the whole of the middle of the
-                  // scale, and it is the part that is judged on a phone
-                  // rather than argued about in a table.
+                  // The one button size sits beside the card title and the
+                  // body on purpose: 18 / 17 / 17 is the middle of the scale,
+                  // and it is judged on a phone rather than in a table.
                   Text('Tap me', style: SkText.button.copyWith(color: sk.ink)),
-                  const SizedBox(height: 8),
-                  Text('Meditate',
-                      style: SkText.buttonSmall.copyWith(color: sk.ink)),
                   const SizedBox(height: 8),
                   Text('Vibrate with the breathing',
                       style: SkText.rowLabel.copyWith(color: sk.ink)),
                   const SizedBox(height: 8),
                   Text('WHEN YOU PANIC',
-                      style: SkText.sectionHeader
+                      style: SkText.label
                           .copyWith(color: SkContrast.captionOn(sk.canvas))),
                   const SizedBox(height: 8),
                   Text('8 min · you stopped at 2:10',
@@ -432,7 +428,7 @@ class _TabBarDemoState extends State<_TabBarDemo> {
       child: SkTabBar(
         items: const [
           SkTabItem(icon: CupertinoIcons.house_fill, label: 'Home'),
-          SkTabItem(icon: CupertinoIcons.sparkles, label: 'Good things'),
+          SkTabItem(icon: CupertinoIcons.sparkles, label: 'Unwind'),
           SkTabItem(icon: CupertinoIcons.wind, label: 'Meditate'),
           SkTabItem(icon: CupertinoIcons.person_crop_circle, label: 'Me'),
         ],

@@ -63,7 +63,7 @@ void main() {
       location: Routes.goodThings,
     );
 
-    expect(find.text('One good thing…'), findsOneWidget);
+    expect(find.text('e.g. The sun came out on my walk'), findsOneWidget);
   });
 
   testWidgets('opens on one box, and Add another adds up to three',
@@ -75,7 +75,7 @@ void main() {
       location: Routes.goodThings,
     );
 
-    expect(find.text('What went well'), findsOneWidget);
+    expect(find.text('Good things'), findsOneWidget);
     expect(find.byType(TextField), findsOneWidget);
 
     await tester.tap(find.text('Add another'));
@@ -101,7 +101,7 @@ void main() {
 
     expect(find.textContaining('When you\'re anxious'), findsNothing);
 
-    await tester.tap(find.byTooltip('Why this helps'));
+    await tester.tap(find.bySemanticsLabel('Why this helps'));
     await tester.pumpAndSettle();
 
     expect(find.textContaining('When you\'re anxious'), findsOneWidget);

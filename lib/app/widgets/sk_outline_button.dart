@@ -1,6 +1,7 @@
 import 'package:flutter/widgets.dart';
 
 import 'package:sidekick/app/widgets/sk_colors.dart';
+import 'package:sidekick/app/widgets/sk_layout.dart';
 import 'package:sidekick/app/widgets/sk_disabled.dart';
 import 'package:sidekick/app/widgets/sk_pressable.dart';
 import 'package:sidekick/app/widgets/sk_text.dart';
@@ -9,15 +10,15 @@ import 'package:sidekick/app/widgets/sk_text.dart';
 // "No thanks", "End", "Text a crisis line", and since 24 September 2026
 // Home's Meditate and Scribble.
 //
-// **It is the primary's shape, one weight down, and that is the point.**
-// Same 999 radius, same 56 height, same `SkText.button` label -- so the two
-// read as the same kind of control, and only the treatment says which one the
-// screen is built around. The weight comes off by dropping the fill, never by
-// fading the label: an outline states its bounds with a line and spends no
-// area doing it, so it cannot out-weigh a filled pill however strong the line
-// is, while a fill competes on area, which is the one axis the primary has to
-// win. Fading the label buys the same drop by spending contrast, which is the
-// one thing this app does not spend.
+// **It is the primary's shape, one weight down, and that is the point.** Same
+// 999 radius, same `SkLayout.buttonHeight`, same `SkText.button` label -- so
+// the two read as the same kind of control, and only the treatment says which
+// one the screen is built around. The weight comes off by dropping the fill,
+// never by fading the label: an outline states its bounds with a line and
+// spends no area doing it, so it cannot out-weigh a filled pill however strong
+// the line is, while a fill competes on area, which is the one axis the primary
+// has to win. Fading the label buys the same drop by spending contrast, which
+// is the one thing this app does not spend.
 //
 // **Home reached for it after two filled treatments failed on the gradient.**
 // The 24 September 2026 swap put its two secondaries on the scene. A pale
@@ -61,7 +62,7 @@ class SkOutlineButton extends StatelessWidget {
         wash: fg,
         borderRadius: BorderRadius.circular(999),
         child: Container(
-          constraints: const BoxConstraints(minHeight: 56),
+          constraints: const BoxConstraints(minHeight: SkLayout.buttonHeight),
           width: double.infinity,
           padding: const EdgeInsets.symmetric(horizontal: 24),
           alignment: Alignment.center,

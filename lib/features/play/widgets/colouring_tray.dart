@@ -5,6 +5,7 @@ import 'package:sidekick/app/widgets/sk_disabled.dart';
 import 'package:sidekick/app/widgets/sk_layout.dart';
 import 'package:sidekick/app/widgets/sk_pressable.dart';
 import 'package:sidekick/app/widgets/sk_text.dart';
+import 'package:sidekick/app/widgets/sk_sheet_frame.dart';
 import 'package:sidekick/features/play/models/colouring_palette.dart';
 import 'package:sidekick/features/play/widgets/colouring_canvas.dart';
 
@@ -421,15 +422,9 @@ class PalettePickerSheet extends StatelessWidget {
     BuildContext context,
     ColouringPalette current,
   ) {
-    return showModalBottomSheet<ColouringPalette>(
-      context: context,
-      isScrollControlled: true,
-      useRootNavigator: true,
-      backgroundColor: context.sk.canvas,
+    return SkSheetFrame.show<ColouringPalette>(
+      context,
       barrierLabel: 'Close the colours',
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
-      ),
       builder: (BuildContext _) => PalettePickerSheet(current: current),
     );
   }
@@ -467,7 +462,7 @@ class PalettePickerSheet extends StatelessWidget {
                         style: SkText.sheetHeading.copyWith(color: sk.ink),
                       ),
                     ),
-                    const SizedBox(height: SkLayout.lg),
+                    const SizedBox(height: SkLayout.headingGap),
                     for (final ColouringPalette palette
                         in ColouringPalettes.all)
                       Padding(

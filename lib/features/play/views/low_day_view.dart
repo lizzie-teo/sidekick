@@ -279,7 +279,7 @@ class _LowDayViewState extends State<LowDayView>
   // of it.
   static const double _closeBand = 52;
 
-  // Tall enough for the longest line in the script at homeQuote size, so a
+  // Tall enough for the longest line in the script at skyText size, so a
   // longer line or a larger system font scrolls inside the band rather than
   // growing it.
   static const double _wordsBand = 140;
@@ -397,7 +397,7 @@ class _LowDayViewState extends State<LowDayView>
                               state.line,
                               textAlign: TextAlign.center,
                               style:
-                                  SkText.homeQuote.copyWith(color: sky.onSky),
+                                  SkText.skyText.copyWith(color: sky.onSky),
                             ),
                           ),
                         ),

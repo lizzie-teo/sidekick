@@ -214,7 +214,7 @@ class _BodySensationSheetState extends State<BodySensationSheet> {
               child: Text(
                 BodySensationSheet.heading,
                 textAlign: TextAlign.center,
-                style: SkLayout.display(context, SkText.sceneLine)
+                style: SkLayout.display(context, SkText.h1)
                     .copyWith(color: sk.ink),
               ),
             ),

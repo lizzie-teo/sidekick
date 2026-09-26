@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:sidekick/app/utilities/date_format_utils.dart';
 
+import 'package:sidekick/app/widgets/sk_layout.dart';
+import 'package:sidekick/app/widgets/sk_main_tab_bar.dart';
+import 'package:sidekick/app/widgets/sk_raised_tile.dart';
 import 'package:sidekick/app/widgets/theme.dart';
 import 'package:sidekick/data/models/noticing_prompts.dart';
 import 'package:sidekick/features/dashboard/models/daily_quotes.dart';
@@ -13,11 +15,21 @@ import 'package:sidekick/features/dashboard/widgets/affirmation_sheet.dart';
 import 'package:sidekick/features/dashboard/widgets/feelings_moth.dart';
 import 'package:sidekick/features/dashboard/widgets/pause_sheet.dart';
 import 'package:sidekick/features/panic/views/feeling_picker_view.dart';
-import 'package:sidekick/features/play/views/scribble_view.dart';
+import 'package:sidekick/features/play/widgets/scribble_pad.dart';
 
+import 'support/load_fonts.dart';
 import 'support/pump_app.dart';
 
 void main() {
+  // The real Poppins, so the peek test below measures the quote and the
+  // heading at the height the running app draws them. The default test font
+  // is about a third wider and wraps the quote onto extra lines. `setUpAll`,
+  // not inside a test: `testWidgets` runs in fake async and the font read
+  // never completes there.
+  setUpAll(() async {
+    await loadPoppins();
+  });
+
   // A phone-shaped window, not the 800x600 default. The prompt carries a
   // label and a reason now, and on a 600-tall window that pushes the ground
   // past what the scroll view builds, so its buttons are not in the tree.
@@ -118,24 +130,87 @@ void main() {
     expect(find.byType(PauseSheet), findsOneWidget);
   });
 
-  // A tile hugs its label rather than wrapping it. "Mindfulness" broke onto
-  // a second line inside a fixed 132-point tile; the tile grows instead.
-  testWidgets('every tile label sits on one line', (tester) async {
+  // The tiles are a 2x2 grid from 26 September 2026, so a tile can no longer
+  // grow to hug a long label -- a label may take two lines. What must hold is
+  // that the two tiles in a row are one height, so a wrapped label does not
+  // leave its neighbour short, and that all four fit without a sideways
+  // scroll.
+  testWidgets('the tiles are a grid of two rows, level in each row',
+      (tester) async {
     usePhone(tester);
     await pumpApp(tester, isAuthenticated: true);
 
-    for (final String label in <String>[
-      DashboardView.howIFeel,
-      'Scribble',
-      PauseSheet.buttonLabel,
-      DashboardView.whatWentWell,
-    ]) {
-      final Finder text = find.text(label);
-      final double lineHeight =
-          tester.renderObject<RenderParagraph>(text).preferredLineHeight;
-      expect(tester.getSize(text).height, lessThan(lineHeight * 1.5),
-          reason: label);
+    Rect tileOf(String label) => tester.getRect(find
+        .ancestor(of: find.text(label), matching: find.byType(SkRaisedTile))
+        .first);
+
+    final Rect a = tileOf(DashboardView.howIFeel);
+    final Rect b = tileOf(PauseSheet.buttonLabel);
+    final Rect c = tileOf('Scribble');
+    final Rect d = tileOf(DashboardView.whatWentWell);
+
+    expect(a.top, b.top);
+    expect(a.height, b.height);
+    expect(c.top, d.top);
+    expect(c.height, d.height);
+    expect(c.top, greaterThan(a.bottom));
+    for (final Rect r in <Rect>[a, b, c, d]) {
+      expect(r.right, lessThanOrEqualTo(400));
     }
+  });
+
+  // Every quote fits the limit Home's layout is tested at.
+  test('no quote is longer than the limit', () {
+    for (final DailyQuote quote in DailyQuotes.all) {
+      expect(quote.text.length, lessThanOrEqualTo(DailyQuotes.maxLength),
+          reason: quote.text);
+    }
+  });
+
+  // **The top of the tiles shows on the first screen of an SE**, at the
+  // default text size, without a scroll. Home scrolls, and more will be
+  // added under the tiles, but nothing on the first screen says so -- a
+  // reader who sees only sky and her has no reason to try. A strip of tile
+  // above the tab bar is what says "there is more". If her band or the quote
+  // grows and this fails, that is the trade to look at, not a test to
+  // loosen. Added 26 September 2026.
+  //
+  // It opens Home on the day of the **longest** quote, so it holds for every
+  // day of the year rather than for whichever day the test happens to run.
+  testWidgets('the first row of tiles peeks above the tab bar on an SE',
+      (tester) async {
+    tester.view.physicalSize = const Size(375, 667);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    final DailyQuote longest = DailyQuotes.all.reduce(
+        (DailyQuote a, DailyQuote b) =>
+            b.text.length > a.text.length ? b : a);
+    DateTime day = DateTime(2026, 1, 1, 12);
+    while (DailyQuotes.forDay(day) != longest) {
+      day = day.add(const Duration(days: 1));
+    }
+    DashboardView.debugNow = () => day;
+    addTearDown(() => DashboardView.debugNow = null);
+
+    await pumpApp(tester, isAuthenticated: true);
+    expect(find.text(longest.text), findsOneWidget);
+
+    final double barTop = tester.getTopLeft(find.byType(SkMainTabBar)).dy;
+    final double tileTop = tester
+        .getTopLeft(find
+            .ancestor(
+                of: find.text(DashboardView.howIFeel),
+                matching: find.byType(SkRaisedTile))
+            .first)
+        .dy;
+
+    // At least a tap target's worth of tile, not a sliver of its edge. With
+    // the longest quote there is 60 points of tile on screen, measured 26
+    // September 2026 -- 12 to spare.
+    expect(tileTop + SkLayout.tapTarget, lessThanOrEqualTo(barTop),
+        reason: 'tile top $tileTop, tab bar top $barTop');
   });
 
   // The moth is the charming door to the picker, but it is often in flight.
@@ -145,14 +220,20 @@ void main() {
     usePhone(tester);
     await pumpApp(tester, isAuthenticated: true);
 
-    final List<double> lefts = <String>[
+    final List<Offset> lefts = <String>[
       DashboardView.howIFeel,
       PauseSheet.buttonLabel,
       'Scribble',
       DashboardView.whatWentWell,
-    ].map((String label) => tester.getTopLeft(find.text(label)).dx).toList();
+    ].map((String label) => tester.getTopLeft(find.text(label))).toList();
+    // Reading order in a 2x2 grid: across the top row, then the bottom.
     for (int i = 1; i < lefts.length; i++) {
-      expect(lefts[i], greaterThan(lefts[i - 1]));
+      final Offset prev = lefts[i - 1];
+      final Offset next = lefts[i];
+      expect(
+          next.dy > prev.dy || (next.dy == prev.dy && next.dx > prev.dx),
+          isTrue,
+          reason: 'tile $i');
     }
 
     // Two controls with one name on one screen are one too many for a
@@ -167,7 +248,8 @@ void main() {
 
   // The soft button that used to say "Play" and go nowhere. It is now the
   // scribble pad's own door, so a user who knows what they want does not
-  // have to name a feeling on the picker first.
+  // have to name a feeling on the picker first. Since 26 September 2026 the
+  // pad is a part of the Good things tab, and the button opens it there.
   testWidgets('the scribble button opens the pad', (tester) async {
     // A phone-shaped window, not the 800x600 default. The tab bar floats over
     // the page, and on a short window it sits on top of this button -- the tap
@@ -187,10 +269,7 @@ void main() {
     await tester.tap(find.text('Scribble'));
     await tester.pumpAndSettle();
 
-    expect(find.byType(ScribbleView), findsOneWidget);
-    // Two tabs since 26 September 2026, and a first visit opens on
-    // Colouring. The pad is one tap away, on the Scribble tab.
-    expect(find.text(ScribbleView.newPicture), findsOneWidget);
+    expect(find.byType(ScribblePad), findsOneWidget);
   });
 
   // The style guide's one test, on the screen the 24 September 2026 swap

@@ -1006,7 +1006,7 @@ Corrected 23 September 2026, the day after the page was built.
 
 | | Was | Is | Why |
 | --- | --- | --- | --- |
-| Title | `largeTitle` 34/700 | `sceneLine` 24/600 | 34 read as a magazine cover over a page whose job is to be read and left. Still the only thing at its size, which is what makes it the title |
+| Title | `h1` 34/700 | `sceneLine` 24/600 | 34 read as a magazine cover over a page whose job is to be read and left. Still the only thing at its size, which is what makes it the title |
 | Her lines | `cardTitle` 18/600 | `rowLabel` 17/400, leading 1.6 | A paragraph that is semibold end to end has no emphasis left to give. 17/400 is the app's body size and the fastest read for somebody wound up or flat |
 | One phrase | -- | 600 | Weight is the one axis that lifts a phrase without taking it out of its sentence |
 

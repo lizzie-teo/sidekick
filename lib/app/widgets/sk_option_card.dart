@@ -100,10 +100,9 @@ class SkOptionCard extends StatelessWidget {
           Expanded(
             child: Text(
               label,
-              style: SkText.caption.copyWith(
+              style: SkText.optionLabel.copyWith(
                 color: skin.ink,
-                fontWeight: skin.bold ? FontWeight.w600 : FontWeight.w500,
-                height: 1.35,
+                fontWeight: skin.bold ? FontWeight.w600 : null,
               ),
             ),
           ),

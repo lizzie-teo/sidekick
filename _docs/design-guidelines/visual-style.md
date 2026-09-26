@@ -342,28 +342,28 @@ the surface.
 
 | Style | Size / weight | For |
 | --- | --- | --- |
-| `largeTitle` | 34 / 700 | A screen title with nothing to outrank |
 | `breathCue` | 34 / 600 | The breathing instruction |
+| `h1` | 26 / 400 | The first heading on every page and picker sheet |
 | `sceneLine` | 24 / 600 | A line over the scene gradient |
-| `button` | 19 / 600 | Primary button label |
+| `homePrompt` | 24 / 400 | The sentence under the sidekick on Home |
+| `h2` | 20 / 400 | A heading over one section of a page |
+| `script` | 20 / 500, handwriting face | Words somebody says |
 | `cardTitle` | 18 / 600 | Card titles |
-| `rowLabel` | 17 / 400 | **Body.** Paragraphs, rows, fields |
-| `buttonSmall` | 17 / 600 | Secondary buttons |
+| `rowLabel` | 17 / 400 | Rows, fields, list values |
+| `button` | 17 / 500 | **Every** button label: primary, outline, glass, soft, ghost |
+| `body` | 16 / 400, 1.5 | Reading text on a lesson page |
 | `sheetHeading` | 16 / 600 | A heading inside a sheet or card |
-| `caption` | 16 / 400 | Subtitles and metadata |
-| `buttonGhost` | 15 / 600 | The quietest control tier |
-| `chipLabel` | 14 / 600 | The label in `SkCategoryChip` |
-| `tabLabel` | 14 / 500 | Hints and lab meters |
-| `sectionHeader` | 13 / 600, uppercase, +6% tracking | An uppercase header over a list group |
+| `optionLabel` | 16 / 500 | Words on something picked in a lesson: a quiz answer card, a word-bank tile |
+| `caption` | 15 / 400, 1.4 | **Every** caption: subtitles, footers, empty states, dates, field errors |
+| `label` | 14 / 600, sentence case | **Every** short tag: a header over a list group, a chip, a segment, the kind on a lesson bubble, a tool name. Replaced `chipLabel`, `tabLabel` and `sectionHeader` on 26 September 2026 |
 
 ### The three rules the scale follows
 
 1. **Tracking is negative at 24 and up, zero below it.** Poppins is geometric
    — perfect circles, wide round forms — and reads loose at headline sizes, so
    the big styles pull in 1.5%. Doing the same to body text would close the
-   counters that make it legible at 16. `sectionHeader` is the exception:
-   capitals have no ascenders or descenders to tell them apart, so it gets
-   6% back.
+   counters that make it legible at 16. Nothing is set in capitals, so no
+   style gets tracking back.
 2. **Nothing lighter than 400, nothing smaller than 13.** Both floors come
    from WCAG 1.4.4 and Apple's 11pt hard minimum. The nine weights in
    `pubspec.yaml` include Thin through Light; they are for Rive and
@@ -383,8 +383,8 @@ Where the weight actually is, so the next person does not start by guessing:
 | The sentence in an example bubble | `cardTitle` | 18 / **600** |
 | An option card's sentence | `cardTitle` | 18 / **600** |
 | A step heading | `sceneLine` | 24 / 600 |
-| The kind label in a bubble | `chipLabel` | 14 / 600 |
-| A beat label over a group | `sectionHeader` | 13 / 600 uppercase |
+| The kind label in a bubble | `label` | 14 / 600 |
+| A beat label over a group | `label` | 14 / 600 |
 | A paragraph | `rowLabel` | 17 / 400 |
 
 So a lesson page can hold four or five blocks at 600 and one at 400, and the
@@ -416,7 +416,7 @@ below the contrast floor.
 | The thing the screen is about | The largest style on the screen, and the only one at that size |
 | A heading over a group | One or two steps down, 600 weight |
 | Body | `rowLabel`, 17/400, `ink` |
-| A caption | One step below body, 600, `captionOn(ground)` |
+| A caption | `SkText.caption` 15/400, one step below body, `captionOn(ground)`. No size, weight or height override at the use site |
 
 **Two things at the same size are the same rank, whatever their colour.** If
 two things must be told apart, change the size.
@@ -462,6 +462,35 @@ the gap around it, or a page of six blocks reads as six unrelated notes. The
 explanation sheet is the worked example: 20 between two parts sharing a card,
 16 plus two card edges between the cards.
 
+### Named gaps, and the heading gap is 12
+
+Set 26 September 2026, at the user's request. **This replaces the two sections
+below** where they disagree; they are kept for the reasoning.
+
+The gap under a heading was 4, 8, 12 and 16 on six screens, each typed at the
+use site, and the practice pages' 8 was reported as tight. The fix is not a
+new number on one screen but three names in `SkLayout`, used everywhere:
+
+| Name | Value | Between |
+| --- | --- | --- |
+| `headingGap` | 12 | A heading and the block it names |
+| `paragraphGap` | 20 | Two paragraphs |
+| `titleGap` | 24 | A page's title and its first section |
+| `groupGap` | 32 | The section gap: one section and the heading of the next |
+
+**The title gap sits between the other two on purpose.** Bigger than 12, or
+the title and the first section heading read as one lump. Smaller than 32,
+because the title owns every section under it.
+
+**The heading over a list is no longer equal to the list's gap.** It is 12
+over points 8 apart. The equal rule below was protecting against a heading
+sitting *closer* to point one than the points sit to each other; 12 over 8 is
+the other way round, which is the ordinary shape of a heading over a list.
+`SkLayout.markerGap` is deleted: it was the heading gap under another name.
+
+**`SkStatusBlock` keeps `xs` between its label and body.** They are one unit
+inside a small tinted block, not a heading over a section.
+
 ### A heading over a list takes the list's own gap
 
 Set 25 September 2026, at the user's request, from the closing step of the
@@ -502,7 +531,7 @@ So both halves moved together, and they are one decision:
 | | Was | Is |
 | --- | --- | --- |
 | Between two points | `SkLayout.listGap` 12 | `SkLayout.listGap` 8 |
-| Inside one point | `lessonBody` 16/1.5 | `SkText.lessonPoint` 16/1.35 |
+| Inside one point | `body` 16/1.5 | `SkText.body` 16/1.35 |
 
 **The size did not move**, which keeps the decision of the morning: the rule
 against a nested list reading as a footnote is about rank, and the dots and

@@ -236,7 +236,7 @@ void main() {
       final List<String> lines = source.split('\n');
       for (int i = 0; i < lines.length; i++) {
         if (isComment(lines[i])) continue;
-        // A *named* family is the leak. `fontFamily: SkText.body` is the
+        // A *named* family is the leak. `fontFamily: SkText.bodyFont` is the
         // theme pointing at the one place the name lives, which is the
         // opposite of the problem.
         const String key = 'fontFamily:';
@@ -279,6 +279,48 @@ void main() {
       contains('sceneScrim'),
       reason: 'nine of the twelve scene inks are under 4.5:1 on their own '
           'gradient without it, and five cannot be fixed by any text colour.',
+    );
+  });
+
+  // **Every caption is the same caption.** On 26 September 2026 three use
+  // sites each carried their own line height (1.35, 1.45, 1.5) and one a
+  // weight of its own, so "the caption" was four styles. A use site may set
+  // the colour, because that depends on the ground; nothing else.
+  test('a caption only ever changes its colour at the use site', () {
+    final List<String> offenders = <String>[];
+    final RegExp override =
+        RegExp(r'^\s*(fontSize|fontWeight|height|letterSpacing|fontFamily):');
+
+    for (final (path: String path, source: String source) in dartFiles()) {
+      if (path.contains('design_system')) continue;
+
+      final List<String> lines = source.split('\n');
+      for (int i = 0; i < lines.length; i++) {
+        if (isComment(lines[i])) continue;
+        if (!lines[i].contains('SkText.caption.copyWith(')) continue;
+
+        // Walk the arguments of this copyWith, to its closing bracket.
+        int depth = 0;
+        for (int j = i; j < lines.length; j++) {
+          final String line = j == i
+              ? lines[j].substring(lines[j].indexOf('SkText.caption.copyWith('))
+              : lines[j];
+          if (j > i && override.hasMatch(line)) {
+            offenders.add('$path:${j + 1}');
+          }
+          depth += '('.allMatches(line).length - ')'.allMatches(line).length;
+          if (depth <= 0) break;
+        }
+      }
+    }
+
+    expect(
+      offenders,
+      isEmpty,
+      reason: '`SkText.caption` is one style: 15/400 at 1.4. Set its colour '
+          'from the ground and nothing else. Text that needs another size, '
+          'weight or line height is not a caption -- give it its own named '
+          'style in `sk_text.dart`. Found at: $offenders',
     );
   });
 }

@@ -1,6 +1,7 @@
 import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:sidekick/app/core/tab_page.dart';
 import 'package:sidekick/app/core/app_constants.dart';
 import 'package:sidekick/app/core/auth_service.dart';
 import 'package:sidekick/app/core/device_settings_service.dart';
@@ -45,7 +46,8 @@ class MeModule extends FeatureModule {
         GoRoute(
           path: Routes.me,
           name: 'me',
-          builder: (context, state) => const MeView(),
+          pageBuilder: (context, state) =>
+              TabPage.forState(state, const MeView()),
         ),
       ];
 }

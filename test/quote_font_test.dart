@@ -27,65 +27,24 @@ void main() {
   const String asset = 'assets/fonts/ShantellSans-Latin.ttf';
   const String family = 'Shantell Sans';
 
-  test('the two quoted-speech styles take the handwriting face', () {
+  test('script takes the handwriting face', () {
     expect(SkText.quoted, family);
-    expect(SkText.quote.fontFamily, family);
-    expect(SkText.lessonSpoken.fontFamily, family);
+    expect(SkText.script.fontFamily, family);
   });
 
-  test('quote asks for no italic, because the family has none', () {
+  test('script asks for no italic, because the family has none', () {
     // Flutter does not synthesise a slant for an asset font. Asking for one
     // here would render upright and say nothing about it, so the style must
     // not ask.
-    expect(SkText.quote.fontStyle, isNot(FontStyle.italic));
+    expect(SkText.script.fontStyle, isNot(FontStyle.italic));
 
-    // 400 is the family's own axis default, so this style needs no variation
-    // to draw at its weight.
-    expect(SkText.quote.fontWeight, FontWeight.w400);
-    expect(SkText.quote.fontVariations, isNull);
-  });
-
-  test('lessonSpoken moves the wght axis as well as asking for the weight', () {
-    // One variable file, loaded at 400. `fontWeight` alone cannot move the
-    // axis, so without this the bubbles draw at 400 and nothing reports it.
-    expect(SkText.lessonSpoken.fontWeight, FontWeight.w600);
+    // 500 is off the family's axis default, so the variation must ask for
+    // it too, or the file draws at 400 whatever `fontWeight` says.
+    expect(SkText.script.fontWeight, FontWeight.w500);
     expect(
-      SkText.lessonSpoken.fontVariations,
-      contains(const FontVariation('wght', 600)),
-      reason: 'the wght axis is what actually draws the weight on a variable '
-          'font; fontWeight on its own renders 400',
+      SkText.script.fontVariations,
+      <FontVariation>[const FontVariation('wght', 500)],
     );
-  });
-
-  test('the two stay the same size as each other', () {
-    // They are one voice on one page -- a specimen quoted in a tile and the
-    // same specimen held up in her bubble -- so a size on one and not the
-    // other splits it.
-    expect(SkText.quote.fontSize, SkText.lessonSpoken.fontSize);
-  });
-
-  test('the size is matched to the face by x-height, not to the ladder', () {
-    // 20, not the 17 these styles carried in Poppins. Shantell Sans' x-height
-    // is 0.485 em against Poppins' 0.554, so the number has to grow for the
-    // sentence to read the same size. 20 puts it at 9.7 against Poppins 17's
-    // 9.42 -- a hair taller on purpose, because "too small" is what started
-    // this.
-    //
-    // This is pinned because the obvious repair is the wrong one: the note on
-    // `lessonBody` says the quoted styles sit one point above it, and
-    // following that arithmetic across two families is how this line ended up
-    // unreadable twice. Read the note on `SkText.quoted` before changing it.
-    expect(SkText.lessonSpoken.fontSize, 20.0);
-
-    // Still a clear step under the page title, which is what the number has
-    // to protect. 20 against `sceneLine`'s 24 looks close; by x-height the
-    // title is half again as large.
-
-    // The leading came down as the size went up. Growing one without the
-    // other is how the face before this one was reported as too small and
-    // too loose in the same breath.
-    expect(SkText.lessonSpoken.height, lessThan(1.3));
-    expect(SkText.lessonSpoken.fontSize, lessThan(SkText.sceneLine.fontSize!));
   });
 
   test('the font file and its licence are on disk', () {
@@ -121,10 +80,9 @@ void main() {
     // A heading or a button in it would still be decoration.
     expect(
       uses,
-      3,
-      reason: 'only SkText.quote, SkText.lessonSpoken and '
-          'SkText.homeMothWords may take Shantell Sans -- all three are '
-          'somebody speaking. A fourth use spends the one signal the face '
+      2,
+      reason: 'only SkText.script and SkText.homeMothWords may take '
+          'Shantell Sans -- both are somebody speaking. A third use spends the one signal the face '
           'carries -- read the note on SkText.quoted before changing this.',
     );
   });

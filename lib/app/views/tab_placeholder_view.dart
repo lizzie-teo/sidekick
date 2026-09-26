@@ -38,15 +38,15 @@ class TabPlaceholderView extends StatelessWidget {
               bottom: false,
               child: Padding(
                 padding: EdgeInsets.fromLTRB(
-                    20, 24, 20, 24 + SkMainTabBar.heightOf(context)),
+                    20, 24, 20, 24 + SkMainTabBar.clearanceOf(context)),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     Text(title,
-                        style: SkText.largeTitle.copyWith(color: sk.ink)),
+                        style: SkText.h1.copyWith(color: sk.ink)),
                     const SizedBox(height: 12),
                     Text(line,
-                        style: SkText.rowLabel.copyWith(
+                        style: SkText.caption.copyWith(
                           color: SkContrast.captionOn(sk.canvas),
                         )),
                   ],

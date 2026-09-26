@@ -119,6 +119,41 @@ void main() {
     expect(end.rise, closeTo(FeelingsMoth.restRise, 1));
   });
 
+  // Each flight lands somewhere and goes some way round her of its own,
+  // but the landings that say "Hi" are on the shoulder, where the words sit
+  // beside it, and one flight always ends where the next begins.
+  test('it lands in different places, by different routes', () {
+    final double loop = FeelingsMoth.flight.inMilliseconds / 1000;
+    for (int n = 0; n < FeelingsMoth.landingsThatSpeak; n++) {
+      expect(FeelingsMoth.landingFor(n), 0, reason: 'landing $n');
+    }
+
+    final Set<int> places = <int>{};
+    final Set<String> routes = <String>{};
+    for (int n = 0; n < 40; n++) {
+      places.add(FeelingsMoth.landingFor(n));
+      if (n >= FeelingsMoth.landingsThatSpeak) {
+        expect(FeelingsMoth.landingFor(n),
+            isNot(FeelingsMoth.landingFor(n - 1)),
+            reason: 'landing $n is where it just left');
+      }
+
+      final MothPose end = FeelingsMoth.poseAt((n + 1) * loop - 0.001);
+      final MothPose next = FeelingsMoth.poseAt((n + 1) * loop);
+      expect(end.across, closeTo(next.across, 1), reason: 'loop $n');
+      expect(end.rise, closeTo(next.rise, 1), reason: 'loop $n');
+
+      // Where it is a second after take-off, and halfway round.
+      final double off = n * loop + FeelingsMoth.restSeconds;
+      final MothPose a = FeelingsMoth.poseAt(off + 1);
+      final MothPose b = FeelingsMoth.poseAt(off + 6);
+      routes.add('${a.across.round()},${a.rise.round()}'
+          '/${b.across.round()},${b.rise.round()}');
+    }
+    expect(places.length, FeelingsMoth.landings.length);
+    expect(routes.length, greaterThan(10));
+  });
+
   // Sitting, the wings are never quite still, but they never open all the
   // way, and they leave the settle and the shiver alone.
   test('the wings move while it sits, and stay out of the shiver', () {

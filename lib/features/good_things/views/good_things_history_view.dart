@@ -71,7 +71,7 @@ class _GoodThingsHistoryViewState extends State<GoodThingsHistoryView> {
         elevation: 0,
         title: Text(
           'Good things',
-          style: SkText.cardTitle.copyWith(color: sk.ink),
+          style: SkText.h1.copyWith(color: sk.ink),
         ),
       ),
       body: SafeArea(
@@ -108,7 +108,9 @@ class _GoodThingsHistoryViewState extends State<GoodThingsHistoryView> {
                   Text(
                     state.errors['general']!,
                     textAlign: TextAlign.center,
-                    style: SkText.caption.copyWith(color: sk.destructive),
+                    style: SkText.caption.copyWith(
+                      color: SkContrast.readable(sk.destructive, sk.canvas),
+                    ),
                   ),
                 ],
 

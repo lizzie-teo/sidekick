@@ -83,7 +83,7 @@ class SkCategoryChip extends StatelessWidget {
             Flexible(
               child: Text(
                 label,
-                style: SkText.chipLabel.copyWith(color: fg),
+                style: SkText.label.copyWith(color: fg),
               ),
             ),
           ],

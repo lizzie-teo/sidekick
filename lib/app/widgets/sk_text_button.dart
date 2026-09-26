@@ -5,8 +5,9 @@ import 'package:sidekick/app/widgets/sk_disabled.dart';
 import 'package:sidekick/app/widgets/sk_text.dart';
 import 'package:sidekick/app/widgets/sk_contrast.dart';
 
-// The quiet text-only action: "Skip", "Just looking", "Done for today".
-// Muted on purpose -- it is always the road away from the screen's point.
+// The quiet text-only action: "Skip", "Just looking", "See everything
+// you've noticed". Quiet by shape, not by colour: it has no fill, so it sits
+// back from a filled pill on its own.
 //
 // The one control that keeps the fade rather than the SkPressable wash. It
 // has no fill, so there is nothing for a state layer to sit on, and Apple's
@@ -38,17 +39,23 @@ class SkTextButton extends StatelessWidget {
         onPressed: onPressed,
         child: Text(
           label,
+          // A long label ("I already have a code for someone@…") wraps, and
+          // a button's lines sit in its middle, not against its left edge.
+          textAlign: TextAlign.center,
           // **The default was `muted`, and this is the widest that mistake
           // reached.** Every ghost button that does not pass a colour -- and
           // most do not -- had its label under 3.3:1 on the canvas. They are
           // the quietest controls in the app by design, and "quiet" was
           // costing them legibility rather than weight.
           //
-          // `captionOn(canvas)` is the ground taken down until it clears
-          // 4.5:1, so the button still sits back from a filled pill without
-          // being the thing on the screen nobody can read.
-          style: SkText.buttonGhost.copyWith(
-            color: color ?? SkContrast.captionOn(sk.canvas),
+          // It was `captionOn(canvas)` next, a brown taken from the page. That
+          // made every ghost button read as "the way out", including ones
+          // that are a real next step beside the pill. Since 26 September
+          // 2026, at the user's request, it is the action colour: the same
+          // green as the pill, so the two read as one family. `readable`
+          // nudges it only where a palette's action is too pale for text.
+          style: SkText.button.copyWith(
+            color: color ?? SkContrast.readable(sk.action, sk.canvas),
           ),
         ),
       ),

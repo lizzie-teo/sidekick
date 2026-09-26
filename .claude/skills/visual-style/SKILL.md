@@ -127,23 +127,33 @@ the pair clears 4.5:1.
 **Gaps are nested, never equal.** The gap inside a group must be smaller than
 the gap around it, or a page of six blocks reads as six unrelated notes.
 
-**A heading over a list takes the list's own gap.** `SkLayout.listGap`, 8,
-read by both use sites so they cannot drift. A heading belongs to the whole
-list, not to its first point, so it must not sit closer to point one than the
-points sit to each other.
+**Four named gaps build a page of text. Use the name, never the number.**
+Set 26 September 2026, after the gap under a heading was found at 4, 8, 12
+and 16 on six screens.
 
-- **A list is set tighter than prose, in both directions.** `SkLayout.listGap`
-  8 between the items, `SkText.lessonPoint` 16/1.35 inside one. A point is one
-  line or two with a dot in front of it, so prose leading puts its air between
-  the items instead of inside them, and the list reads as spread out.
+| Name | Value | Between |
+| --- | --- | --- |
+| `SkLayout.headingGap` | 12 | A heading and the block it names -- a paragraph, a list, tiles |
+| `SkLayout.paragraphGap` | 20 | Two paragraphs |
+| `SkLayout.titleGap` | 24 | A page's title and its first section |
+| `SkLayout.groupGap` | 32 | The section gap: the end of one section and the heading of the next |
+
+A heading must never sit closer to point one than the points sit to each
+other, so `headingGap` is never smaller than `listGap`. A label and its body
+inside one small block (`SkStatusBlock`) are one unit, not a heading and a
+section, and keep `xs`.
+
+- **A list is set tighter than prose between its items.** `SkLayout.listGap`
+  8 between the items. Inside one point the text is `SkText.body` with
+  `SkText.bodyListHeight` (1.35) -- one reading style, tighter lines in a list.
 - **It came down from 12 on 25 September 2026**, with the leading, because the
   introduction's three-line chain was reported as too loose. The old rule said
   a point wants a clearer step than a paragraph marker's 8 -- that was about
   *ranking two gaps*, and it was answered by pushing the list open rather than
   by asking what the list needed. The two are equal now.
-- The nesting is one level out: 8 inside a section, 24 between two sections.
-  Inside a section the heading and its points are one flat group. That `xxl`
-  is what tells one group from the next, so it is the number to protect.
+- The nesting: 8 between points, 12 under a heading, 20 between paragraphs,
+  24 under a page title, 32 before the next section. `groupGap` is what tells one group from the next,
+  so it is the number to protect.
 - **A list of points, not a list of controls.** Cards, tiles and chips have
   edges and are governed by rule 7. The test is what the reader does with it:
   points are read, controls are chosen from.
@@ -186,7 +196,8 @@ put every caption in this app below the contrast floor.
 | What the screen is about | The largest style, and the only thing at that size |
 | A heading over a group | One or two steps down, 600 weight |
 | Body | `rowLabel` 17/400 in `ink` |
-| A caption | One step below body, 600, `captionOn(ground)` |
+| A caption | `SkText.caption` 15/400, one step below body, `captionOn(ground)`. No size, weight or height override at the use site |
+| A short tag -- a list header, a chip, a segment, a bubble's kind | `SkText.label` 14/600, sentence case. The only label style; never capitals |
 
 **Two things at the same size are the same rank, whatever their colour.** If
 two things must be told apart, change the size — never only the colour.
@@ -359,10 +370,9 @@ as shouting.
 - **The practice lessons read too heavy. Fixed on the reading pages, 24
   September 2026.** A lesson page held four or five blocks at 600 against one
   at 400, so the body was the lightest and smallest thing on it. The reading
-  pages now run **24/600 title, 20/400 marker, 17/400 body at 1.5** -- two new
-  styles, `SkText.lessonBeat` and `SkText.lessonBody`, with the reasoning on
-  each. The title is the only bold thing left on the page, which is the ladder
-  a printed page runs on.
+  pages now run **`SkText.h1` 26/400 title, `SkText.h2` 20/400 heading,
+  `SkText.body` 16/400 at 1.5**, and quoted or spoken words in `SkText.script`
+  20/500, from 26 September 2026.
 
   **The body went to 18/1.7 first and came straight back down.** "Reads like a
   book" is a fair brief and growing the body is the wrong way to answer it: at

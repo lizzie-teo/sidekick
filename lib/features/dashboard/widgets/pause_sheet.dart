@@ -438,7 +438,7 @@ class _BackState extends State<_Back> with SingleTickerProviderStateMixin {
                     child: Text(
                       PauseSheet.turnHint,
                       textAlign: TextAlign.center,
-                      style: SkText.chipLabel
+                      style: SkText.label
                           .copyWith(color: CardSceneColours.onDeep),
                     ),
                   ),
@@ -554,7 +554,7 @@ class _Front extends StatelessWidget {
                                     Text(
                                       why,
                                       textAlign: TextAlign.center,
-                                      style: SkText.lessonBody
+                                      style: SkText.body
                                           .copyWith(color: sk.ink),
                                     ),
                                   ],

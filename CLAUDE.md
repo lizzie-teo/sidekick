@@ -436,6 +436,7 @@ and one quote at the top, and her standing on a hill.
 | The words on the sky are near-black or near-white per sky (`onSky`), not the palette's `ink` | same |
 | **Tap me and the tiles sit on a canvas panel, not on the land.** The palette's action fill measured as low as 1.02:1 on a violet hill | `DashboardView` |
 | One quote a day, the same all day. Every quote needs its source checked before release | `daily_quotes.dart` |
+| **Her band scrolls at half speed and the tile panel rises over it** -- the user's call, 26 September 2026. The band and the panel are one sliver, because a viewport paints its first sliver on top. Reduce Motion turns it off. A fifth tile, Daily meditation, says "Not ready yet" and takes the full width | `_Parallax` in `dashboard_view.dart`, `SkTileGrid` |
 | **The door to the feeling picker is her moth**, not a "Tap me" pill. It lands on her shoulder, says "Hi", in a small circle, on its first two landings of a visit, then flies round her. A screen reader always finds it on her shoulder. The fluffball and her shadow were tried first and removed | `feelings_moth.dart` |
 
 The time zone, not the location, was the user's choice: a permission prompt
@@ -610,6 +611,7 @@ explicit call in the second phase of `setupServiceLocator()`.
 | `lib/app/widgets/sk_option_card.dart` | A card the reader taps: an answer, or a line for a sentence |
 | `lib/app/widgets/sk_progress_bar.dart` | One bar filling once. No segments, no number |
 | `lib/app/widgets/sk_speech_bubble.dart` | Words somebody said, with a tail pointing at them |
+| `lib/app/widgets/sk_pinned_header.dart` | A main tab's title and toggle stay put; a line shows under them once the page scrolls |
 | `test/support/fakes.dart` | Fakes that `implements` services, so no real `SupabaseClient` is built |
 | `lib/features/play/services/picture_repository.dart` | Where colouring pictures are kept: the phone always, the server once there is an email |
 | `lib/features/play/widgets/colouring_canvas.dart` | The colouring page: fill, brush, rubber, pinch, and the pen and palm rules |
@@ -623,7 +625,7 @@ priority order (connectivity, then auth, then onboarding). Route paths are
 declared in `app_constants.dart`, not inline.
 
 The app has five slots along the bottom: four tabs (`Routes.tabs` -- Home,
-Good things, Meditate, Me) and the panic button in the centre, which is not a
+Unwind, Practice, Me) and the panic button in the centre, which is not a
 tab. `SkMainTabBar` owns the labels, the icons and the destinations; each
 screen only says which slot it is.
 
@@ -638,20 +640,42 @@ pressed by someone who could not wait, and a question in front of the pacer is
 a gate. The picker is still there behind the Home CTA, which is the unhurried
 door into the three Play faces.
 
-**The scribble pad has its own door on Home.** The soft button that used to
-say "Play" and do nothing now says "Scribble" and pushes `Routes.scribble`.
-The picker's Wound up face still leads there too, and both doors are wanted:
-somebody who already knows they want to scribble should not have to name a
-feeling first, and somebody arriving through the picker should not be shown a
-screen they did not ask for. The pad's own two doors pop, so either route
-comes back where it started.
+**The Unwind tab holds three parts behind a toggle: Good things, Colouring
+and Scribble** -- since 26 September 2026, at the user's request,
+the same shape as the Practice tab. Colouring and Scribble were a screen of
+their own (`Routes.scribble`, now deleted) behind Home's Scribble button. The
+tab and its page are titled "Unwind" (it said "Good things" until the same
+day). The form's label is "Good things": "What went well" was too wide for a
+three-way toggle on a small phone, and "Noticing" names how the practice works
+rather than what you do. "Feel better" was turned down as the tab's name -- the
+dial's Good faces lead here, and a good day does not need to feel better. The
+route, the feature and the table keep the name `good_things`.
 
-**Since 26 September 2026 that door opens two tabs: Colouring and Scribble.**
+| Part | Owner | Kept? |
+| --- | --- | --- |
+| Good things | good_things -- `WhatWentWellForm` | Yes, on the server |
+| Colouring | play -- `ColouringShelf` | Yes, see `PictureRepository` |
+| Scribble | play -- `ScribbleSection` | No. Nothing is saved, which is the point |
+
+**The play parts arrive through `FeatureModule.tabSections`**, found with
+`tabSectionsFor()` (`lib/app/core/tab_sections.dart`), the same way
+`guidedIntros` works. Good things never imports play; without play the page
+is the form alone, with no toggle. A part is built on its first visit and
+kept alive after, so half-written words survive a look at the colouring; a
+hidden part's clocks are stopped with `TickerMode`.
+
+**Only a tab-bar tap opens on the part used last**
+(`SettingsKeys.goodThingsSection`). Every other way in names its part: Home's
+"What went well" tile, the picker's Good stops and "Actually okay" mean the
+form, and Home's Scribble tile `go`es to `?section=scribble`
+(`Routes.goodThingsSectionQuery`, ids in `GoodThingsSections`). Somebody who
+tapped "Good" on the dial must never land on a colouring page.
+
 Colouring is a colouring book -- pick a scene, fill spaces, brush inside the
-lines -- and its pictures are kept. Scribble is the pad, unchanged: nothing on
-it is saved and its "no undo, no picker" rule still holds there and only
-there. The tabs change by a tap, never a swipe, because a swipe is also a
-stroke. A first visit opens on Colouring; after that, whichever was last used.
+lines. Scribble is the pad, unchanged except that its X and "I'm done" went
+with its screen: on a tab the tab bar is the way out. Its "no undo, no picker"
+rule still holds there and only there. The toggle changes by a tap, never a
+swipe, because a swipe is also a stroke.
 `Routes.colouring` is one picture, full screen, pushed from the list.
 `_docs/briefs/colouring-book.md` is the plan, and the comments at the top of
 `colouring_canvas.dart` hold the finger and pen rules -- a pen that has touched
@@ -723,7 +747,7 @@ committed. The sheet answers first, at the reader's own speed.
 | --- | --- |
 | No duration | A number hands the reader arithmetic -- and it is a promise about how long they have to stay |
 | No count, no record, no "skip next time" | All three are a tally of how often somebody felt bad. The sheet is the same on the first visit and the fiftieth |
-| One bold phrase | `rowLabel` 17/400 at leading 1.6, one phrase at 600 -- `TightenScript.emphasis`, `LowDayScript.emphasis`, `BreathingScript.introEmphasisFor`. The title is `sceneLine` 24/600 |
+| One bold phrase | `rowLabel` 17/400 at leading 1.6, one phrase at 600 -- `TightenScript.emphasis`, `LowDayScript.emphasis`, `BreathingScript.introEmphasisFor`. The title is `h1` 24/400 |
 | It is not a route | A route would put the introduction in the back stack, where the system back gesture drops somebody mid-script onto a page inviting them to start again |
 | No status tone | A tinted panel with an icon is the shape of something to *deal with*; the permission line was one for an afternoon on 23 September 2026 and read as a condition attached to starting |
 
@@ -1075,7 +1099,7 @@ dial that can only hold whatever has been built.
 **The question is capped at `FeelingPickerView.titleWidth`, and 280 is a
 measured number.** It used to run the full gutter width at 28 points -- two
 lines nearly edge to edge, read by sweeping the eye rather than taken in at a
-glance. It is `SkText.sceneLine`'s own 24 now, with no invented size at the
+glance. It is `SkText.h1`, 24/400, since 26 September 2026 the first heading on every page, with no invented size at the
 use site, capped so it breaks into two shorter lines. On an iPhone SE 280 is
 the widest cap that still gives two; below 260 it goes to three and pushes her
 head down the screen. `test/feeling_picker_view_test.dart` pins the width, the
@@ -1635,8 +1659,14 @@ Deliberately absent -- do not add without being asked:
   September 2026: a row that looks like it worked. It is the next thing to
   build on that page.
 - `lib/app/views/tab_placeholder_view.dart` and the one feature folder still
-  using it (`meditate`) are scaffolding: a real screen with nothing behind it,
-  so every tab leads somewhere. Delete the file when it is replaced in phase 2.
+  using it (`meditate`) are scaffolding. `/meditate` is not in the tab bar:
+  the meditations are the Practice tab's **Meditations** half, a grid of
+  every guided practice since 26 September 2026 (`SkTileGrid`, shared with
+  Home). Two tiles say "Not ready yet" and take no taps: Daily meditation (an
+  audio meditation) and Mountain meditation (script written, no screen or
+  recording). The other three open existing screens under their practice
+  names -- Release tension (the picker's Wound up), Loving kindness (Low),
+  Panic attacks (the breathing).
 - `flutter_local_notifications` and `flutter_timezone` are pinned at versions
   without Swift Package Manager support, which prints an iOS build warning
   that will one day become an error. The upgrade is written up at the end of
@@ -1936,7 +1966,7 @@ an option card by the things a reader notices without being told:
 | | Option card | Topic card |
 | --- | --- | --- |
 | What it holds | A sentence to judge | The name of a subject |
-| The words | `caption` 16/400 -- something to read | `cardTitle` 18/600 -- something to choose |
+| The words | `optionLabel` 16/500 -- something to read | `cardTitle` 18/600 -- something to choose |
 | The shape | Full width, stacked | A tile, sat beside its neighbour |
 | The words sit | Left, where a line of prose starts | Centred in the tile |
 | After the tap | Marked, and dead | Chosen, and still changeable |
@@ -2032,7 +2062,7 @@ already runs: a title at the top of the type ladder, then her holding up the
 sentence it is about. The box was a third ground on a page that already had a
 page and a bank, and it left the one thing the reader is building as the only
 thing in the lesson with nobody behind it. The sentence takes
-`SkText.lessonSpoken` there, in step with her six, rather than `cardTitle`.
+`SkText.script` there, in step with her six, rather than `cardTitle`.
 
 **The blanks are drawn rules, not words.** They were "how you feel", "what
 happened" and "what you'd like" in the caption colour. Three instructions
@@ -2201,6 +2231,7 @@ by name with a leading slash, or just describe the job and it loads itself.
 | Skill | What it is for | Reach for it when |
 | --- | --- | --- |
 | `/visual-style` | How a screen is coloured, set, spaced and made readable | **Before touching anything the user sees** -- a view, a widget in `lib/app/widgets/`, a colour, a text style, a gap, a layout. Also contrast, dark mode, tablet layout, text scaling. **Not** the words on the screen -- that is `_docs/kind-writing-style.md` |
+| `/design-audit` | Checking that components, styling, colours, text, gaps and corners come from the theme and the design system, not typed at the use site | Auditing a screen or the app for hardcoded styling, or before saying a UI change is done. Runs `tool/design_audit/check.dart` and the source tests. The rules themselves are `/visual-style` |
 | `/rive-animator` | Animating the character in `assets/rive/character.riv` through the Rive editor MCP | Before the first `mcp__rive__` call -- timelines, state machines, tap reactions, idles, the pacer |
 | `/breath-events` | Checking and repairing the two Rive events the breath counter runs on | The count stops incrementing, the in/out cue stops swapping, or any Rive session touched `Breathe` |
 | `/meditation-writer` | Writing or editing a guided meditation or relaxation script | The Meditate tab, body scans, grounding, sleep. **Not** the panic script -- that is `_docs/affirmation-flow.md` |

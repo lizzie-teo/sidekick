@@ -40,7 +40,7 @@ ThemeData _themeFrom(SkColors sk, Brightness brightness) {
     scaffoldBackgroundColor: sk.canvas,
     // **The name lives in `SkText`, not here.** It was the string 'Poppins'
     // in both places, which is two places a font swap has to be remembered.
-    fontFamily: SkText.body,
+    fontFamily: SkText.bodyFont,
 
     // Taps read as a brief press, not an Android ink ripple.
     splashFactory: NoSplash.splashFactory,

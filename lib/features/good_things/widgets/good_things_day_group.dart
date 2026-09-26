@@ -35,7 +35,7 @@ class GoodThingsDayGroup extends StatelessWidget {
           padding: const EdgeInsets.only(left: 4, bottom: 8),
           child: Text(
             DateFormatUtils.dayLabel(group.day, now: now),
-            style: SkText.sectionHeader.copyWith(
+            style: SkText.label.copyWith(
               color: SkContrast.captionOn(sk.canvas),
             ),
           ),

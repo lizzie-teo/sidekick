@@ -1,6 +1,7 @@
 import 'package:flutter/widgets.dart';
 
 import 'package:sidekick/app/widgets/sk_colors.dart';
+import 'package:sidekick/app/widgets/sk_layout.dart';
 import 'package:sidekick/app/widgets/sk_contrast.dart';
 import 'package:sidekick/app/widgets/sk_disabled.dart';
 import 'package:sidekick/app/widgets/sk_pressable.dart';
@@ -43,7 +44,7 @@ class SkSoftButton extends StatelessWidget {
         wash: ink,
         borderRadius: BorderRadius.circular(14),
         child: Container(
-          constraints: const BoxConstraints(minHeight: 50),
+          constraints: const BoxConstraints(minHeight: SkLayout.buttonHeight),
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           alignment: Alignment.center,
           decoration: BoxDecoration(
@@ -53,7 +54,7 @@ class SkSoftButton extends StatelessWidget {
           child: Text(
             label,
             textAlign: TextAlign.center,
-            style: SkText.buttonSmall.copyWith(color: ink),
+            style: SkText.button.copyWith(color: ink),
           ),
         ),
       ),

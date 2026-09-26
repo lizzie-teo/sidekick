@@ -84,7 +84,7 @@ class _TemplateViewState extends State<TemplateView> {
                 // has no isLoading flag for this action.
                 AsyncButton(
                   onPressed: _viewModel.refresh,
-                  child: const Text('Refresh'),
+                  label: 'Refresh',
                 ),
               ],
             ),

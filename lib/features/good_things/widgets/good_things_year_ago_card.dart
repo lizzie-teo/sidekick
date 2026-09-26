@@ -32,7 +32,7 @@ class GoodThingsYearAgoCard extends StatelessWidget {
         children: <Widget>[
           Text(
             'A year ago today',
-            style: SkText.sectionHeader.copyWith(
+            style: SkText.label.copyWith(
               color: SkContrast.captionOn(sk.surfaceMuted),
             ),
           ),

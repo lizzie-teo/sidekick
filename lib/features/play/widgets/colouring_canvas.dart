@@ -644,7 +644,7 @@ class _WholePageButton extends StatelessWidget {
               const SizedBox(width: SkLayout.sm),
               Text(
                 ColouringCanvasState.wholePageLabel,
-                style: SkText.chipLabel.copyWith(color: sk.ink),
+                style: SkText.label.copyWith(color: sk.ink),
               ),
             ],
           ),

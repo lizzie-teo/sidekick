@@ -9,6 +9,9 @@ import 'package:sidekick/app/widgets/sk_layout.dart';
 // Shared by `BodySensationSheet` and `GuidedIntroSheet`, because "Can't cope"
 // turns one into the other in place. Two frames drawn two ways would make that
 // swap move the handle.
+//
+// [show] is wider than the frame: every sheet in the app opens through it,
+// whether or not it draws this frame.
 class SkSheetFrame extends StatelessWidget {
   const SkSheetFrame({super.key, required this.child});
 
@@ -29,21 +32,47 @@ class SkSheetFrame extends StatelessWidget {
   // says a swipe down goes back to it.
   static const double maxHeightFraction = 0.9;
 
+  // How every sheet in the app rises and falls. One place, so two sheets can
+  // never move two ways.
+  //
+  // In on the iOS drawer curve -- fast off the mark, a long soft landing --
+  // and out a third quicker, because the reader has already decided to go.
+  // Flutter's own sheet runs 250ms in on a weaker ease-out.
+  //
+  // The drag is untouched: a sheet let go mid-swipe still carries the
+  // finger's speed, because Flutter hands that over itself.
+  static const AnimationStyle motion = AnimationStyle(
+    duration: Duration(milliseconds: 320),
+    reverseDuration: Duration(milliseconds: 220),
+    curve: Cubic(0.32, 0.72, 0, 1),
+  );
+
   // Opens [builder] as a sheet over the whole screen.
   //
-  // A swipe down or a tap on the page behind closes it with null. Every
-  // caller reads null as "I changed my mind": nothing starts.
+  // Every bottom sheet in the app opens through here, not only the picker's,
+  // so they all share [motion].
+  //
+  // A swipe down or a tap on the page behind closes it with null. The
+  // picker's callers read null as "I changed my mind": nothing starts.
+  //
+  // [useRootNavigator] is on by default, so the sheet covers the floating tab
+  // bar as well as the page. The two Good things sheets keep it off, as they
+  // always had it.
   static Future<T?> show<T>(
     BuildContext context, {
     required String barrierLabel,
     required WidgetBuilder builder,
+    bool useRootNavigator = true,
   }) {
     return showModalBottomSheet<T>(
       context: context,
       isScrollControlled: true,
-      // The root navigator, so the sheet covers the floating tab bar as well
-      // as the page.
-      useRootNavigator: true,
+      useRootNavigator: useRootNavigator,
+      // With Reduce Motion on, the sheet is simply there. A slide is
+      // movement, and there is no fade a sheet can do instead.
+      sheetAnimationStyle: MediaQuery.disableAnimationsOf(context)
+          ? AnimationStyle.noAnimation
+          : motion,
       backgroundColor: context.sk.canvas,
       // What a screen reader says when the sheet takes focus, and what a tap
       // outside it is announced as. The default is "Scrim", which tells

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import 'package:sidekick/app/widgets/sk_colors.dart';
 import 'package:sidekick/app/widgets/sk_text.dart';
@@ -15,6 +16,19 @@ class SkTextField extends StatelessWidget {
   final TextInputType? keyboardType;
   final ValueChanged<String>? onChanged;
 
+  // What the sign-in fields need: the email and the one-time code. Passed
+  // straight through to the TextField underneath.
+  final bool autocorrect;
+  final bool autofocus;
+  final Iterable<String>? autofillHints;
+  final TextInputAction? textInputAction;
+  final ValueChanged<String>? onSubmitted;
+  final List<TextInputFormatter>? inputFormatters;
+
+  // Caps what can be typed. The counter Flutter would draw under the field
+  // is hidden: a six-digit code does not need "3/6" read out beside it.
+  final int? maxLength;
+
   const SkTextField({
     super.key,
     this.controller,
@@ -23,6 +37,13 @@ class SkTextField extends StatelessWidget {
     this.maxLines = 1,
     this.keyboardType,
     this.onChanged,
+    this.autocorrect = true,
+    this.autofocus = false,
+    this.autofillHints,
+    this.textInputAction,
+    this.onSubmitted,
+    this.inputFormatters,
+    this.maxLength,
   });
 
   @override
@@ -45,10 +66,18 @@ class SkTextField extends StatelessWidget {
             maxLines: maxLines,
             keyboardType: keyboardType,
             onChanged: onChanged,
+            autocorrect: autocorrect,
+            autofocus: autofocus,
+            autofillHints: autofillHints,
+            textInputAction: textInputAction,
+            onSubmitted: onSubmitted,
+            inputFormatters: inputFormatters,
+            maxLength: maxLength,
             style: SkText.rowLabel.copyWith(color: sk.ink),
             cursorColor: sk.action,
             decoration: InputDecoration(
               hintText: hint,
+              counterText: '',
               // **A placeholder is text somebody has to read**, so it is
               // held to the same 4.5:1 as the words they type. `muted`
               // measures under 3.3:1 on every light palette.
@@ -68,7 +97,9 @@ class SkTextField extends StatelessWidget {
             padding: const EdgeInsets.only(left: 4, top: 6),
             child: Text(
               errorText!,
-              style: SkText.caption.copyWith(color: sk.destructive),
+              style: SkText.caption.copyWith(
+                color: SkContrast.readable(sk.destructive, sk.canvas),
+              ),
             ),
           ),
       ],

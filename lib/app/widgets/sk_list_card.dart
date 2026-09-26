@@ -65,11 +65,11 @@ class SkListCard extends StatelessWidget {
               children: [
                 if (overline != null) ...[
                   Text(
-                    overline!.toUpperCase(),
+                    overline!,
                     // Not `muted`, which is under 4.5:1 on every surface in
                     // every light palette. `captionOn` keeps the card's own
                     // hue and takes it dark enough to read.
-                    style: SkText.sectionHeader.copyWith(
+                    style: SkText.label.copyWith(
                       color: SkContrast.captionOn(sk.surface),
                     ),
                   ),

@@ -14,17 +14,21 @@ import 'package:sidekick/app/core/app_constants.dart';
 // The cost is accepted: half the tab is hidden at any moment. If either list
 // ever drops to one item, this is worth reopening -- a toggle guarding one
 // card is a control with nothing to do.
+// Meditations first, from 26 September 2026, at the user's request. The
+// order here is the toggle's order. The saved choice is stored by name, so
+// swapping the two moves nobody.
 enum PracticeSection {
-  lessons('Lessons'),
-  meditations('Meditations');
+  meditations('Meditations'),
+  lessons('Lessons');
 
   final String label;
 
   const PracticeSection(this.label);
 
-  // What a fresh install opens on. Lessons, because that is the half the tab
-  // was built for first.
-  static const PracticeSection fallback = PracticeSection.lessons;
+  // What a fresh install opens on: the first half of the toggle. It was
+  // Lessons, the half the tab was built for first, until Meditations moved
+  // to the front on 26 September 2026.
+  static const PracticeSection fallback = PracticeSection.meditations;
 
   // Reads the stored name back, tolerating anything it does not recognise --
   // a renamed value, a corrupted row, nothing saved at all. Losing the choice

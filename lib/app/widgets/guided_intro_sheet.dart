@@ -116,14 +116,14 @@ class GuidedIntroPanel extends StatelessWidget {
                 children: <Widget>[
                   // The name of the thing. The only widget at this size,
                   // which is what makes it the title without a label saying
-                  // so. `sceneLine` rather than `largeTitle`: 34/700 read as a
-                  // magazine cover over something to be read and left.
+                  // so. `h1`, the picker's own question size, so the
+                  // sheet's title matches the page it rises over.
                   Semantics(
                     header: true,
                     child: Text(
                       intro.title,
                       textAlign: TextAlign.center,
-                      style: SkLayout.display(context, SkText.sceneLine)
+                      style: SkLayout.display(context, SkText.h1)
                           .copyWith(color: sk.ink),
                     ),
                   ),

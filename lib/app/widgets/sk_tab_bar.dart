@@ -45,6 +45,14 @@ class SkTabBar extends StatelessWidget {
     return _pillHeight + (bottomInset > 0 ? bottomInset : 16);
   }
 
+  // How much room a scrolling page leaves under its last row: the bar and
+  // the panic button's rise above it. `heightOf` leaves the rise out, which
+  // is right for a picture that may run under it and wrong for a list --
+  // the last tile came to rest touching the panic button (26 September
+  // 2026).
+  static double clearanceOf(BuildContext context) =>
+      heightOf(context) + _fabOverhang;
+
   @override
   Widget build(BuildContext context) {
     final SkColors sk = context.sk;

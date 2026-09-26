@@ -41,37 +41,64 @@ abstract final class SkLayout {
   static const double xxxl = 32;
   static const double huge = 40;
 
-  // The gap between a section marker and the text it names -- "What we say"
-  // and the paragraph under it, on a lesson reading page.
+  // **The three gaps a page of text is built from.** Named for what they
+  // separate, not for how big they are, so every screen reaches for the same
+  // one and nobody types a number. Set 26 September 2026, at the user's
+  // request, after the gap under a heading was found at 4, 8, 12 and 16 on
+  // six screens.
   //
-  // **8, and it is a named step rather than `sm` at the use site**, because
-  // two screens have to agree on it. The introduction pages and the closing
-  // step both set a 20/400 marker over a block, and they held their own copy
-  // of the number: the two are one decision and a copy each is how they
-  // drift.
-  //
-  // **It came down from 12 on 25 September 2026, and the reason is that 12
-  // was measured against a different marker.** It was the right pair for the
-  // 13pt uppercase eyebrow these pages used until 24 September 2026 -- app
-  // furniture, which wants air under it so it reads as a label rather than as
-  // a first line. The marker is a 20pt line of text now, so it is the top of
-  // the paragraph rather than a tag above it, and at 12 it floated off the
-  // words it names.
-  //
-  // **The nesting rule is what bounds it**, not taste: 8 under the marker,
-  // 20 between two paragraphs, 32 starting the next section. Anything that
-  // raises this has to raise those two as well or the page stops reading as
-  // groups.
-  static const double markerGap = sm;
+  // The nesting rule is what holds them apart: the gap inside a group is
+  // smaller than the gap around it. 12 under a heading, 20 between two
+  // paragraphs, 24 under a page title, 32 before the next section. Raising one means checking the
+  // other two still rank.
 
-  // The gap between two points of a list, and the gap under the heading that
-  // names them. **One number for both, on purpose.**
+  // From a heading to the block it names: "What happens next" and the
+  // paragraph under it, a sheet heading and its text, a heading over a list
+  // or a set of tiles.
   //
-  // A heading is the top of the list it names, so it must not sit further
-  // from the first point than the points sit from each other -- at 8 over a
-  // 12 list the heading read as glued to point one while the points read as
-  // separate, which is two different groupings on one short block. Setting
-  // the two from one constant is what stops them drifting apart again.
+  // **12, up from 8 on 26 September 2026, because 8 read as tight.** It was
+  // 12 once before and came down to 8 on 25 September, on the argument that a
+  // 20pt marker at 12 floated off its words. That was taste rather than a
+  // rule, and the opposite was reported a day later.
+  //
+  // It is at least `listGap`, so a heading over a list never sits closer to
+  // the first point than the points sit to each other -- that is the
+  // grouping bug the old one-number rule was protecting against.
+  //
+  // Not for a label and its body inside one small block -- `SkStatusBlock`
+  // keeps `xs` there, because the two are one unit, not a heading and a
+  // section.
+  static const double headingGap = md;
+
+  // Between two paragraphs. 20: at 16 the gap between two paragraphs was
+  // barely wider than the gap between two lines of one, and the text ran
+  // together into a slab.
+  static const double paragraphGap = xl;
+
+  // From a page's title to its first section: "The trouble with "you"" and
+  // "One evening" under it.
+  //
+  // **24, between the heading gap and the section gap, on purpose.** Larger
+  // than `headingGap`, because at 12 a 24pt title and a 20pt section heading
+  // sat on top of each other as one two-line lump. Smaller than `groupGap`,
+  // because the title owns every section under it, so it must sit closer to
+  // them than they sit to each other. Named 26 September 2026, at the user's
+  // request; the number was already 24 on the lesson pages.
+  static const double titleGap = xxl;
+
+  // Before the next section starts: above a heading that opens one -- "What
+  // we say" after the "One evening" paragraph.
+  //
+  // Not `sectionGap(context)` below, which grows with the screen width and
+  // spaces whole cards apart. This one is inside a column of reading text.
+  static const double groupGap = xxxl;
+
+  // The gap between two points of a list.
+  //
+  // **It used to be the gap under the list's heading as well**, so the
+  // heading could never sit closer to point one than the points sit to each
+  // other -- at 8 over a 12 list it read as glued to point one. `headingGap`
+  // does that job now, and is never smaller than this.
   //
   // **8, down from 12 on 25 September 2026, at the user's request.** The
   // three-line chain on the introduction page was reported as too loose, and
@@ -117,6 +144,14 @@ abstract final class SkLayout {
   // 44 is Apple's floor and 48 is Android's. The app uses 48: a control that
   // clears both is one number to remember, and the difference is four points.
   static const double tapTarget = 48;
+
+  // How tall every button is: the filled pill, the outline, the glass, the
+  // soft row and the lesson pills. One number, so they cannot drift apart.
+  //
+  // 50, set 26 September 2026. It was 56, which read as heavy on an iPhone
+  // SE. 50 is Apple's large button, and it sits a little above [tapTarget]
+  // rather than on it, so the label does not look squeezed.
+  static const double buttonHeight = 50;
 
   static SkWidthBand bandOf(BuildContext context) =>
       bandFor(MediaQuery.sizeOf(context).width);

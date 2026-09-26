@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:sidekick/app/core/app_constants.dart';
+import 'package:sidekick/app/widgets/theme.dart';
 import 'package:sidekick/features/welcome/views/welcome_view.dart';
 
 // The real ConnectView resolves services from getIt, so this stands in for it.
@@ -24,7 +25,8 @@ void main() {
       ],
     );
 
-    await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+    await tester.pumpWidget(
+        MaterialApp.router(theme: appTheme(), routerConfig: router));
 
     expect(find.text('Get started'), findsOneWidget);
     expect(find.text('connect screen'), findsNothing);
@@ -51,7 +53,8 @@ void main() {
       ],
     );
 
-    await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+    await tester.pumpWidget(
+        MaterialApp.router(theme: appTheme(), routerConfig: router));
 
     expect(find.text('Design system'), findsOneWidget);
 

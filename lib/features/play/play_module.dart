@@ -11,6 +11,7 @@ import 'package:sidekick/app/core/feature_module.dart';
 import 'package:sidekick/app/core/logger_service.dart';
 import 'package:sidekick/app/core/service_locator.dart';
 import 'package:sidekick/app/models/guided_intro.dart';
+import 'package:sidekick/app/models/tab_section.dart';
 import 'package:sidekick/data/services/colouring_archive.dart';
 import 'package:sidekick/features/play/models/low_day_script.dart';
 import 'package:sidekick/features/play/models/tighten_script.dart';
@@ -21,8 +22,9 @@ import 'package:sidekick/features/play/services/scene_library.dart';
 import 'package:sidekick/features/play/views/actually_okay_view.dart';
 import 'package:sidekick/features/play/views/colouring_view.dart';
 import 'package:sidekick/features/play/views/low_day_view.dart';
-import 'package:sidekick/features/play/views/scribble_view.dart';
 import 'package:sidekick/features/play/views/tighten_view.dart';
+import 'package:sidekick/features/play/widgets/colouring_shelf.dart';
+import 'package:sidekick/features/play/widgets/scribble_section.dart';
 
 // The three faces that are not panic, phase 5 of the build plan. Each one is
 // allowed to end in nothing.
@@ -112,6 +114,28 @@ class PlayModule extends FeatureModule {
         ),
       };
 
+  // Colouring and Scribble sit on the Good things tab beside What went well,
+  // since 26 September 2026. They are handed over here rather than imported
+  // by that tab, so deleting this feature leaves it with its own part.
+  @override
+  Map<String, List<TabSection>> get tabSections =>
+      <String, List<TabSection>>{
+        Routes.goodThings: <TabSection>[
+          TabSection(
+            id: GoodThingsSections.colouring,
+            label: ColouringShelf.label,
+            order: 10,
+            builder: (_) => const ColouringShelf(),
+          ),
+          TabSection(
+            id: GoodThingsSections.scribble,
+            label: ScribbleSection.label,
+            order: 20,
+            builder: (_) => const ScribbleSection(),
+          ),
+        ],
+      };
+
   @override
   List<RouteBase> get routes => <RouteBase>[
         GoRoute(
@@ -128,11 +152,6 @@ class PlayModule extends FeatureModule {
           path: Routes.actuallyOkay,
           name: 'actually-okay',
           builder: (context, state) => const ActuallyOkayView(),
-        ),
-        GoRoute(
-          path: Routes.scribble,
-          name: 'scribble',
-          builder: (context, state) => const ScribbleView(),
         ),
         GoRoute(
           path: Routes.colouring,

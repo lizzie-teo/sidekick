@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:sidekick/app/core/app_constants.dart';
+import 'package:sidekick/app/widgets/sk_circle_icon_button.dart';
 
 import 'support/fakes.dart';
 import 'support/pump_app.dart';
@@ -121,7 +122,8 @@ void main() {
     expect(find.text('Sent to someone@example.com'), findsOneWidget);
 
     // Back to Connect, the way a user correcting a typo would go.
-    await tester.tap(find.byTooltip('Back'));
+    await tester.tap(find.byWidgetPredicate(
+        (Widget w) => w is SkCircleIconButton && w.label == 'Back'));
     await tester.pumpAndSettle();
 
     expect(
@@ -138,7 +140,8 @@ void main() {
       location: Routes.connect,
     );
 
-    await tester.tap(find.byTooltip('Back'));
+    await tester.tap(find.byWidgetPredicate(
+        (Widget w) => w is SkCircleIconButton && w.label == 'Back'));
     await tester.pumpAndSettle();
 
     expect(router.state.uri.path, Routes.home);

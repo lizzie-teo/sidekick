@@ -269,7 +269,7 @@ sealed class SwapIntroBlock {
 // one pair with one thing changed between them.
 //
 // **It is not a heading, and `/lesson-design` rule 5 still holds.** The page
-// has one heading, at 24/600, and it is the only thing at that size. These are
+// has one heading, at 24/400, and it is the only thing at that size. These are
 // 13/600 captions in the exercise set's own caption colour -- a step *below*
 // body text, marking where a group starts. Three of them do not compete with
 // the title, because none of them is anywhere near its size.
@@ -401,7 +401,7 @@ class SwapClosingSection {
 // tone's own fill and edge, so the two kinds are still taught in colour on the
 // one page in the drill where green and red have no verdict to collide with.
 // The quote marks came off, because a bubble already says somebody is talking
-// -- which is what `SkText.quote`'s own note said would happen.
+// -- which is what `SkText.script`'s own note said would happen.
 //
 // **She says both, with a different face on each, since 22 September 2026.**
 // For an afternoon the criticism was hers and the "I" version was the reader's

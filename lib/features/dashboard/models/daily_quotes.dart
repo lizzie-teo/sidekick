@@ -55,6 +55,18 @@ abstract final class DailyQuotes {
   // teacher's words on the home screen can read as an endorsement they
   // never gave. Everybody here is credited, with their years, on the Me
   // tab (`QuoteCreditsView`).
+  // **No quote is longer than this many characters**, set 26 September
+  // 2026. A long quote pushes the tiles on Home below the tab bar on an
+  // iPhone SE, and then nothing on the first screen says the page scrolls.
+  // Three were over it and were taken out rather than shortened: a shortened
+  // quote is a new sentence, and its source would need checking again.
+  // Ajahn Chah's "If you let go a little..." (172), Viktor Frankl's
+  // "Everything can be taken from a man..." (142) and Marcus Aurelius's
+  // "If you are pained by any external thing..." (113).
+  // `test/dashboard_view_test.dart` holds Home to this on an SE with the
+  // longest quote in the set.
+  static const int maxLength = 100;
+
   static const List<DailyQuote> all = <DailyQuote>[
     DailyQuote(
       text: 'Feelings come and go like clouds in a windy sky. Conscious '
@@ -76,14 +88,6 @@ abstract final class DailyQuotes {
       name: 'Carl Rogers',
       role: 'Psychologist',
       lived: '1902–1987',
-    ),
-    DailyQuote(
-      text: 'If you let go a little, you will have a little peace. If you'
-          ' let go a lot, you will have a lot of peace. If you let go '
-          'completely, you will know complete peace and freedom.',
-      name: 'Ajahn Chah',
-      role: 'Buddhist monk',
-      lived: '1918–1992',
     ),
     DailyQuote(
       text: 'We are more often frightened than hurt; and we suffer more '
@@ -138,13 +142,6 @@ abstract final class DailyQuotes {
       name: 'Alan Watts',
       role: 'Philosopher',
       lived: '1915–1973',
-    ),
-    DailyQuote(
-      text: 'If you are pained by any external thing, it is not this '
-          'thing that disturbs you, but your own judgement about it.',
-      name: 'Marcus Aurelius',
-      role: 'Stoic philosopher',
-      lived: '121–180',
     ),
     DailyQuote(
       text: 'My experience is what I agree to attend to.',
@@ -203,14 +200,6 @@ abstract final class DailyQuotes {
       name: 'Shunryu Suzuki',
       role: 'Zen teacher',
       lived: '1904–1971',
-    ),
-    DailyQuote(
-      text: 'Everything can be taken from a man but one thing: the last '
-          "of the human freedoms – to choose one's attitude in any "
-          'given set of circumstances.',
-      name: 'Viktor Frankl',
-      role: 'Psychiatrist',
-      lived: '1905–1997',
     ),
     DailyQuote(
       text: 'Breathing in, I calm body and mind. Breathing out, I smile.',

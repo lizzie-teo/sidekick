@@ -833,9 +833,8 @@
         <li><strong>Tracking is negative at 24 and up, zero below it.</strong> Poppins is
         geometric — perfect circles, wide round forms — and reads loose at headline
         sizes, so the big styles pull in 1.5%. Doing the same to body text would close
-        the counters that make it legible at 16. <code>sectionHeader</code> is the
-        exception: capitals have no ascenders or descenders to tell them apart, so it
-        gets 6% back.</li>
+        the counters that make it legible at 16. Nothing is set in capitals, so no
+        style gets tracking back.</li>
         <li><strong>Nothing lighter than 400, nothing smaller than 13.</strong> Both
         floors come from WCAG 1.4.4 and Apple's 11pt hard minimum. Thin through Light
         are bundled for Rive and decoration, never for reading.</li>
@@ -873,7 +872,7 @@
             <tr><td>What the screen is about</td><td>The largest style on the screen, and the only thing at that size</td></tr>
             <tr><td>A heading over a group</td><td>One or two steps down, 600 weight</td></tr>
             <tr><td>Body</td><td><code>rowLabel</code>, 17/400, <code>ink</code></td></tr>
-            <tr><td>A caption</td><td>One step below body, 600, <code>captionOn(ground)</code></td></tr>
+            <tr><td>A caption</td><td><code>SkText.caption</code> 15/400, one step below body, <code>captionOn(ground)</code></td></tr>
           </tbody>
         </table>
       </div>
@@ -1242,16 +1241,12 @@
     ['largeTitle', 34, 700, -0.015, 'A screen title'],
     ['breathCue', 34, 600, -0.015, 'Breathe in'],
     ['sceneLine', 24, 600, -0.015, 'A line over the gradient'],
-    ['button', 19, 600, 0, 'Primary button'],
     ['cardTitle', 18, 600, 0, 'Card title'],
     ['rowLabel', 17, 400, 0, 'Body text, and the style long writing is read in'],
-    ['buttonSmall', 17, 600, 0, 'Secondary button'],
+    ['button', 17, 500, 0, 'Every button label'],
     ['sheetHeading', 16, 600, 0, 'Why it does not hold'],
     ['caption', 16, 400, 0, 'A subtitle under a title'],
-    ['buttonGhost', 15, 600, 0, "That's enough for now"],
-    ['chipLabel', 14, 600, 0, 'Things you are allowed'],
-    ['tabLabel', 14, 500, 0, 'A hint, or a lab meter'],
-    ['sectionHeader', 13, 600, 0.06, 'OVER A LIST GROUP']
+    ['label', 14, 600, 0, 'Over a list group']
   ];
 
   const specimens = document.getElementById('specimens');

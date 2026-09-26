@@ -2,79 +2,63 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:sidekick/app/core/app_constants.dart';
-import 'package:sidekick/app/core/device_settings_service.dart';
 import 'package:sidekick/app/core/service_locator.dart';
 import 'package:sidekick/app/utilities/date_format_utils.dart';
-import 'package:sidekick/app/widgets/sk_circle_icon_button.dart';
 import 'package:sidekick/app/widgets/sk_colors.dart';
 import 'package:sidekick/app/widgets/sk_contrast.dart';
 import 'package:sidekick/app/widgets/sk_layout.dart';
+import 'package:sidekick/app/widgets/sk_main_tab_bar.dart';
 import 'package:sidekick/app/widgets/sk_outline_button.dart';
 import 'package:sidekick/app/widgets/sk_pressable.dart';
-import 'package:sidekick/app/widgets/sk_segmented.dart';
 import 'package:sidekick/app/widgets/sk_status.dart';
 import 'package:sidekick/app/widgets/sk_text.dart';
 import 'package:sidekick/app/widgets/sk_text_button.dart';
+import 'package:sidekick/app/widgets/sk_sheet_frame.dart';
 import 'package:sidekick/features/play/models/colouring_palette.dart';
 import 'package:sidekick/features/play/models/colouring_picture.dart';
 import 'package:sidekick/features/play/models/colouring_scene.dart';
 import 'package:sidekick/features/play/services/picture_repository.dart';
 import 'package:sidekick/features/play/services/scene_library.dart';
-import 'package:sidekick/features/play/viewmodels/scribble_viewmodel.dart';
+import 'package:sidekick/features/play/viewmodels/colouring_shelf_viewmodel.dart';
 import 'package:sidekick/features/play/widgets/colouring_painting.dart';
-import 'package:sidekick/features/play/widgets/scribble_pad.dart';
 
-// The Scribble button on Home. Two tabs since 26 September 2026: Colouring
-// and Scribble. `_docs/briefs/colouring-book.md` is the plan.
+// The Colouring part of the Good things tab, since 26 September 2026: the
+// pictures already started, then the scenes to start one from. Tapping one
+// pushes `Routes.colouring`, full screen. `_docs/briefs/colouring-book.md` is
+// the plan.
 //
-// | Tab | What it is | Kept? |
-// | --- | --- | --- |
-// | Colouring | Pick a scene and colour it in | Yes, saved as you go |
-// | Scribble | One ink, no choices, every mark fades | No. Nothing is saved, which is the point |
+// It was one of two tabs on its own Scribble screen, pushed from Home, until
+// the same day. Colouring and Scribble moved onto the Good things tab beside
+// What went well, at the user's request, so the three quiet things to do are
+// one tab-bar tap away. The play feature hands both over through
+// `PlayModule.tabSections`, so the good_things feature never imports this.
 //
-// **The tabs change by a tap, never a swipe.** A sideways swipe is also a
-// line being drawn, and a page that changed tab in the middle of a stroke
-// would be a screen fighting the reader's finger.
+// **Colouring does not inherit the scribble pad's rule.** The pad has no
+// undo, no picker and no save, because it was built as a place with no
+// decisions in it. Colouring is slow and calm, and with no colours and no
+// undo it would not work at all -- so the rule does not reach it. Colouring a
+// set pattern lowered anxiety more than free drawing in two small studies
+// (Curry & Kasser 2005; van der Vennet & Serice 2012).
 //
-// **The scribble pad keeps its old rule, and colouring does not inherit it.**
-// The pad has no undo, no picker and no save, because it was built as a place
-// with no decisions in it. That rule protected the pad's use as a discharge,
-// and it still holds on that tab. Colouring is slow and calm, and with no
-// colours and no undo it would not work at all -- so the rule does not reach
-// it.
-//
-// **It used to be the picker's Wound up face, and that was wrong.** Kjærvik &
-// Bushman's 2024 meta-analysis of anger management -- roughly 154 studies,
-// around 10,000 people -- splits the field cleanly: things that raise arousal
-// (hitting, venting, jogging) do not reduce anger and sometimes increase it,
-// while things that lower it (muscle relax-and-release, slow breathing,
-// timeout) do. "Scribble as hard as you like" was on the wrong side of that
-// line. That face now leads to `TightenView`. Colouring a set pattern sits
-// on the calming side: it lowered anxiety more than free drawing in two small
-// studies (Curry & Kasser 2005; van der Vennet & Serice 2012).
-//
-// The sidekick is deliberately absent from both tabs. Being watched while you
-// make something is wrong even when the watching is kind.
-class ScribbleView extends StatefulWidget {
-  const ScribbleView({super.key});
+// **There is no count anywhere on it.** Not of pictures, not of finished
+// ones. "Nothing counts" is written about exactly this: a tally of the reader
+// over time.
+class ColouringShelf extends StatefulWidget {
+  const ColouringShelf({super.key});
 
-  static const String colouringTab = 'Colouring';
-  static const String scribbleTab = 'Scribble';
-
-  static const String promise = 'Draw whatever you like. It fades away.';
+  static const String label = 'Colouring';
 
   static const String yourPictures = 'Your pictures';
   static const String newPicture = 'Start a new picture';
 
   @override
-  State<ScribbleView> createState() => _ScribbleViewState();
+  State<ColouringShelf> createState() => _ColouringShelfState();
 }
 
-class _ScribbleViewState extends State<ScribbleView> {
-  late final ScribbleViewModel _viewModel = ScribbleViewModel(
+class _ColouringShelfState extends State<ColouringShelf> {
+  late final ColouringShelfViewModel _viewModel = ColouringShelfViewModel(
     repository: getIt<PictureRepository>(),
     sceneLibrary: getIt<SceneLibrary>(),
-    deviceSettingsService: getIt<DeviceSettingsService>(),
   );
 
   @override
@@ -89,116 +73,22 @@ class _ScribbleViewState extends State<ScribbleView> {
     super.dispose();
   }
 
-  // Same exit shape as the picker: pop back to wherever the user was, or go
-  // home when the screen was opened cold with nothing underneath.
-  //
-  // Both doors -- the X and "I'm done" -- lead here. Leaving is the only
-  // thing to do when the scribbling is done, and neither door is the wrong
-  // kind of leaving.
-  void _leave(BuildContext context) {
-    final GoRouter? router = GoRouter.maybeOf(context);
-    if (router == null) return;
-
-    if (router.canPop()) {
-      router.pop();
-    } else {
-      router.go(Routes.home);
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
-    final double gutter = SkLayout.gutter(context);
-
-    return Scaffold(
-      body: SafeArea(
-        child: ValueListenableBuilder<ScribbleState>(
-          valueListenable: _viewModel.state,
-          builder: (BuildContext context, ScribbleState state, Widget? _) {
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: <Widget>[
-                Padding(
-                  padding: EdgeInsets.fromLTRB(gutter, SkLayout.sm, gutter, 0),
-                  child: Row(
-                    children: <Widget>[
-                      Expanded(
-                        child: SkSegmented(
-                          labels: const <String>[
-                            ScribbleView.colouringTab,
-                            ScribbleView.scribbleTab,
-                          ],
-                          selected: state.tab.index,
-                          onChanged: (int i) =>
-                              _viewModel.setTab(ScribbleTab.values[i]),
-                        ),
-                      ),
-                      const SizedBox(width: SkLayout.md),
-                      SkCircleIconButton(
-                        icon: Icons.close,
-                        label: 'Close',
-                        onPressed: () => _leave(context),
-                      ),
-                    ],
-                  ),
-                ),
-                Expanded(
-                  child: state.isLoading
-                      ? const SizedBox.shrink()
-                      : state.tab == ScribbleTab.scribble
-                          ? _scribble(context)
-                          : _ColouringList(viewModel: _viewModel, state: state),
-                ),
-              ],
-            );
-          },
-        ),
-      ),
-    );
-  }
-
-  Widget _scribble(BuildContext context) {
-    final SkColors sk = context.sk;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: <Widget>[
-        const SizedBox(height: SkLayout.sm),
-
-        // Full-bleed: the pad runs edge to edge, with no frame around it. A
-        // box to stay inside is one more rule, and this tab is for having
-        // none.
-        Expanded(child: ScribblePad(color: sk.ink)),
-
-        Padding(
-          padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
-          child: Text(
-            ScribbleView.promise,
-            textAlign: TextAlign.center,
-            style: SkText.caption.copyWith(
-              color: SkContrast.captionOn(sk.canvas),
-            ),
-          ),
-        ),
-
-        Padding(
-          padding: const EdgeInsets.fromLTRB(20, 14, 20, 12),
-          child: SkOutlineButton(
-            label: "I'm done",
-            onPressed: () => _leave(context),
-          ),
-        ),
-      ],
+    return ValueListenableBuilder<ColouringShelfState>(
+      valueListenable: _viewModel.state,
+      builder: (BuildContext context, ColouringShelfState state, Widget? _) {
+        return _ColouringList(viewModel: _viewModel, state: state);
+      },
     );
   }
 }
 
-// The Colouring tab: the pictures already started, then the scenes.
 class _ColouringList extends StatelessWidget {
   const _ColouringList({required this.viewModel, required this.state});
 
-  final ScribbleViewModel viewModel;
-  final ScribbleState state;
+  final ColouringShelfViewModel viewModel;
+  final ColouringShelfState state;
 
   // Two tiles abreast on a phone, more as the screen widens. A tile is a
   // picture to recognise, so it is never shrunk below a size a thumb can
@@ -259,7 +149,12 @@ class _ColouringList extends StatelessWidget {
     return CustomScrollView(
       slivers: <Widget>[
         SliverPadding(
-          padding: EdgeInsets.fromLTRB(gutter, SkLayout.xl, gutter, SkLayout.huge),
+          padding: EdgeInsets.fromLTRB(
+            gutter,
+            SkLayout.xl,
+            gutter,
+            SkLayout.huge + SkMainTabBar.clearanceOf(context),
+          ),
           sliver: SliverMainAxisGroup(
             slivers: <Widget>[
               if (state.errors['delete'] != null)
@@ -274,7 +169,7 @@ class _ColouringList extends StatelessWidget {
                   ),
                 ),
               if (state.pictures.isNotEmpty) ...<Widget>[
-                heading(ScribbleView.yourPictures),
+                heading(ColouringShelf.yourPictures),
                 grid(<Widget>[
                   for (final ColouringPicture picture in state.pictures)
                     if (ColouringScenes.byId(picture.sceneId)
@@ -296,7 +191,7 @@ class _ColouringList extends StatelessWidget {
                 ]),
                 const SliverToBoxAdapter(child: SizedBox(height: SkLayout.xxl)),
               ],
-              heading(ScribbleView.newPicture),
+              heading(ColouringShelf.newPicture),
               grid(<Widget>[
                 for (final ColouringScene scene in ColouringScenes.all)
                   _Tile(
@@ -455,15 +350,9 @@ class DeletePictureSheet extends StatelessWidget {
   static const String keepLabel = 'Keep it';
 
   static Future<bool?> show(BuildContext context) {
-    return showModalBottomSheet<bool>(
-      context: context,
-      isScrollControlled: true,
-      useRootNavigator: true,
-      backgroundColor: context.sk.canvas,
+    return SkSheetFrame.show<bool>(
+      context,
       barrierLabel: 'Keep the picture',
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
-      ),
       builder: (BuildContext _) => const DeletePictureSheet(),
     );
   }
@@ -494,7 +383,7 @@ class DeletePictureSheet extends StatelessWidget {
                   style: SkText.sheetHeading.copyWith(color: sk.ink),
                 ),
               ),
-              const SizedBox(height: SkLayout.sm),
+              const SizedBox(height: SkLayout.headingGap),
               Text(
                 body,
                 textAlign: TextAlign.center,

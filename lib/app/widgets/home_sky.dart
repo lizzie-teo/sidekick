@@ -519,7 +519,9 @@ class _HomeStageState extends State<HomeStage>
     // a scroll view paints its first slivers over the later ones: unclipped,
     // the bottoms of the trees were drawn over the cream panel. The top is
     // left open, so the moon's glow fades into the sky above instead of
-    // stopping at a straight line.
+    // stopping at a straight line. The sides are clipped: the mountains are
+    // painted wider than the screen, and during a page slide that overhang
+    // showed over the page next to this one.
     return SizedBox(
       height: widget.height,
       child: ClipRect(
@@ -559,13 +561,14 @@ class _HomeStageState extends State<HomeStage>
   }
 }
 
-// Cuts off whatever is painted below the foot of the band, and nothing else.
+// Cuts off whatever is painted below the foot of the band or past either
+// side of it. Only the top is left open.
 class _FootClipper extends CustomClipper<Rect> {
   const _FootClipper();
 
   @override
   Rect getClip(Size size) =>
-      Rect.fromLTRB(-size.width, -size.height, size.width * 2, size.height);
+      Rect.fromLTRB(0, -size.height, size.width, size.height);
 
   @override
   bool shouldReclip(_FootClipper old) => false;

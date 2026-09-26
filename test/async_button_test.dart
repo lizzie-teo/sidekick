@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:sidekick/app/widgets/async_button.dart';
+import 'package:sidekick/app/widgets/theme.dart';
 
 void main() {
   testWidgets('ignores repeat taps while the action is in flight',
@@ -13,13 +14,14 @@ void main() {
 
     await tester.pumpWidget(
       MaterialApp(
+        theme: appTheme(),
         home: Scaffold(
           body: AsyncButton(
             onPressed: () async {
               callCount++;
               await completer.future;
             },
-            child: const Text('Save'),
+            label: 'Save',
           ),
         ),
       ),

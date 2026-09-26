@@ -6,6 +6,13 @@ import 'package:sidekick/app/core/auth_service.dart';
 import 'package:sidekick/app/core/logger_service.dart';
 import 'package:sidekick/app/core/service_locator.dart';
 import 'package:sidekick/app/widgets/async_button.dart';
+import 'package:sidekick/app/widgets/sk_circle_icon_button.dart';
+import 'package:sidekick/app/widgets/sk_colors.dart';
+import 'package:sidekick/app/widgets/sk_layout.dart';
+import 'package:sidekick/app/widgets/sk_status.dart';
+import 'package:sidekick/app/widgets/sk_text.dart';
+import 'package:sidekick/app/widgets/sk_text_button.dart';
+import 'package:sidekick/app/widgets/sk_text_field.dart';
 import 'package:sidekick/features/authentication/viewmodels/connect_viewmodel.dart';
 
 class ConnectView extends StatefulWidget {
@@ -77,12 +84,16 @@ class _ConnectViewState extends State<ConnectView> {
   // outside the builder: none of it depends on state, so none of it rebuilds.
   @override
   Widget build(BuildContext context) {
+    final SkColors sk = context.sk;
+    final Color errorColour =
+        SkStatusStyle.of(context, SkTone.destructive, sk.canvas).text;
+
     return Scaffold(
       appBar: context.canPop()
           ? AppBar(
-              leading: IconButton(
-                icon: const Icon(Icons.chevron_left),
-                tooltip: 'Back',
+              leading: SkCircleIconButton(
+                icon: Icons.chevron_left,
+                label: 'Back',
                 onPressed: _back,
               ),
             )
@@ -98,7 +109,10 @@ class _ConnectViewState extends State<ConnectView> {
           behavior: HitTestBehavior.opaque,
           child: Center(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+              padding: EdgeInsets.symmetric(
+                horizontal: SkLayout.gutter(context),
+                vertical: SkLayout.xxxl,
+              ),
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 400),
                 child: ValueListenableBuilder<ConnectViewModelState>(
@@ -110,55 +124,52 @@ class _ConnectViewState extends State<ConnectView> {
                       children: [
                         //
 
-                        Text(
-                          'Connect',
-                          style: Theme.of(context).textTheme.headlineMedium,
-                          textAlign: TextAlign.center,
+                        Semantics(
+                          header: true,
+                          child: Text(
+                            'Connect',
+                            style: SkText.h1.copyWith(color: sk.ink),
+                            textAlign: TextAlign.center,
+                          ),
                         ),
 
-                        const SizedBox(height: 8),
+                        const SizedBox(height: SkLayout.sm),
 
                         Text(
                           'We will email you a code.',
-                          style: Theme.of(context).textTheme.bodyMedium,
+                          style: SkText.rowLabel.copyWith(color: sk.ink),
                           textAlign: TextAlign.center,
                         ),
 
-                        const SizedBox(height: 32),
+                        const SizedBox(height: SkLayout.xxxl),
 
-                        TextField(
+                        SkTextField(
                           controller: _controller,
+                          hint: 'Email address',
                           keyboardType: TextInputType.emailAddress,
                           autocorrect: false,
                           autofillHints: const [AutofillHints.email],
                           textInputAction: TextInputAction.go,
                           onSubmitted: (_) => _sendCode(),
-                          decoration: InputDecoration(
-                            labelText: 'Email address',
-                            border: const OutlineInputBorder(),
-                            errorText: state.errors['email'],
-                          ),
+                          errorText: state.errors['email'],
                         ),
 
                         if (state.errors['general'] != null) ...[
-                          const SizedBox(height: 12),
+                          const SizedBox(height: SkLayout.md),
                           Text(
                             state.errors['general']!,
-                            style: Theme.of(context)
-                                .textTheme
-                                .bodyMedium
-                                ?.copyWith(
-                                  color: Theme.of(context).colorScheme.error,
-                                ),
+                            style: SkText.rowLabel.copyWith(
+                              color: errorColour,
+                            ),
                             textAlign: TextAlign.center,
                           ),
                         ],
 
-                        const SizedBox(height: 24),
+                        const SizedBox(height: SkLayout.xxl),
 
                         AsyncButton(
                           onPressed: _sendCode,
-                          child: const Text('Send code'),
+                          label: 'Send code',
                         ),
 
                         // The way back to a code already sitting in the user's
@@ -169,13 +180,11 @@ class _ConnectViewState extends State<ConnectView> {
                         // Shown only when Supabase says an address is waiting to
                         // be confirmed, so it cannot lead to an empty screen.
                         if (state.pendingEmail.isNotEmpty) ...[
-                          const SizedBox(height: 8),
-                          TextButton(
+                          const SizedBox(height: SkLayout.sm),
+                          SkTextButton(
                             onPressed: () => _goVerify(state.pendingEmail),
-                            child: Text(
-                              'I already have a code for ${state.pendingEmail}',
-                              textAlign: TextAlign.center,
-                            ),
+                            label:
+                                'I already have a code for ${state.pendingEmail}',
                           ),
                         ],
                       ],

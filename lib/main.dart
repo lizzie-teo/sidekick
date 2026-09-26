@@ -176,7 +176,7 @@ class MissingConfigApp extends StatelessWidget {
                 // before any theme exists.
                 Text(
                   'Missing Supabase configuration',
-                  style: SkText.sceneLine,
+                  style: SkText.h1,
                   textAlign: TextAlign.center,
                 ),
                 SizedBox(height: 16),

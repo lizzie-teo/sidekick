@@ -7,7 +7,7 @@ import 'package:sidekick/app/core/service_locator.dart';
 import 'package:sidekick/features/play/models/colouring_picture.dart';
 import 'package:sidekick/features/play/services/picture_repository.dart';
 import 'package:sidekick/features/play/viewmodels/colouring_viewmodel.dart';
-import 'package:sidekick/features/play/views/scribble_view.dart';
+import 'package:sidekick/features/play/widgets/colouring_shelf.dart';
 import 'package:sidekick/features/play/widgets/colouring_canvas.dart';
 import 'package:sidekick/features/play/widgets/colouring_tray.dart';
 
@@ -301,7 +301,12 @@ void main() {
     await pumpApp(
       tester,
       isAuthenticated: true,
-      location: Routes.scribble,
+      location: Uri(
+        path: Routes.goodThings,
+        queryParameters: <String, String>{
+          Routes.goodThingsSectionQuery: GoodThingsSections.colouring,
+        },
+      ).toString(),
       pictureRepository: PictureRepository(
         loggerService: SilentLoggerService(),
         local: store,
@@ -311,7 +316,7 @@ void main() {
     );
     await letScenesLoad(tester);
 
-    expect(find.text(ScribbleView.yourPictures), findsOneWidget);
+    expect(find.text(ColouringShelf.yourPictures), findsOneWidget);
     expect(find.bySemanticsLabel(RegExp('^Japanese garden. Today')),
         findsOneWidget);
     // No tally, in any wording.
@@ -328,7 +333,12 @@ void main() {
     await pumpApp(
       tester,
       isAuthenticated: true,
-      location: Routes.scribble,
+      location: Uri(
+        path: Routes.goodThings,
+        queryParameters: <String, String>{
+          Routes.goodThingsSectionQuery: GoodThingsSections.colouring,
+        },
+      ).toString(),
       pictureRepository: PictureRepository(
         loggerService: SilentLoggerService(),
         local: store,
@@ -349,6 +359,6 @@ void main() {
     await tester.tap(find.text(DeletePictureSheet.deleteLabel));
     await tester.pumpAndSettle();
     expect(store.pictures, isEmpty);
-    expect(find.text(ScribbleView.yourPictures), findsNothing);
+    expect(find.text(ColouringShelf.yourPictures), findsNothing);
   });
 }

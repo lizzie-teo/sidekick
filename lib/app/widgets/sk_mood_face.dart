@@ -183,19 +183,43 @@ class _SkMoodFaceState extends State<SkMoodFace> {
   Widget build(BuildContext context) {
     final rive.RiveWidgetController? controller = _controller;
 
+    final bool still = MediaQuery.disableAnimationsOf(context);
+
+    // **She arrives, she does not appear.** Until the file has decoded the
+    // box is empty, and then she is drawn -- which on its own is a cut, a
+    // beat after the dial around her has already faded in. She fades in and
+    // grows the last few percent into place instead, from 96% and never from
+    // nothing: a face that grows from a point is a pop, and this is the door
+    // to the panic path. Under Reduce Motion she only fades.
     return SizedBox.square(
       dimension: widget.size,
-      child: !_settled
-          ? null
-          : controller != null
-              ? rive.RiveWidget(controller: controller, fit: rive.Fit.contain)
-              : Center(child: _still()),
+      child: AnimatedOpacity(
+        opacity: _settled ? 1 : 0,
+        duration: _arrive,
+        curve: Curves.easeOutQuint,
+        child: AnimatedScale(
+          scale: _settled || still ? 1 : 0.96,
+          duration: _arrive,
+          curve: Curves.easeOutQuint,
+          child: !_settled
+              ? null
+              : controller != null
+                  ? rive.RiveWidget(
+                      controller: controller,
+                      fit: rive.Fit.contain,
+                    )
+                  : Center(child: _still(still)),
+        ),
+      ),
     );
   }
 
+  // How long her first arrival takes.
+  static const Duration _arrive = Duration(milliseconds: 280);
+
   // The still face standing in for the live one. It is the picked mood's own
   // face, or the idle face while nothing is picked.
-  Widget _still() {
+  Widget _still(bool still) {
     final bool picked = widget.mood != null;
 
     final String? artboard =
@@ -213,17 +237,22 @@ class _SkMoodFaceState extends State<SkMoodFace> {
     //
     // It grows into place rather than sliding: there is no direction to slide
     // in, because the reader moves the dial both ways.
+    //
+    // **A strong ease-out, not `easeOutBack`.** Back overshoots -- the face
+    // swelled past full size and settled -- and that is a bounce, on the
+    // panic path, many times a drag. Under Reduce Motion it is the fade only.
     return AnimatedSwitcher(
-      duration: const Duration(milliseconds: 220),
-      switchInCurve: Curves.easeOutBack,
+      duration: const Duration(milliseconds: 200),
+      switchInCurve: Curves.easeOutQuint,
       switchOutCurve: Curves.easeIn,
       transitionBuilder: (Widget child, Animation<double> animation) {
+        if (still) return FadeTransition(opacity: animation, child: child);
         return FadeTransition(
           opacity: animation,
           child: ScaleTransition(
-            // From 94%, not from nothing. A face that grows from a point is a
+            // From 96%, not from nothing. A face that grows from a point is a
             // pop, and this screen is the one that must never startle.
-            scale: Tween<double>(begin: 0.94, end: 1).animate(animation),
+            scale: Tween<double>(begin: 0.96, end: 1).animate(animation),
             child: child,
           ),
         );

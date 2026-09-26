@@ -3,6 +3,16 @@
 // Route paths live here rather than in app_router.dart so that feature modules
 // can reference them without importing the router (which imports every module).
 
+// The three parts of the Good things tab, by id, since 26 September 2026.
+// What went well is the good_things feature's own; Colouring and Scribble
+// are the play feature's, handed in through `FeatureModule.tabSections`.
+// Declared here so Home can open a part without importing either feature.
+abstract class GoodThingsSections {
+  static const String whatWentWell = 'what-went-well';
+  static const String colouring = 'colouring';
+  static const String scribble = 'scribble';
+}
+
 abstract class Routes {
   // App-level routes
   static const String loading = '/loading';
@@ -13,6 +23,12 @@ abstract class Routes {
   // route surface visible in one place.
   static const String home = '/';
   static const String goodThings = '/good-things';
+
+  // Which part of the Good things tab to open on: `?section=<id>`, one of
+  // [GoodThingsSections]. Unset from the tab bar means "the one used last";
+  // unset from anywhere else means What went well. An id is not the reader's
+  // words, so a query parameter is fine, and it survives a restored route.
+  static const String goodThingsSectionQuery = 'section';
 
   // The long view, reached from Good things rather than from the tab bar.
   // A child path so the back arrow returns to the entry form, which is where
@@ -91,12 +107,8 @@ abstract class Routes {
   // same reason the panic sensation is never stored.
   static const String actuallyOkay = '/play/actually-okay';
 
-  // The Scribble button on Home. Two tabs since 26 September 2026: Colouring,
-  // where pictures are kept, and Scribble, the pad where nothing is. See
-  // `_docs/briefs/colouring-book.md`.
-  static const String scribble = '/play/scribble';
-
-  // One colouring picture, full screen, pushed from the Colouring tab.
+  // One colouring picture, full screen, pushed from the Colouring part of the
+  // Good things tab.
   //
   // `?picture=<id>` opens one already started. `?scene=<id>` starts a new
   // one, which is not saved until the first mark -- so opening a scene and
@@ -256,9 +268,10 @@ abstract class SettingsKeys {
   // two. A fresh install opens on lessons.
   static const String practiceSection = 'practice_section';
 
-  // Which tab the Scribble screen showed last: colouring or scribble. A first
-  // visit opens on Colouring -- the new thing, and the calmer one.
-  static const String scribbleTab = 'scribble_tab';
+  // Which part of the Good things tab showed last when it was reached from
+  // the tab bar: What went well, Colouring or Scribble. A first visit opens
+  // on What went well.
+  static const String goodThingsSection = 'good_things_section';
 
   // The colouring book's set of paints, by id, and which side of the page the
   // tools sit on when there is room for them down one side. Lost on a new
