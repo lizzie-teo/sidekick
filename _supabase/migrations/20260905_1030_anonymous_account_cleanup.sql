@@ -50,7 +50,7 @@ as $fn$
 declare
   -- Tables whose rows mean "this account owns something", each of which has a
   -- matching not exists clause in the delete below.
-  covered constant text[] := array['good_things'];
+  covered constant text[] := array['good_things', 'colourings'];
   uncovered text;
   deleted integer;
 begin
@@ -83,6 +83,9 @@ begin
       -- One clause per table in `covered`.
       and not exists (
         select 1 from public.good_things g where g.user_id = u.id
+      )
+      and not exists (
+        select 1 from public.colourings c where c.user_id = u.id
       )
     returning u.id
   )

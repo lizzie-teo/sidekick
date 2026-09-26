@@ -15,6 +15,8 @@ import 'package:sidekick/data/models/entities/good_thing_model.dart';
 import 'package:sidekick/data/services/configuration_service.dart';
 import 'package:sidekick/data/services/good_things_service.dart';
 import 'package:sidekick/features/me/services/data_export_service.dart';
+import 'package:sidekick/features/play/models/colouring_picture.dart';
+import 'package:sidekick/features/play/services/picture_stores.dart';
 
 // The fakes `implements` rather than `extends` the real services, so no
 // SupabaseClient is constructed -- a real one starts a token refresh timer that
@@ -398,4 +400,36 @@ class FakeDataExportService implements DataExportService {
 
   @override
   Future<Uint8List> render(ExportData data) async => Uint8List(0);
+}
+
+// A picture store held in a map, standing in for both the phone's files and
+// the `colourings` table. `failing` makes every call throw, which is what
+// being offline looks like from the repository's side.
+class FakePictureStore implements PictureStore {
+  final Map<String, ColouringPicture> pictures = <String, ColouringPicture>{};
+  bool failing = false;
+  int saves = 0;
+
+  void _check() {
+    if (failing) throw Exception('offline');
+  }
+
+  @override
+  Future<List<ColouringPicture>> list() async {
+    _check();
+    return pictures.values.toList();
+  }
+
+  @override
+  Future<void> save(ColouringPicture picture) async {
+    _check();
+    saves++;
+    pictures[picture.id] = picture;
+  }
+
+  @override
+  Future<void> delete(String id) async {
+    _check();
+    pictures.remove(id);
+  }
 }

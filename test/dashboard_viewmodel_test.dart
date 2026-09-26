@@ -4,8 +4,8 @@ import 'package:sidekick/app/core/app_constants.dart';
 import 'package:sidekick/app/core/notification_service.dart';
 import 'package:sidekick/app/core/theme_service.dart';
 import 'package:sidekick/data/models/noticing_prompts.dart';
-import 'package:sidekick/features/dashboard/models/day_phase.dart';
-import 'package:sidekick/features/dashboard/services/home_place_service.dart';
+import 'package:sidekick/app/models/day_phase.dart';
+import 'package:sidekick/app/core/home_place_service.dart';
 import 'package:sidekick/features/dashboard/viewmodels/dashboard_viewmodel.dart';
 
 import 'support/fakes.dart';
@@ -127,7 +127,7 @@ void main() {
       );
       addTearDown(vm.dispose);
       await vm.init();
-      expect(vm.state.value.phase, DayPhase.day);
+      expect(vm.state.value.phase, DayPhase.afternoon);
 
       clock = DateTime(2026, 9, 24, 17, 0);
       vm.refreshClock();
@@ -161,7 +161,7 @@ void main() {
       expect(notified, 0);
     });
 
-    test('midnight moves the date on and keeps the night', () async {
+    test('midnight moves the date on and keeps the late night', () async {
       DateTime clock = DateTime(2026, 9, 24, 23, 59);
       final DashboardViewModel vm = DashboardViewModel(
         loggerService: SilentLoggerService(),
@@ -175,7 +175,7 @@ void main() {
       clock = DateTime(2026, 9, 25, 0, 0);
       vm.refreshClock();
 
-      expect(vm.state.value.phase, DayPhase.night);
+      expect(vm.state.value.phase, DayPhase.lateNight);
       expect(vm.state.value.today, DateTime(2026, 9, 25));
     });
   });

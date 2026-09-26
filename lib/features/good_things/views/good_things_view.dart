@@ -10,6 +10,8 @@ import 'package:sidekick/app/core/logger_service.dart';
 import 'package:sidekick/app/core/service_locator.dart';
 import 'package:sidekick/app/widgets/async_button.dart';
 import 'package:sidekick/app/widgets/sk_colors.dart';
+import 'package:sidekick/app/widgets/sk_layout.dart';
+import 'package:sidekick/app/widgets/sk_pressable.dart';
 import 'package:sidekick/app/widgets/sk_main_tab_bar.dart';
 import 'package:sidekick/app/widgets/sk_text.dart';
 import 'package:sidekick/app/widgets/sk_text_button.dart';
@@ -18,6 +20,7 @@ import 'package:sidekick/data/services/good_things_service.dart';
 import 'package:sidekick/features/good_things/models/good_things_arguments.dart';
 import 'package:sidekick/features/good_things/viewmodels/good_things_viewmodel.dart';
 import 'package:sidekick/features/good_things/widgets/good_things_account_offer.dart';
+import 'package:sidekick/features/good_things/widgets/good_things_why_sheet.dart';
 import 'package:sidekick/app/widgets/sk_contrast.dart';
 
 // Three good things -- the entry form, and the second tab.
@@ -63,9 +66,21 @@ class _GoodThingsViewState extends State<GoodThingsView> {
 
   static const List<String> _hints = <String>[
     'One good thing…',
-    'Second thing…',
-    'Third thing…',
+    'Another good thing…',
+    'One more…',
   ];
+
+  // How many boxes are on screen. The form opens on one, so the page asks for
+  // one thing rather than showing two empty boxes waiting to be filled. It is
+  // the widget's own state: the viewmodel only ever sees what Save hands it.
+  //
+  // A pre-filled line opens a second box as well -- the caller has written
+  // the first thing, so the obvious next move is somewhere to put another.
+  late int _shown = widget.arguments.firstLine.isEmpty ? 1 : 2;
+
+  void _addField() {
+    setState(() => _shown++);
+  }
 
   @override
   void initState() {
@@ -96,6 +111,7 @@ class _GoodThingsViewState extends State<GoodThingsView> {
     for (final TextEditingController controller in _controllers) {
       controller.clear();
     }
+    setState(() => _shown = 1);
     FocusScope.of(context).unfocus();
 
     if (_viewModel.state.value.showAccountOffer) {
@@ -154,7 +170,11 @@ class _GoodThingsViewState extends State<GoodThingsView> {
                 behavior: HitTestBehavior.opaque,
                 child: SingleChildScrollView(
                   padding: EdgeInsets.fromLTRB(
-                      20, 24, 20, 24 + SkMainTabBar.heightOf(context)),
+                    SkLayout.gutter(context),
+                    SkLayout.xxl,
+                    SkLayout.gutter(context),
+                    SkLayout.xxl + SkMainTabBar.heightOf(context),
+                  ),
                   child: ValueListenableBuilder<GoodThingsViewModelState>(
                     valueListenable: _viewModel.state,
                     builder: (BuildContext context,
@@ -164,18 +184,38 @@ class _GoodThingsViewState extends State<GoodThingsView> {
                         children: <Widget>[
                           //
 
-                          // Marked as a heading, so "next heading" lands on
-                          // it the way it does on the picker and the guided
-                          // introduction pages.
-                          Semantics(
-                            header: true,
-                            child: Text(
-                              'Three things that went well',
-                              style: SkText.largeTitle.copyWith(color: sk.ink),
-                            ),
+                          Row(
+                            children: <Widget>[
+                              Expanded(
+                                // Marked as a heading, so "next heading"
+                                // lands on it the way it does on the picker
+                                // and the guided introduction pages.
+                                child: Semantics(
+                                  header: true,
+                                  child: Text(
+                                    'What went well',
+                                    style: SkText.largeTitle
+                                        .copyWith(color: sk.ink),
+                                  ),
+                                ),
+                              ),
+                              IconButton(
+                                onPressed: () =>
+                                    GoodThingsWhySheet.show(context),
+                                tooltip: 'Why this helps',
+                                constraints: const BoxConstraints(
+                                  minWidth: SkLayout.tapTarget,
+                                  minHeight: SkLayout.tapTarget,
+                                ),
+                                icon: Icon(
+                                  Icons.info_outline_rounded,
+                                  color: SkContrast.captionOn(sk.canvas),
+                                ),
+                              ),
+                            ],
                           ),
 
-                          const SizedBox(height: 8),
+                          const SizedBox(height: SkLayout.sm),
 
                           Text(
                             'Small things count. One word is fine.',
@@ -184,42 +224,34 @@ class _GoodThingsViewState extends State<GoodThingsView> {
                             ),
                           ),
 
-                          const SizedBox(height: 22),
+                          const SizedBox(height: SkLayout.xxl),
 
-                          for (int i = 0;
-                              i < GoodThingsViewModel.fieldCount;
-                              i++) ...<Widget>[
-                            if (i > 0) const SizedBox(height: 10),
+                          for (int i = 0; i < _shown; i++) ...<Widget>[
+                            if (i > 0) const SizedBox(height: SkLayout.md),
                             SkTextField(
                               controller: _controllers[i],
                               hint: _hints[i],
                               maxLines: 2,
                               // The message hangs off the group, so it is
                               // shown once under the last box rather than
-                              // three times.
-                              errorText: i == GoodThingsViewModel.fieldCount - 1
+                              // under every one.
+                              errorText: i == _shown - 1
                                   ? state.errors['entries']
                                   : null,
                             ),
                           ],
 
-                          const SizedBox(height: 18),
-
-                          // Says what the practice is for, in terms the user
-                          // can check against their own experience. It does
-                          // not claim to rewire anything.
-                          Text(
-                            'When you\'re anxious, your brain keeps looking '
-                            'for bad things. This gives it good things to '
-                            'find too. Doing it often is what helps, not '
-                            'doing it perfectly.',
-                            style: SkText.caption.copyWith(
-                              color: SkContrast.captionOn(sk.canvas),
-                            ),
-                          ),
+                          // Gone once all three boxes are out. Three is the
+                          // practice, and the button saying nothing more can
+                          // be added is quieter than one that stops working.
+                          if (_shown <
+                              GoodThingsViewModel.fieldCount) ...<Widget>[
+                            const SizedBox(height: SkLayout.md),
+                            _AddAnother(onPressed: _addField),
+                          ],
 
                           if (state.errors['general'] != null) ...<Widget>[
-                            const SizedBox(height: 14),
+                            const SizedBox(height: SkLayout.md),
                             Text(
                               state.errors['general']!,
                               textAlign: TextAlign.center,
@@ -229,7 +261,7 @@ class _GoodThingsViewState extends State<GoodThingsView> {
                           ],
 
                           if (state.messages['general'] != null) ...<Widget>[
-                            const SizedBox(height: 14),
+                            const SizedBox(height: SkLayout.md),
                             Text(
                               state.messages['general']!,
                               textAlign: TextAlign.center,
@@ -239,14 +271,14 @@ class _GoodThingsViewState extends State<GoodThingsView> {
                             ),
                           ],
 
-                          const SizedBox(height: 22),
+                          const SizedBox(height: SkLayout.xxl),
 
                           AsyncButton(
                             onPressed: _save,
                             child: const Text('Save'),
                           ),
 
-                          const SizedBox(height: 6),
+                          const SizedBox(height: SkLayout.xs),
 
                           SkTextButton(
                             label: 'See everything you\'ve noticed',
@@ -267,6 +299,67 @@ class _GoodThingsViewState extends State<GoodThingsView> {
             child: SkMainTabBar(selected: 1),
           ),
         ],
+      ),
+    );
+  }
+}
+
+// "Add another": a round plus and its label, as one control.
+//
+// The circle is the action colour's soft tint, so it reads as a thing to
+// press without competing with Save, which is the one filled pill here.
+class _AddAnother extends StatelessWidget {
+  final VoidCallback onPressed;
+
+  const _AddAnother({required this.onPressed});
+
+  @override
+  Widget build(BuildContext context) {
+    final SkColors sk = context.sk;
+
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: Semantics(
+        button: true,
+        label: 'Add another good thing',
+        excludeSemantics: true,
+        child: SkPressable(
+          onPressed: onPressed,
+          wash: sk.ink,
+          borderRadius: BorderRadius.circular(SkLayout.tapTarget / 2),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(minHeight: SkLayout.tapTarget),
+            child: Padding(
+              padding: const EdgeInsets.only(right: SkLayout.lg),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  Container(
+                    width: SkLayout.xxxl,
+                    height: SkLayout.xxxl,
+                    margin: const EdgeInsets.all(SkLayout.sm),
+                    decoration: BoxDecoration(
+                      color: sk.actionSoft,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(Icons.add_rounded,
+                        color: sk.ink, size: SkLayout.xl),
+                  ),
+                  const SizedBox(width: SkLayout.xs),
+                  Flexible(
+                    child: Text(
+                      'Add another',
+                      style: SkText.rowLabel.copyWith(
+                        color: sk.ink,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }

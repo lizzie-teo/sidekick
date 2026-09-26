@@ -2,17 +2,54 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:sidekick/app/core/app_constants.dart';
+import 'package:sidekick/features/play/views/scribble_view.dart';
 import 'package:sidekick/features/play/widgets/scribble_pad.dart';
 
+import 'support/fakes.dart';
 import 'support/pump_app.dart';
 
-// Wound up -- scribble it out. The screen has no viewmodel, so what is
-// pinned is behaviour: the mark lands, the mark goes away by itself, and
-// both doors lead back out.
+// The Scribble screen: two tabs. What is pinned on the Scribble tab is
+// behaviour -- the mark lands, the mark goes away by itself, and both doors
+// lead back out. The Colouring tab has its own tests.
+Future<void> _openScribbleTab(WidgetTester tester) async {
+  await tester.tap(find.text(ScribbleView.scribbleTab).last);
+  await tester.pumpAndSettle();
+}
+
 void main() {
+  testWidgets('a first visit opens on Colouring', (tester) async {
+    await pumpApp(tester, location: Routes.scribble, isAuthenticated: true);
+
+    expect(find.text(ScribbleView.newPicture), findsOneWidget);
+    expect(find.byType(ScribblePad), findsNothing);
+  });
+
+  testWidgets('the tab last used is the one that opens next',
+      (tester) async {
+    final FakeDeviceSettingsService settings = FakeDeviceSettingsService();
+    await pumpApp(
+      tester,
+      location: Routes.scribble,
+      isAuthenticated: true,
+      deviceSettingsService: settings,
+    );
+
+    await _openScribbleTab(tester);
+    expect(settings.values[SettingsKeys.scribbleTab], 'scribble');
+
+    await pumpApp(
+      tester,
+      location: Routes.scribble,
+      isAuthenticated: true,
+      deviceSettingsService: settings,
+    );
+    expect(find.byType(ScribblePad), findsOneWidget);
+  });
+
   testWidgets('a scribble lands and then fades away on its own',
       (tester) async {
     await pumpApp(tester, location: Routes.scribble, isAuthenticated: true);
+    await _openScribbleTab(tester);
 
     final ScribblePadState pad =
         tester.state<ScribblePadState>(find.byType(ScribblePad));
@@ -46,6 +83,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(router.state.uri.path, Routes.scribble);
 
+    await _openScribbleTab(tester);
     await tester.tap(find.text("I'm done"));
     await tester.pumpAndSettle();
 

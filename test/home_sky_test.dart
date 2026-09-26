@@ -3,10 +3,11 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:sidekick/app/widgets/sk_contrast.dart';
 import 'package:sidekick/features/dashboard/models/daily_quotes.dart';
-import 'package:sidekick/features/dashboard/models/day_phase.dart';
-import 'package:sidekick/features/dashboard/models/sun_times.dart';
-import 'package:sidekick/features/dashboard/models/zone_coordinates.dart';
-import 'package:sidekick/features/dashboard/widgets/home_sky.dart';
+import 'package:sidekick/app/models/day_phase.dart';
+import 'package:sidekick/app/models/moon_phase.dart';
+import 'package:sidekick/app/models/sun_times.dart';
+import 'package:sidekick/app/models/zone_coordinates.dart';
+import 'package:sidekick/app/widgets/home_sky.dart';
 
 // Home's sky, its clock and its quotes. `home_sky.dart` and
 // `daily_quotes.dart` hold the reasoning.
@@ -25,14 +26,13 @@ void main() {
         final HomeSkyColors sky = HomeSkyColors.of(phase, mode);
 
         for (double at = 0; at <= HomeSkyColors.textZone; at += 0.05) {
-          final Color ground = Color.lerp(sky.top, sky.bottom, at)!;
+          final Color ground = sky.at(at);
           expect(SkContrast.ratio(sky.onSky, ground),
               greaterThanOrEqualTo(SkContrast.bodyText),
               reason: 'the words, $at of the way down the sky');
         }
 
-        final Color horizon =
-            Color.lerp(sky.top, sky.bottom, HomeSkyColors.horizonAt)!;
+        final Color horizon = sky.horizon;
         expect(SkContrast.ratio(sky.farHill, horizon),
             greaterThanOrEqualTo(1.3),
             reason: 'far hills against the sky');
@@ -60,18 +60,20 @@ void main() {
 
   group('the time of day', () {
     test('each phase starts on its hour', () {
-      expect(DayPhase.of(DateTime(2026, 9, 25, 4, 59)), DayPhase.night);
+      expect(DayPhase.of(DateTime(2026, 9, 25, 4, 59)), DayPhase.lateNight);
       expect(DayPhase.of(DateTime(2026, 9, 25, 5)), DayPhase.morning);
-      expect(DayPhase.of(DateTime(2026, 9, 25, 11)), DayPhase.day);
+      expect(DayPhase.of(DateTime(2026, 9, 25, 11)), DayPhase.midday);
+      expect(DayPhase.of(DateTime(2026, 9, 25, 14)), DayPhase.afternoon);
       expect(DayPhase.of(DateTime(2026, 9, 25, 17)), DayPhase.evening);
       expect(DayPhase.of(DateTime(2026, 9, 25, 21)), DayPhase.night);
-      expect(DayPhase.of(DateTime(2026, 9, 25, 0)), DayPhase.night);
+      expect(DayPhase.of(DateTime(2026, 9, 25, 23)), DayPhase.lateNight);
+      expect(DayPhase.of(DateTime(2026, 9, 25, 0)), DayPhase.lateNight);
     });
 
     // The mode picks the brightness, the clock picks the sky. So a dark
     // phone at noon gets a dark sky, not the light one.
     test('dark mode at noon is a dark sky', () {
-      final HomeSkyColors sky = HomeSkyColors.of(DayPhase.day, Brightness.dark);
+      final HomeSkyColors sky = HomeSkyColors.of(DayPhase.midday, Brightness.dark);
 
       expect(sky.top.computeLuminance(), lessThan(0.2));
     });
@@ -128,14 +130,38 @@ void main() {
       // 6:00 am is morning, just after sunrise.
       expect(DayPhase.of(DateTime.utc(2026, 9, 24, 20, 0), sun: sun),
           DayPhase.morning);
-      // Noon is day.
+      // Noon is midday, with the sun at the top of the sky.
       expect(DayPhase.of(DateTime.utc(2026, 9, 25, 2, 0), sun: sun),
-          DayPhase.day);
+          DayPhase.midday);
+      // 1:00 pm is still midday. With an hour's window it was the
+      // afternoon, and that was reported as the clock being wrong.
+      expect(DayPhase.of(DateTime.utc(2026, 9, 25, 3, 0), sun: sun),
+          DayPhase.midday);
+      // 2:30 pm is the afternoon, the sun on its way down.
+      expect(DayPhase.of(DateTime.utc(2026, 9, 25, 4, 30), sun: sun),
+          DayPhase.afternoon);
+    });
+
+    // Late night starts an hour before solar midnight, about 10:50 pm in
+    // Sydney, and runs until the dawn.
+    test('the small hours are late night', () {
+      final (double lat, double lon) = zoneCoordinates['Australia/Sydney']!;
+      final SunTimes sun = SunTimes.of(DateTime(2026, 9, 25), lat, lon);
+
+      // 10:30 pm is still night.
+      expect(DayPhase.of(DateTime.utc(2026, 9, 25, 12, 30), sun: sun),
+          DayPhase.night);
+      // 11:30 pm is late night.
+      expect(DayPhase.of(DateTime.utc(2026, 9, 25, 13, 30), sun: sun),
+          DayPhase.lateNight);
+      // 4:00 am, before the dawn, is late night.
+      expect(DayPhase.of(DateTime.utc(2026, 9, 24, 18, 0), sun: sun),
+          DayPhase.lateNight);
     });
 
     test('a polar day falls back to the fixed hours', () {
       final SunTimes sun = SunTimes.of(DateTime(2026, 6, 21), 78.22, 15.63);
-      expect(DayPhase.of(DateTime(2026, 6, 21, 23), sun: sun), DayPhase.night);
+      expect(DayPhase.of(DateTime(2026, 6, 21, 22), sun: sun), DayPhase.night);
     });
 
     test('every zone in the table is a real place on the globe', () {
@@ -144,6 +170,43 @@ void main() {
         expect(zone.value.$1, inInclusiveRange(-90, 90), reason: zone.key);
         expect(zone.value.$2, inInclusiveRange(-180, 180), reason: zone.key);
       }
+    });
+  });
+
+  // The moon is tonight's shape. Dates are the published times of real
+  // new and full moons (US Naval Observatory tables). The mean month
+  // drifts up to about a day from them, which costs a few per cent of lit
+  // at new and full and up to ten at a quarter, where the lit share moves
+  // fastest.
+  group('the moon', () {
+    test('a known new moon is dark', () {
+      // 11 January 2024, 11:57 UTC.
+      final MoonPhase moon = MoonPhase.at(DateTime.utc(2024, 1, 11, 11, 57));
+      expect(moon.lit, lessThan(0.03));
+    });
+
+    test('a known full moon is full', () {
+      // 25 January 2024, 17:54 UTC.
+      final MoonPhase moon = MoonPhase.at(DateTime.utc(2024, 1, 25, 17, 54));
+      expect(moon.lit, greaterThan(0.97));
+    });
+
+    test('a known first quarter is half lit and growing', () {
+      // 18 January 2024, 03:53 UTC.
+      final MoonPhase moon = MoonPhase.at(DateTime.utc(2024, 1, 18, 3, 53));
+      expect(moon.lit, closeTo(0.5, 0.1));
+      expect(moon.waxing, isTrue);
+    });
+
+    // A waxing moon is lit on the right from the north and on the left
+    // from the south, where the sky is the other way up.
+    test('the lit side turns over in the southern hemisphere', () {
+      final DateTime waxing = DateTime.utc(2024, 1, 18, 3, 53);
+      final (double sydney, _) = zoneCoordinates['Australia/Sydney']!;
+      final (double london, _) = zoneCoordinates['Europe/London']!;
+
+      expect(MoonPhase.at(waxing, latitude: london).litOnRight, isTrue);
+      expect(MoonPhase.at(waxing, latitude: sydney).litOnRight, isFalse);
     });
   });
 

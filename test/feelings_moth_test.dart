@@ -3,9 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:sidekick/app/widgets/sk_contrast.dart';
-import 'package:sidekick/features/dashboard/models/day_phase.dart';
+import 'package:sidekick/app/models/day_phase.dart';
 import 'package:sidekick/features/dashboard/widgets/feelings_moth.dart';
-import 'package:sidekick/features/dashboard/widgets/home_sky.dart';
+import 'package:sidekick/app/widgets/home_sky.dart';
 
 void main() {
   // The words sit in front of the mountains, the trees and the hill, so
@@ -58,7 +58,7 @@ void main() {
               width: 393,
               height: 266,
               child: FeelingsMoth(
-                phase: DayPhase.day,
+                phase: DayPhase.midday,
                 onPressed: onPressed,
                 child: const SizedBox(width: 250, height: 250),
               ),
@@ -118,6 +118,27 @@ void main() {
     expect(end.rise, closeTo(FeelingsMoth.restRise, 1));
   });
 
+  // Sitting, the wings are never quite still, but they never open all the
+  // way, and they leave the settle and the shiver alone.
+  test('the wings move while it sits, and stay out of the shiver', () {
+    final List<double> open = <double>[
+      for (double t = 0; t < FeelingsMoth.restSeconds; t += 0.05)
+        FeelingsMoth.restingWingsAt(t),
+    ];
+    expect(open.any((double o) => o > 0.5), isTrue);
+    expect(open.every((double o) => o <= FeelingsMoth.wingOpenMost), isTrue);
+    expect(FeelingsMoth.restingWingsAt(0.5), 0);
+    expect(
+        FeelingsMoth.restingWingsAt(
+            FeelingsMoth.restSeconds - FeelingsMoth.shiverSeconds / 2),
+        0);
+    // Every opening is closed again before the shiver starts.
+    for (final double at in FeelingsMoth.wingOpenings) {
+      expect(at + 2.3,
+          lessThan(FeelingsMoth.restSeconds - FeelingsMoth.shiverSeconds));
+    }
+  });
+
   // The words must be gone before it leaves, or they are left behind
   // labelling an empty patch of sky.
   test('the words are gone before it flies', () {
@@ -133,7 +154,8 @@ void main() {
   // -- and some of the way it is nearer and larger.
   test('it disappears behind her and grows as it comes near', () {
     final List<MothPose> path = <MothPose>[
-      for (double t = 0; t < 18; t += 0.1) FeelingsMoth.poseAt(t),
+      for (double t = 0; t < FeelingsMoth.flight.inMilliseconds / 1000; t += 0.1)
+        FeelingsMoth.poseAt(t),
     ];
     expect(path.any((MothPose p) => p.alpha < 0.05), isTrue);
     expect(path.any((MothPose p) => p.scale > 1.2), isTrue);
@@ -156,7 +178,7 @@ void main() {
   });
 
   // The first two landings say the words; after that the moth is quiet, so
-  // Home does not repeat a line every 18 seconds for as long as it is open.
+  // Home does not repeat a line every loop for as long as it is open.
   test('the words come on the first two landings only', () {
     final double loop = FeelingsMoth.flight.inMilliseconds / 1000;
     for (final double start in <double>[0, loop]) {

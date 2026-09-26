@@ -7,6 +7,10 @@ import 'package:sidekick/app/widgets/sk_pressable.dart';
 // Breathing-flow chrome: close and mute. A 52 circle on a 12% wash of the
 // foreground colour, so it reads on any surface including the scene gradient.
 class SkCircleIconButton extends StatelessWidget {
+  // Its width and height. The breathing screen works out where her band is
+  // from this, so it is a name rather than a number at the use site.
+  static const double size = 52;
+
   final IconData icon;
   final VoidCallback? onPressed;
   final Color? color;
@@ -45,8 +49,8 @@ class SkCircleIconButton extends StatelessWidget {
         shape: BoxShape.circle,
         semanticLabel: label,
         child: Container(
-          width: 52,
-          height: 52,
+          width: size,
+          height: size,
           decoration: BoxDecoration(
             color: fg.withValues(alpha: 0.12),
             shape: BoxShape.circle,

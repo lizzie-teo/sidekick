@@ -6,8 +6,8 @@ import 'package:flutter/scheduler.dart';
 import 'package:sidekick/app/widgets/sk_contrast.dart';
 import 'package:sidekick/app/widgets/sk_layout.dart';
 import 'package:sidekick/app/widgets/sk_text.dart';
-import 'package:sidekick/features/dashboard/models/day_phase.dart';
-import 'package:sidekick/features/dashboard/widgets/home_sky.dart';
+import 'package:sidekick/app/models/day_phase.dart';
+import 'package:sidekick/app/widgets/home_sky.dart';
 
 // **The door to the feeling picker is a moth that lives on her shoulder**,
 // from 25 September 2026, at the user's request. It is her daemon, in the
@@ -36,6 +36,7 @@ import 'package:sidekick/features/dashboard/widgets/home_sky.dart';
 // | Body | Rises on each downstroke and sinks on each upstroke. The abdomen swings against a turn and lags it, like a rudder |
 // | Path | Never straight: a slow wander all the time, and a sudden dart, drop or swerve every 1 to 4 seconds. It never glides |
 // | Rest | It lands on her left shoulder with its wings folded back like a roof, shivers them for a second before it goes, and bursts off |
+// | Idle | While it sits the wings are never quite still: a slow, shallow breathing of the fold, and twice a rest it opens them half way and closes them again. Added 26 September 2026, at the user's request |
 //
 // **The last item on the brief -- turning its back to the moon, circling,
 // stalling, flipping over -- is not built.** It is the loudest thing a moth
@@ -78,14 +79,52 @@ class FeelingsMoth extends StatefulWidget {
   static const double restAcross = -34;
   static const double restRise = 92;
 
-  // One flight, from her shoulder round her and back.
-  static const Duration flight = Duration(seconds: 18);
+  // One loop: a long sit on her shoulder, then a flight round her and back.
+  // Must equal restSeconds plus the 13 seconds of `_Flight._keys`.
+  static const Duration flight = Duration(seconds: 28);
 
-  // How long it sits at the start of each flight. The words live inside
-  // this, so they are gone before it leaves. The last second of it is the
-  // shiver before take-off.
-  static const double restSeconds = 5.0;
+  // How long it sits at the start of each loop. The words live inside this,
+  // so they are gone before it leaves. The last second of it is the shiver
+  // before take-off.
+  //
+  // **It settles for a good while, at the user's request.** It was five
+  // seconds, and the moth read as restless: it was barely down before it
+  // was off again. Fifteen seconds lets it be a thing resting on her.
+  // Raised 26 September 2026.
+  static const double restSeconds = 15.0;
   static const double shiverSeconds = 1.0;
+
+  // **The wings while it sits.** How far they open out of the roof, 0 to 1,
+  // at a moment of the loop in seconds. A slow breath all the time, and two
+  // half-way openings a rest -- the fanning a resting moth does. Slow on
+  // purpose: a quick flick on her shoulder would read as it being startled.
+  // Nothing in the first second after landing, while it settles, and
+  // nothing in the shiver, which has the wings to itself.
+  static const List<double> wingOpenings = <double>[5.5, 10.5];
+  static const double wingOpenMost = 0.55;
+
+  static double restingWingsAt(double seconds) {
+    final double local = seconds % (flight.inMilliseconds / 1000);
+    if (local < 1 || local >= restSeconds - shiverSeconds) return 0;
+
+    final double since = local - 1;
+    final double breath =
+        0.08 * (0.5 - 0.5 * math.cos(2 * math.pi * since / 3.6));
+
+    double open = 0;
+    for (final double at in wingOpenings) {
+      final double u = local - at;
+      // Out over 0.7 seconds, held 0.5, back over 1.1.
+      if (u < 0 || u > 2.3) continue;
+      final double shape = u < 0.7
+          ? Curves.easeInOut.transform(u / 0.7)
+          : u < 1.2
+              ? 1
+              : 1 - Curves.easeInOut.transform((u - 1.2) / 1.1);
+      open = math.max(open, shape * wingOpenMost);
+    }
+    return math.max(open, breath);
+  }
 
   // Wingbeats a second in flight.
   static const double beatsPerSecond = 8;
@@ -187,7 +226,8 @@ class MothPose {
 }
 
 // The planned flight, as keys of (seconds, across, rise, scale, alpha). The
-// curve runs smoothly through every key.
+// curve runs smoothly through every key. Seconds count from take-off, so the
+// time it sits can change without moving a single key.
 //
 // **It passes behind her, never across her face.** Going behind is where it
 // shrinks and fades -- that is the disappearing -- and crossing in front of
@@ -197,38 +237,39 @@ abstract final class _Flight {
   static const List<(double, double, double, double, double)> _keys =
       <(double, double, double, double, double)>[
     (0.0, -34, 92, 1.0, 1),
-    (5.0, -34, 92, 1.0, 1),
     // The burst off her shoulder: up and out, fast.
-    (5.4, -72, 150, 1.05, 1),
-    (6.6, -140, 175, 0.85, 1),
-    (7.8, -110, 214, 0.58, 0.7),
-    (8.8, -20, 228, 0.45, 0),
-    (10.2, 90, 215, 0.45, 0),
-    (11.1, 136, 188, 0.6, 1),
-    (12.4, 150, 130, 1.1, 1),
-    (13.6, 82, 70, 1.3, 1),
-    (14.8, 0, 46, 1.35, 1),
-    (15.9, -62, 70, 1.15, 1),
-    (16.8, -48, 108, 1.05, 1),
-    (17.4, -35, 97, 1.0, 1),
-    (18.0, -34, 92, 1.0, 1),
+    (0.4, -72, 150, 1.05, 1),
+    (1.6, -140, 175, 0.85, 1),
+    (2.8, -110, 214, 0.58, 0.7),
+    (3.8, -20, 228, 0.45, 0),
+    (5.2, 90, 215, 0.45, 0),
+    (6.1, 136, 188, 0.6, 1),
+    (7.4, 150, 130, 1.1, 1),
+    (8.6, 82, 70, 1.3, 1),
+    (9.8, 0, 46, 1.35, 1),
+    (10.9, -62, 70, 1.15, 1),
+    (11.8, -48, 108, 1.05, 1),
+    (12.4, -35, 97, 1.0, 1),
+    (13.0, -34, 92, 1.0, 1),
   ];
 
   // The stretch spent behind her. It changes sides at two places where it
   // is clear of her outline, so the swap is never seen.
-  static const double behindFrom = 7.9;
-  static const double behindUntil = 11.1;
+  static const double behindFrom = FeelingsMoth.restSeconds + 2.9;
+  static const double behindUntil = FeelingsMoth.restSeconds + 6.1;
 
   // It lands over the last 0.6 seconds: the wings stop and fold.
-  static const double landFrom = 17.4;
+  static const double landFrom = FeelingsMoth.restSeconds + 12.4;
 
   static double get total => FeelingsMoth.flight.inMilliseconds / 1000;
 
   static MothPose poseAt(double t) {
     t = t % total;
+    // Seconds since take-off, which is what the keys count in.
+    final double f = math.max(t - FeelingsMoth.restSeconds, 0.0);
 
     int i = 0;
-    while (i < _keys.length - 2 && t >= _keys[i + 1].$1) {
+    while (i < _keys.length - 2 && f >= _keys[i + 1].$1) {
       i++;
     }
     final (double, double, double, double, double) k0 =
@@ -242,7 +283,7 @@ abstract final class _Flight {
     // it off her shoulder before it has left.
     final bool sitting = t < FeelingsMoth.restSeconds;
     final double u =
-        sitting ? 0 : ((t - k1.$1) / (k2.$1 - k1.$1)).clamp(0.0, 1.0);
+        sitting ? 0 : ((f - k1.$1) / (k2.$1 - k1.$1)).clamp(0.0, 1.0);
 
     double at(double a, double b, double c, double d) =>
         _catmullRom(a, b, c, d, u);
@@ -475,6 +516,7 @@ class _FeelingsMothState extends State<FeelingsMoth>
                       flying: flying,
                       beat: _beat,
                       shiver: still ? 0 : _shiver(t),
+                      idle: still ? 0 : FeelingsMoth.restingWingsAt(t),
                       heading: heading,
                       abdomen: _abdomen,
                     ),
@@ -606,6 +648,7 @@ class _MothPainter extends CustomPainter {
   final double flying;
   final double beat;
   final double shiver;
+  final double idle;
   final double heading;
   final double abdomen;
 
@@ -617,6 +660,7 @@ class _MothPainter extends CustomPainter {
     required this.flying,
     required this.beat,
     required this.shiver,
+    required this.idle,
     required this.heading,
     required this.abdomen,
   });
@@ -640,8 +684,9 @@ class _MothPainter extends CustomPainter {
     if (alpha <= 0.01) return;
 
     final double s = FeelingsMoth.mothSize * scale;
-    // Folded back like a roof when sitting; a shiver loosens the fold.
-    final double fold = (1 - flying) * (1 - 0.25 * shiver);
+    // Folded back like a roof when sitting; a shiver loosens the fold, and
+    // so does the idle opening.
+    final double fold = (1 - flying) * (1 - 0.25 * shiver) * (1 - idle);
 
     canvas.save();
     canvas.translate(centre.dx, centre.dy);

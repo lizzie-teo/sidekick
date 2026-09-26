@@ -333,8 +333,14 @@ class _MeViewState extends State<MeView> {
                           // only the settings are phone-only. A privacy line
                           // that overclaims is worse than none at all, so it
                           // now says what is actually kept and what is not.
+                          //
+                          // Colouring pictures joined the list on 26
+                          // September 2026, and "Nothing else is kept" would
+                          // have been the same overclaim the other way round.
                           footer: 'Your good things are saved to your '
-                              'account, so they survive a new phone. Nothing '
+                              'account, so they survive a new phone. Your '
+                              'colouring is kept on this phone, and in your '
+                              'account too once it has an email. Nothing '
                               'else is kept: breathing, the panic screen and '
                               'the feeling you pick all record nothing. '
                               'Deleting is immediate and can\'t be undone.',
@@ -378,6 +384,11 @@ class _MeViewState extends State<MeView> {
                               label: 'Crisis lines near you',
                               chevron: true,
                               onTap: () {},
+                            ),
+                            SkRow(
+                              label: 'Who the quotes on Home are from',
+                              chevron: true,
+                              onTap: () => context.push(Routes.quoteCredits),
                             ),
                             // Signing out navigates nowhere: the session
                             // ends, the watch() in the viewmodel notices,

@@ -15,6 +15,8 @@ import 'package:sidekick/app/widgets/theme.dart';
 import 'package:sidekick/data/services/configuration_service.dart';
 import 'package:sidekick/data/services/good_things_service.dart';
 import 'package:sidekick/features/me/services/data_export_service.dart';
+import 'package:sidekick/features/play/services/picture_repository.dart';
+import 'package:sidekick/features/play/services/scene_library.dart';
 
 import 'fakes.dart';
 
@@ -43,6 +45,10 @@ Future<GoRouter> pumpApp(
   // band in the app was unchecked at the size that breaks them. Pass
   // `TextScaler.linear(2)` to run that pass.
   TextScaler textScaler = TextScaler.noScaling,
+  // The screen size the app is told about. Left unset, the harness reports
+  // zero, which every width-band helper reads as a phone. Pass a size to
+  // test a tablet layout -- and set the surface to match.
+  Size? screenSize,
   // The theme to mount. Defaults to Moss light, which is what nearly every
   // test wants. Pass `appDarkTheme()` to run the dark half of the style
   // guide's one test -- the exercise screens have two grounds since 22
@@ -54,6 +60,7 @@ Future<GoRouter> pumpApp(
   DeviceSettingsService? deviceSettingsService,
   GoodThingsService? goodThingsService,
   DataExportService? dataExportService,
+  PictureRepository? pictureRepository,
 }) async {
   // The shell mounts Home, and Home has a Rive animation on it. Rive's native
   // engine has to be loaded before that widget builds or it asserts. Safe to
@@ -80,6 +87,20 @@ Future<GoRouter> pumpApp(
   );
   getIt.registerSingleton<GoodThingsService>(
     goodThingsService ?? FakeGoodThingsService(),
+  );
+
+  // The colouring book. The real scene library reads the real SVGs from the
+  // test bundle; the repository keeps its pictures in memory, so nothing
+  // touches the file system or the server.
+  getIt.registerSingleton<SceneLibrary>(SceneLibrary());
+  getIt.registerSingleton<PictureRepository>(
+    pictureRepository ??
+        PictureRepository(
+          loggerService: logger,
+          local: FakePictureStore(),
+          remote: FakePictureStore(),
+          hasAccount: authState.hasAccount,
+        ),
   );
 
   // The Me tab's "Send me a copy of everything". Faked by default because the
@@ -115,6 +136,7 @@ Future<GoRouter> pumpApp(
   await tester.pumpWidget(
     MediaQuery(
       data: MediaQueryData(
+        size: screenSize ?? Size.zero,
         disableAnimations: true,
         textScaler: textScaler,
       ),

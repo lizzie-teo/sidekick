@@ -11,6 +11,7 @@ import 'package:sidekick/app/core/auth_state_service.dart';
 import 'package:sidekick/app/core/device_settings_service.dart';
 import 'package:sidekick/app/core/event_bus.dart';
 import 'package:sidekick/app/core/feature_registry.dart';
+import 'package:sidekick/app/core/home_place_service.dart';
 import 'package:sidekick/app/core/logger_service.dart';
 import 'package:sidekick/app/core/notification_service.dart';
 import 'package:sidekick/app/core/theme_service.dart';
@@ -43,6 +44,13 @@ Future<void> setupServiceLocator() async {
 
   getIt.registerLazySingleton<ThemeService>(
     () => ThemeService(deviceSettingsService: getIt<DeviceSettingsService>()),
+  );
+
+  // Where the phone roughly is, for the sky. Registered here rather than in
+  // `DashboardModule` because two features read it -- Home and the breathing
+  // screen both draw the time of day's sky.
+  getIt.registerLazySingleton<HomePlaceService>(
+    () => HomePlaceService(loggerService: getIt<LoggerService>()),
   );
 
   // Supabase. Supabase.initialize() must already have run in main().

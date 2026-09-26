@@ -36,6 +36,9 @@ class SkSegmented extends StatelessWidget {
               child: SkPressable(
                 onPressed: () => onChanged(i),
                 wash: sk.ink,
+                // Which one is on is said out loud, not only shown by the
+                // lifted pill.
+                selected: i == selected,
                 borderRadius: BorderRadius.circular(8),
                 child: Container(
                   padding: const EdgeInsets.symmetric(vertical: 7),

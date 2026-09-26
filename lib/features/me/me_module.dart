@@ -6,6 +6,7 @@ import 'package:sidekick/app/core/auth_service.dart';
 import 'package:sidekick/app/core/device_settings_service.dart';
 import 'package:sidekick/app/core/feature_module.dart';
 import 'package:sidekick/app/core/logger_service.dart';
+import 'package:sidekick/data/services/colouring_archive.dart';
 import 'package:sidekick/data/services/good_things_service.dart';
 import 'package:sidekick/features/me/services/data_export_service.dart';
 import 'package:sidekick/features/me/views/me_view.dart';
@@ -30,6 +31,11 @@ class MeModule extends FeatureModule {
         goodThingsService: locator<GoodThingsService>(),
         deviceSettingsService: locator<DeviceSettingsService>(),
         authService: locator<AuthService>(),
+        // Asked for, not assumed: the pictures belong to the play feature,
+        // and a build without it still makes a copy.
+        colouringArchive: locator.isRegistered<ColouringArchive>()
+            ? locator<ColouringArchive>()
+            : null,
       ),
     );
   }

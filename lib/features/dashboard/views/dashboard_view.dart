@@ -15,11 +15,11 @@ import 'package:sidekick/app/widgets/sk_main_tab_bar.dart';
 import 'package:sidekick/app/widgets/sk_pressable.dart';
 import 'package:sidekick/app/widgets/sk_text.dart';
 import 'package:sidekick/features/dashboard/models/daily_quotes.dart';
-import 'package:sidekick/features/dashboard/services/home_place_service.dart';
+import 'package:sidekick/app/core/home_place_service.dart';
 import 'package:sidekick/features/dashboard/viewmodels/dashboard_viewmodel.dart';
 import 'package:sidekick/features/dashboard/widgets/affirmation_sheet.dart';
 import 'package:sidekick/features/dashboard/widgets/feelings_moth.dart';
-import 'package:sidekick/features/dashboard/widgets/home_sky.dart';
+import 'package:sidekick/app/widgets/home_sky.dart';
 import 'package:sidekick/features/dashboard/widgets/pause_sheet.dart';
 
 // **Home is a scene from 25 September 2026, at the user's request.** The
@@ -71,11 +71,11 @@ class DashboardView extends StatefulWidget {
   static const String tilesHeading = 'Now for you';
 
   // The tile that opens Good things.
-  static const String writeItDown = 'Write it down';
+  static const String whatWentWell = 'What went well';
 
   // Her height on the hill. Fixed, so a quote that grows at 200% text moves
   // the whole band down rather than squeezing her.
-  static const double characterHeight = 250;
+  static const double characterHeight = HomeStage.characterHeight;
 
   @override
   State<DashboardView> createState() => _DashboardViewState();
@@ -187,19 +187,29 @@ class _DashboardViewState extends State<DashboardView> {
                       // calm until the user reaches for her.
                       return HomeStage(
                         phase: state.phase,
+                        moon: state.moon,
                         height: DashboardView.characterHeight + SkLayout.lg,
                         // The door to the feeling picker: her moth, flying
                         // round her. It holds her, because it passes behind
                         // her for part of the way and in front for the rest.
-                        child: SizedBox.expand(
-                          child: FeelingsMoth(
-                            phase: state.phase,
-                            // Pushed, so "Just looking" comes straight back
-                            // to Home.
-                            onPressed: () => context.push(Routes.panic),
-                            child: SkCharacter(
-                              height: DashboardView.characterHeight,
-                              skin: state.character.skin,
+                        //
+                        // Lifted 6 off the band's foot, at the user's
+                        // request on 26 September 2026 -- off the four-point
+                        // grid on purpose, because 6 is the number they
+                        // chose by eye. The moth moves with her, because its
+                        // landing spot is measured from the same foot.
+                        child: Padding(
+                          padding: const EdgeInsets.only(bottom: 6),
+                          child: SizedBox.expand(
+                            child: FeelingsMoth(
+                              phase: state.phase,
+                              // Pushed, so "Just looking" comes straight back
+                              // to Home.
+                              onPressed: () => context.push(Routes.panic),
+                              child: SkCharacter(
+                                height: DashboardView.characterHeight,
+                                skin: state.character.skin,
+                              ),
                             ),
                           ),
                         ),
@@ -277,7 +287,7 @@ class _DashboardViewState extends State<DashboardView> {
                                 // prompt is read at the tap, so the tile
                                 // itself never rebuilds.
                                 _Tile(
-                                  icon: Icons.pause_circle_outline_rounded,
+                                  icon: Icons.spa_rounded,
                                   label: PauseSheet.buttonLabel,
                                   onPressed: () {
                                     final String prompt =
@@ -292,7 +302,7 @@ class _DashboardViewState extends State<DashboardView> {
                                 // too many for a screen reader.
                                 _Tile(
                                   icon: Icons.edit_note_rounded,
-                                  label: DashboardView.writeItDown,
+                                  label: DashboardView.whatWentWell,
                                   onPressed: () =>
                                       context.go(Routes.goodThings),
                                 ),
@@ -385,7 +395,7 @@ class _DailyQuoteBlock extends StatelessWidget {
                       style: SkText.homeDate.copyWith(color: ink)),
                   const SizedBox(height: SkLayout.sm),
                   Text(
-                    DateFormatUtils.monthLabel(today).toUpperCase(),
+                    DateFormatUtils.shortMonthLabel(today).toUpperCase(),
                     style: SkText.homeMonth.copyWith(color: ink),
                   ),
                 ],
@@ -451,7 +461,13 @@ class _Tiles extends StatelessWidget {
         children: <Widget>[
           for (int i = 0; i < children.length; i++) ...<Widget>[
             if (i > 0) const SizedBox(width: SkLayout.md),
-            SizedBox(width: _Tile.width, child: children[i]),
+            // A floor, not a fixed width: the row scrolls, so a tile is
+            // offered all the width it wants and hugs its label on one line.
+            // "Mindfulness" ran onto a second line in a fixed 132.
+            ConstrainedBox(
+              constraints: const BoxConstraints(minWidth: _Tile.width),
+              child: children[i],
+            ),
           ],
           SizedBox(width: gutter),
         ],
@@ -466,7 +482,8 @@ class _Tile extends StatelessWidget {
   final String label;
   final VoidCallback onPressed;
 
-  // Wide enough for "Write it down" on one line at 100% text.
+  // The narrowest a tile gets in the row, so a short label does not make a
+  // small tile. A longer label widens its own tile rather than wrapping.
   static const double width = 132;
   static const double minHeight = 104;
 

@@ -1,8 +1,22 @@
+import 'dart:async';
+
+import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'package:sidekick/app/core/app_constants.dart';
+import 'package:sidekick/app/core/auth_service.dart';
+import 'package:sidekick/app/core/auth_state_service.dart';
 import 'package:sidekick/app/core/feature_module.dart';
+import 'package:sidekick/app/core/logger_service.dart';
+import 'package:sidekick/app/core/service_locator.dart';
+import 'package:sidekick/data/services/colouring_archive.dart';
+import 'package:sidekick/features/play/services/picture_exporter.dart';
+import 'package:sidekick/features/play/services/picture_repository.dart';
+import 'package:sidekick/features/play/services/picture_stores.dart';
+import 'package:sidekick/features/play/services/scene_library.dart';
 import 'package:sidekick/features/play/views/actually_okay_view.dart';
+import 'package:sidekick/features/play/views/colouring_view.dart';
 import 'package:sidekick/features/play/views/low_day_view.dart';
 import 'package:sidekick/features/play/views/scribble_view.dart';
 import 'package:sidekick/features/play/views/tighten_view.dart';
@@ -26,13 +40,57 @@ import 'package:sidekick/features/play/views/tighten_view.dart';
 // muscle script instead, and the pad is reached from Home by somebody who is
 // not angry. See `_docs/briefs/wound-up-tighten-and-stop.md`.
 //
-// No services: nothing on these screens is saved, so there is nothing to
-// register.
+// **The one thing here that is saved is a colouring picture**, since 26
+// September 2026. Its services are the play feature's own and registered
+// below. The Me tab's export reads them through `ColouringArchive`, an
+// interface in `lib/data/services/`, so deleting this feature does not break
+// that one.
 class PlayModule extends FeatureModule {
   const PlayModule();
 
   @override
   String get name => 'play';
+
+  @override
+  void registerServices(GetIt locator) {
+    locator.registerLazySingleton<SceneLibrary>(() => SceneLibrary());
+
+    locator.registerLazySingleton<PictureRepository>(
+      () => PictureRepository(
+        loggerService: locator<LoggerService>(),
+        local: LocalPictureStore(loggerService: locator<LoggerService>()),
+        remote: RemotePictureStore(
+          loggerService: locator<LoggerService>(),
+          supabaseClient: locator<SupabaseClient>(),
+          authService: locator<AuthService>(),
+        ),
+        hasAccount: locator<AuthStateService>().hasAccount,
+      ),
+    );
+
+    locator.registerLazySingleton<ColouringArchive>(
+      () => PictureExporter(
+        loggerService: locator<LoggerService>(),
+        repository: locator<PictureRepository>(),
+        sceneLibrary: locator<SceneLibrary>(),
+      ),
+    );
+  }
+
+  // Started with the app rather than with the Colouring tab, because one of
+  // the moments it watches for -- an email landing on the account -- can
+  // happen without the tab ever being opened. Not awaited: it reads files,
+  // and the first frame does not wait for files.
+  @override
+  Future<void> onAppStart() async {
+    unawaited(getIt<PictureRepository>().start());
+  }
+
+  // Pictures safely on the server leave the phone with the account.
+  @override
+  Future<void> onSessionEnded() async {
+    await getIt<PictureRepository>().onSessionEnded();
+  }
 
   @override
   List<RouteBase> get routes => <RouteBase>[
@@ -55,6 +113,15 @@ class PlayModule extends FeatureModule {
           path: Routes.scribble,
           name: 'scribble',
           builder: (context, state) => const ScribbleView(),
+        ),
+        GoRoute(
+          path: Routes.colouring,
+          name: 'colouring',
+          builder: (context, state) => ColouringView(
+            pictureId:
+                state.uri.queryParameters[Routes.colouringPictureQuery],
+            sceneId: state.uri.queryParameters[Routes.colouringSceneQuery],
+          ),
         ),
       ];
 }

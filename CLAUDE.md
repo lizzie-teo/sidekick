@@ -199,6 +199,13 @@ journal entries go to the server from the very first save, under row-level
 security. There is no copy on the phone, no holding pen, no upload step and
 nothing to merge.
 
+**Colouring pictures are the one exception, on purpose.** They stay on the
+phone for an anonymous user and go to the `colourings` table only once an
+email is attached, when the phone sends up everything it holds. A picture is
+tens of kilobytes, and an anonymous user who deletes the app leaves their rows
+on the server for ever with nobody able to reach them. `PictureRepository`
+holds the rules and `_docs/briefs/colouring-book.md` the argument.
+
 The call is deliberately **not** awaited in `setupServiceLocator()`. It is a
 network call, and blocking the first frame on it would hold a slow or offline
 first open on a blank screen. Nothing is gated on the session, so the app
@@ -416,7 +423,9 @@ and one quote at the top, and her standing on a hill.
 
 | Fact | Where |
 | --- | --- |
-| Four skies -- morning, day, evening, night -- never a continuous blend | `DayPhase` |
+| Six skies -- morning, midday, afternoon, evening, night, late night -- never a continuous blend. The sun travels left to right across the day and the moon moves between the two nights. The midday sun is in the middle, just above her ears, and sits behind the end of the quote -- the user's call, 26 September 2026. Midday is a light baby blue, sky and land. Late night starts an hour before solar midnight | `DayPhase`, `_StagePainter.bodyAt` |
+| **The moon is tonight's real shape**, worked out on the phone from the date, and turned the right way round for the hemisphere of the phone's time zone -- a waxing moon is lit on the right in the north and the left in the south. The dark side shows faintly (earthshine). Faint craters on the lit part | `MoonPhase`, `_paintMoon` |
+| **Dark mode dims the day skies rather than replacing them.** Dark morning is still pink, dark midday still baby blue going pale at the horizon, dark afternoon still warm at the foot. Decided 26 September 2026: dark midday used to be a navy-teal that read as evening | `HomeSkyColors._scenes` |
 | The edges follow the **real sun**, worked out on the phone from the time zone's principal city. No location permission, no network | `SunTimes`, `HomePlaceService`, `zone_coordinates.dart` (generated from IANA `zone.tab`) |
 | Fixed hours only when the zone is unknown or the sun does not set | `DayPhase._byHour` |
 | **The clock picks what is in the sky; light or dark mode picks how bright.** Dark mode at noon is a deep day sky | `HomeSkyColors.of` |
@@ -601,6 +610,10 @@ explicit call in the second phase of `setupServiceLocator()`.
 | `lib/app/widgets/sk_progress_bar.dart` | One bar filling once. No segments, no number |
 | `lib/app/widgets/sk_speech_bubble.dart` | Words somebody said, with a tail pointing at them |
 | `test/support/fakes.dart` | Fakes that `implements` services, so no real `SupabaseClient` is built |
+| `lib/features/play/services/picture_repository.dart` | Where colouring pictures are kept: the phone always, the server once there is an email |
+| `lib/features/play/widgets/colouring_canvas.dart` | The colouring page: fill, brush, rubber, pinch, and the pen and palm rules |
+| `tool/make_colouring_scenes.py` | Draws the colouring scenes in `assets/colouring/` |
+| `tool/trace_colouring_page.py` | Turns a black-and-white drawing into a colouring scene, keeping its own lines |
 
 ### Routing
 
@@ -631,6 +644,17 @@ somebody who already knows they want to scribble should not have to name a
 feeling first, and somebody arriving through the picker should not be shown a
 screen they did not ask for. The pad's own two doors pop, so either route
 comes back where it started.
+
+**Since 26 September 2026 that door opens two tabs: Colouring and Scribble.**
+Colouring is a colouring book -- pick a scene, fill spaces, brush inside the
+lines -- and its pictures are kept. Scribble is the pad, unchanged: nothing on
+it is saved and its "no undo, no picker" rule still holds there and only
+there. The tabs change by a tap, never a swipe, because a swipe is also a
+stroke. A first visit opens on Colouring; after that, whichever was last used.
+`Routes.colouring` is one picture, full screen, pushed from the list.
+`_docs/briefs/colouring-book.md` is the plan, and the comments at the top of
+`colouring_canvas.dart` hold the finger and pen rules -- a pen that has touched
+the page turns fingers into page-movers, so a resting palm never draws.
 
 The words themselves, the order they are read in and the rules behind both
 flows are written out in `_docs/affirmation-flow.md`. That document is the
@@ -1062,7 +1086,7 @@ their mind into a six-minute script.
 
 **The button under the dial names its destination.** A reader on a hard
 evening should not have to press to find out where a stop goes. None of them
-congratulates and none of them scores -- "Write it down" and "Keep this one"
+congratulates and none of them scores -- "What went well" and "Keep this one"
 are invitations, "Well done" would be a verdict on a feeling. A test asserts
 the labels are all different, so two stops sharing a door still say two
 different things. `Feeling.ctaLabel`.
@@ -1371,6 +1395,41 @@ enough to breathe along with. Three things about it are decisions, not taste:
 - **Its centre was measured off the running app**, not calculated. Moving any
   band on this screen means looking at `_centreY` again.
 
+**The pacer stands on Home's hill, under Home's sky**, from 26 September 2026
+at the user's request. Same sky for the time of day, same moon, same band
+(`HomeStage`), and her the same size in the same place on it
+(`HomeStage.characterHeight`, `bandHeight`, `characterLift`, which Home now
+reads too). Home's moth is not here.
+
+**The fireflies and butterflies move, and that is the user's decision, taken
+knowing it is a second clock on the panic path.** Raised twice that afternoon
+and decided on the second time. The ring and her body are still the only
+things that keep the breath's time.
+
+Five backdrops of the screen's own were tried and dropped the same afternoon:
+a lake, dunes with palms, a sea of dunes, the day's Mindfulness card scene
+behind a hill, and a lake at dusk from a reference. **She stands on a hill;
+she does not float in a picture** -- that was the lesson of the card scenes.
+
+Mechanics worth knowing:
+
+- **The hill is painted under the ring, not in her band.** `_Place` works out
+  where her band is from the fixed bands above and below it, and centres
+  `HomeStage` on the same line her band centres her on. Moving or resizing any
+  band on the breathing screen means checking this again.
+- `HomeSky`, `HomeStage`, `DayPhase`, `MoonPhase`, `SunTimes` and
+  `zone_coordinates.dart` moved to `lib/app/` for this, and `HomePlaceService`
+  to `lib/app/core/`, registered in `service_locator.dart`, because two
+  features read them now.
+- `BreathingViewModel.readSky()` puts up the clock's phase on the first frame
+  and corrects it to the real sun when the place is read. It is read once and
+  never refreshed: a sky that changed mid-session would be the screen moving
+  on its own.
+- **The buttons sit on the hill, where Home has a cream panel.** The
+  light-mode morning and midday grounds are mid-tones no word colour clears
+  at 70%, so `BreathingView.groundUnderButtons` deepens the ground under them,
+  only as far as it must. `test/breathing_view_sky_test.dart` walks every sky.
+
 The cue keeps being updated under the words even though nothing shows it. It
 is the pacer reporting, not the screen deciding, and stopping it would mean
 the line was wrong the moment the words ran out.
@@ -1496,8 +1555,10 @@ once and never repeated. Nothing on this screen may ever say "deep breath".
 Deliberately absent -- do not add without being asked:
 
 - No local database. No SQLite, no Drift.
-- No repository layer. It goes between viewmodels and data services when a
-  backend and a local cache both exist.
+- One repository, and only one: `PictureRepository` in
+  `lib/features/play/services/`, because colouring pictures are the first
+  thing with both a phone copy and a server copy. Nothing else gets one until
+  it has both.
 - `lib/data/` holds two tables' worth of code: `_configuration` and
   `good_things`, each with its model and its service.
 - No connectivity or onboarding guards. The auth guard is in place; the redirect
@@ -1512,6 +1573,10 @@ Deliberately absent -- do not add without being asked:
 - `lib/app/views/tab_placeholder_view.dart` and the one feature folder still
   using it (`meditate`) are scaffolding: a real screen with nothing behind it,
   so every tab leads somewhere. Delete the file when it is replaced in phase 2.
+- `flutter_local_notifications` and `flutter_timezone` are pinned at versions
+  without Swift Package Manager support, which prints an iOS build warning
+  that will one day become an error. The upgrade is written up at the end of
+  `_docs/notifications-plan.md`.
 - `StateScope` in `app_constants.dart` is a placeholder enum with nothing behind
   it yet. It marks the intended split between application-scoped and
   session-scoped state.
@@ -2030,18 +2095,20 @@ fill and anything else whose number comes from the app's own state stay on an
 `AnimationController` or an `Animated*` widget. `flutter_animate` runs an effect
 on a schedule; those follow a value, which is a different job.
 
-Two rules it inherits from the rest of this file:
+One rule it inherits from the rest of this file:
 
 - **Durations are short and the easing is ordinary.** A screen read at the
   worst moment of somebody's day must not make them wait for a flourish.
   `_docs/skills/lively-motion.md` is the long version.
-- **Nothing decorative moves under the reader.** An entrance plays once, when
-  the thing arrives. A loop on a screen the reader is trying to read is the
-  same failure as two clocks, one level down.
 
-**Home's fireflies and butterflies are the one decorative loop, and it was
-the user's call.** Made 25 September 2026 with this rule on the table: the
-quote sits above the scene, not on it, so nothing moves under the words. The
+**Decorative motion under words is allowed.** There used to be a rule that
+nothing decorative moves under somebody reading. The user removed it on 26
+September 2026: it read as odd, and it was blocking slow, quiet movement in
+pictures like Home's scene and the Mindfulness card. Keep such movement slow
+and small. The panic path is still governed by its own rules above -- one
+clock, nothing that startles -- and those do not bend.
+
+**Home's fireflies and butterflies loop slowly behind the scene.** The
 creatures come and go rather than hover: a butterfly appears small, as if
 far off, grows as it comes nearer, then flies out of the scene or shrinks
 back into the distance; a firefly lights, drifts up, fades and lights again
@@ -2049,6 +2116,18 @@ a short way off. It runs on a 24-second `AnimationController` in
 `HomeStage`, and every movement repeats a whole number of times per loop so
 there is no jump. Reduce Motion stops it: every firefly lit, every butterfly
 at its nearest point with its wings open.
+
+**The Mindfulness card is alive too, on its own 24-second loop.** Added 26
+September 2026, at the user's request. Each of the eight scenes has the one or
+two living things that belong in it -- sky lanterns rising and water lanterns
+bobbing, a flock crossing past floating islands, sand streaming off dunes,
+snow and a rippling aurora, falling petals and butterflies, a turning
+lighthouse beam and circling gulls, seeds drifting down from the great tree,
+birds circling the temple. The lanterns and seeds shimmer slowly rather than
+blink. The back turns its ring of rays an eighth, and its sparkles swell. The
+real-insect facts and the slowed numbers are in the comment on `_LifePainter`
+in `lib/features/dashboard/widgets/card_scene.dart`. Reduce Motion stops both sides on a frame where
+everything is present.
 
 ## Skills
 
@@ -2062,7 +2141,9 @@ by name with a leading slash, or just describe the job and it loads itself.
 | `/breath-events` | Checking and repairing the two Rive events the breath counter runs on | The count stops incrementing, the in/out cue stops swapping, or any Rive session touched `Breathe` |
 | `/meditation-writer` | Writing or editing a guided meditation or relaxation script | The Meditate tab, body scans, grounding, sleep. **Not** the panic script -- that is `_docs/affirmation-flow.md` |
 | `/practice-writer` | Writing or editing a lesson that teaches a psychology skill | Anything in `lib/features/practice/` -- assertiveness, saying no, self-compassion drills. **Not** the app's own voice -- that is `_docs/kind-writing-style.md` |
+| `/scene-illustrator` | Painting a scene in the Alto's Odyssey style, and small creatures that move like the real insect | Drawing or changing Home's scene, a card picture or a new scene, or adding a firefly, butterfly, moth, bee, seed or leaf. **Never** the breathing screen or the character |
 | `/lesson-design` | How a lesson is laid out: how much goes on a screen, step or scroll, what may go behind a tap | Building or restructuring a teaching screen, adding a page to a lesson, or any request about accordions, "show more", info icons or a lesson feeling long. **Not** the words -- that is `/practice-writer` |
+| `/colouring-page` | Adding a page to the colouring book: the image prompt, checking the drawing, tracing it, finding leaks, registering it | The user wants a new colouring page, a prompt to generate one, or drops a drawing into `assets/colouring/`. **Not** Home's painted scenes -- that is `scene-illustrator` |
 
 This table is maintained by hand, so it can fall behind. Typing `/` in Claude
 Code lists the live set, personal skills included, and that list is always
@@ -2147,7 +2228,7 @@ explicitly chosen the version that got softened.
 | No instructions | The app talking to somebody who did not ask -- a lock screen line, an empty state | A script or a lesson the reader chose to open. There the instruction **is** the content |
 | No naming a technique | Same: somebody who did not ask | A screen the reader opened to learn or do the thing. A name is something to recognise next time |
 | No "we" | A brochure claiming closeness the app has not earned | A teacher's "today we're going to..." |
-| Nothing counts | Tallies of the user **over time** — scores kept, streaks, this month against last | "One hand" is a body part. "A few" is not a count |
+| Nothing counts | Tallies of the user **over time** — scores kept, streaks, this month against last. The panic screen and Good things keep this ban in full | "One hand" is a body part. "A few" is not a count. **Meditation journey stamps**: one per place, earned once, never a visit count or a streak -- the user's decision, 26 September 2026. `_docs/briefs/meditation-journeys.md` |
 | Length is the failure mode | Panic and low mood, where attention is measurably impaired | A meditation somebody calm sat down for |
 | The theme stops at the edge of an exercise | The **palette**. Six grounds making six promises about one lesson | Light and dark. That is the room the reader is in, not decoration -- and holding a page off-white in the dark is a bug, not consistency |
 | The forward pill is `ink` | A **third colour** on a page that already marks answers in green and red | How bright it is. A dimmed ink is still the ink's colour, and a full-width slab at text brightness is a lamp in the dark |
@@ -2158,6 +2239,7 @@ explicitly chosen the version that got softened.
 | Nothing moves on the panic path | Motion that **startles** or sets a second clock -- the cut startle, the fidgeting idle | A control the reader is dragging. The face follows the thumb, so it is one instruction, not two |
 | A bubble holds only what somebody said | The app **ventriloquising** -- putting its own label or its own words in a character's mouth, on the steps where the sentence is hers or the reader's | An **exhibit**: the swap drill's two introduction bubbles, which the page holds up, names and quotes. "A criticism" sits inside one and the sentence is in quote marks |
 | Only two styles take the handwriting face | Spending the face's one meaning -- *somebody is speaking* -- on a heading or a button | Words somebody says. The Home moth's "How are you?" is the third style, `SkText.homeMothWords`, added 25 September 2026 |
+| Detail on a phone reads as noise (scene-illustrator) | The **land** -- mountains, hills, dunes, water -- where many small bumps turn to grain | One focal figure in a scene -- a girl and her cat in a boat, a crane, a lighthouse. Section 9 of the skill says how much detail survives at card size |
 | A bubble already says somebody is talking, so quote marks say it twice | The same thing, one level down. Her six sorting sentences are **spoken**, so the marks are a second speaker tag | A sentence being **quoted** rather than said. On the introduction the page is citing a specimen, and that is what quote marks are for |
 
 **Add a row when you find another one.** The list is the point: a rule whose

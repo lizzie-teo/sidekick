@@ -1,11 +1,9 @@
-import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:sidekick/app/core/app_constants.dart';
 import 'package:sidekick/app/core/feature_module.dart';
-import 'package:sidekick/app/core/logger_service.dart';
-import 'package:sidekick/features/dashboard/services/home_place_service.dart';
 import 'package:sidekick/features/dashboard/views/dashboard_view.dart';
+import 'package:sidekick/features/dashboard/views/quote_credits_view.dart';
 
 // The authenticated destination. It owns Routes.home because that is where the
 // redirect sends anyone with a session -- there is no separate /dashboard path
@@ -17,18 +15,16 @@ class DashboardModule extends FeatureModule {
   String get name => 'dashboard';
 
   @override
-  void registerServices(GetIt locator) {
-    locator.registerLazySingleton<HomePlaceService>(
-      () => HomePlaceService(loggerService: locator<LoggerService>()),
-    );
-  }
-
-  @override
   List<RouteBase> get routes => <RouteBase>[
         GoRoute(
           path: Routes.home,
           name: 'dashboard',
           builder: (context, state) => const DashboardView(),
+        ),
+        GoRoute(
+          path: Routes.quoteCredits,
+          name: 'quoteCredits',
+          builder: (context, state) => const QuoteCreditsView(),
         ),
       ];
 }

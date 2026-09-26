@@ -214,3 +214,26 @@ Each of these has been shipped broken by somebody, so each has a step above.
 - **Two lines still argued over**, both listed at the end of
   `_docs/briefs/affirmation-lines.md`: five items listed at the end of
   `_docs/briefs/affirmation-lines.md`, and whether the set uses contractions.
+
+## Later: move both plugins to Swift Package Manager
+
+Noted 26 September 2026. `flutter build` / `flutter run` on iOS prints:
+
+> The following plugins do not support Swift Package Manager for ios:
+> flutter_local_notifications, flutter_timezone. This will become an error in
+> a future version of Flutter.
+
+It is a warning today and nothing is broken -- both still install through
+CocoaPods. It becomes a build failure on some future Flutter release, so do it
+before then, as its own job.
+
+| Package | Pinned | Latest on 26 Sep 2026 |
+| --- | --- | --- |
+| `flutter_local_notifications` | 18.0.1 | 22.3.1 |
+| `flutter_timezone` | 3.0.1 | 5.1.0 |
+
+- Check each changelog for the first version with Swift Package Manager
+  support; the smallest bump that has it is the safest.
+- Both are major-version jumps, so expect API changes in the scheduling and
+  timezone code. Run `flutter test`, then check a real reminder fires on a
+  real phone -- the tests cannot prove that.

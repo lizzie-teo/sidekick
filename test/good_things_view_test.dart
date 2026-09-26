@@ -66,6 +66,47 @@ void main() {
     expect(find.text('One good thing…'), findsOneWidget);
   });
 
+  testWidgets('opens on one box, and Add another adds up to three',
+      (tester) async {
+    await pumpApp(
+      tester,
+      isAuthenticated: true,
+      hasAccount: true,
+      location: Routes.goodThings,
+    );
+
+    expect(find.text('What went well'), findsOneWidget);
+    expect(find.byType(TextField), findsOneWidget);
+
+    await tester.tap(find.text('Add another'));
+    await tester.pumpAndSettle();
+    expect(find.byType(TextField), findsNWidgets(2));
+
+    await tester.tap(find.text('Add another'));
+    await tester.pumpAndSettle();
+    expect(find.byType(TextField), findsNWidgets(3));
+
+    // Three is the practice, so the button goes rather than doing nothing.
+    expect(find.text('Add another'), findsNothing);
+  });
+
+  testWidgets('the reason is behind the info icon, not on the form',
+      (tester) async {
+    await pumpApp(
+      tester,
+      isAuthenticated: true,
+      hasAccount: true,
+      location: Routes.goodThings,
+    );
+
+    expect(find.textContaining('When you\'re anxious'), findsNothing);
+
+    await tester.tap(find.byTooltip('Why this helps'));
+    await tester.pumpAndSettle();
+
+    expect(find.textContaining('When you\'re anxious'), findsOneWidget);
+  });
+
   testWidgets('a failed save keeps the words on screen', (tester) async {
     final goodThings = FakeGoodThingsService()
       ..saveError = Exception('offline');

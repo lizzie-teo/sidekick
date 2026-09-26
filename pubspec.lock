@@ -568,6 +568,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.9.1"
+  path_drawing:
+    dependency: "direct main"
+    description:
+      name: path_drawing
+      sha256: bbb1934c0cbb03091af082a6389ca2080345291ef07a5fa6d6e078ba8682f977
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.1"
   path_parsing:
     dependency: transitive
     description:
@@ -632,6 +640,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.13.1"
+  perfect_freehand:
+    dependency: "direct main"
+    description:
+      name: perfect_freehand
+      sha256: f42b8164c4e7e689b278f4e2e8e8f5006e716f8c127eb44404f21bd73b1d3b56
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.5.2+1"
   petitparser:
     dependency: transitive
     description:
@@ -1046,7 +1062,7 @@ packages:
     source: hosted
     version: "1.1.0"
   xml:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: xml
       sha256: "67f0aff7be013d107995e9b75bf4e7f2c3ef2dfdb2c8e68024bba0a7fd5756a4"

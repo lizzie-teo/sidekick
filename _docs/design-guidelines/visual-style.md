@@ -683,7 +683,6 @@ order.
 | Crossfade, never slide, between steps of a script | The reader moves both ways, so a direction would be a lie half the time |
 | 240ms, `easeOut` in / `easeIn` out | Long enough to see, short enough not to wait |
 | **One clock per screen** | Two things moving on two timings is two instructions. An orb driven by the same data as the line being read is one instruction said twice, and that is allowed |
-| Nothing moves under somebody reading | The thing they are reading must not leave |
 | A character must never shift | Bands around her are fixed height, so a long line cannot move her |
 
 ---

@@ -154,6 +154,16 @@ void main() {
     'feelings_moth.dart': "the moth on Home, a creature made of light. "
         'Fixed in every sky for the same reason the sun is yellow; its edge '
         'and its words are measured in feelings_moth_test.dart',
+    'card_scene.dart': "the Mindfulness card's eight landscapes, the same "
+        "argument as home_sky.dart: a dusk that went teal in one palette would "
+        'not read as dusk. The back\'s one line is measured in '
+        'card_scene_test.dart',
+    'pause_sheet.dart': 'the scrim, a fixed dark wash: every palette\'s ink '
+        'turns pale in the dark, where it would fog Home rather than shade it',
+    'colouring_palette.dart': "the colouring book's paints and paper. A "
+        "picture is the reader's own work, and a theme that repainted it "
+        'would change it. Argued beside them; the lines are measured in '
+        'colouring_scenes_test.dart',
   };
 
   test('a raw colour literal only appears where it is the decision', () {

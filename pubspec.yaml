@@ -67,6 +67,15 @@ dependencies:
   # to stop.
   flutter_animate: ^4.5.2
 
+  # Used for the colouring book. `perfect_freehand` turns a stroke's points
+  # into a smooth shape that swells with pen pressure, and fakes pressure
+  # from speed for a finger. `xml` reads each scene's SVG file and
+  # `path_drawing` turns every shape in it into a Flutter path, so a tap can
+  # fill a whole shape and a brush stroke can be clipped to it.
+  perfect_freehand: ^2.5.2+1
+  path_drawing: ^1.0.1
+  xml: ^7.0.1
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -155,6 +164,8 @@ flutter:
     - assets/images/
     - assets/rive/
     - assets/audio/
+    # The colouring scenes. tool/make_colouring_scenes.py draws them.
+    - assets/colouring/
 
   # Fragment shaders, compiled by the build and loaded through ShaderCache.
   # They are listed one by one rather than by folder: Flutter has no folder

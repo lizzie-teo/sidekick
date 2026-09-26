@@ -2,7 +2,11 @@ import 'dart:async';
 
 import 'package:sidekick/app/core/app_constants.dart';
 import 'package:sidekick/app/core/device_settings_service.dart';
+import 'package:sidekick/app/core/home_place_service.dart';
 import 'package:sidekick/app/core/view_model.dart';
+import 'package:sidekick/app/models/day_phase.dart';
+import 'package:sidekick/app/models/moon_phase.dart';
+import 'package:sidekick/app/models/sun_times.dart';
 import 'package:sidekick/features/panic/models/breathing_script.dart';
 import 'package:sidekick/features/panic/models/sensation.dart';
 import 'package:sidekick/features/panic/services/panic_voice.dart';
@@ -66,8 +70,12 @@ class BreathingViewModel extends ViewModel<BreathingState> {
     this.showsIntro = false,
     PanicVoice? voice,
     DeviceSettingsService? deviceSettingsService,
+    HomePlaceService? placeService,
+    DateTime Function()? now,
   })  : _voice = voice ?? const SilentPanicVoice(),
         _deviceSettingsService = deviceSettingsService,
+        _placeService = placeService,
+        _now = now ?? DateTime.now,
         super(const BreathingState()) {
     // Registered here rather than in start(), so a screen torn down before it
     // ever started still lets the player go.
@@ -96,6 +104,13 @@ class BreathingViewModel extends ViewModel<BreathingState> {
   // Optional for the same reason. Without it the voice is simply on, which is
   // the default anyway.
   final DeviceSettingsService? _deviceSettingsService;
+
+  // Where the phone roughly is, for the sky's real sunrise and sunset.
+  // Optional: without it the sky falls back to fixed hours, which is what a
+  // test wants and what Home does when the zone is unknown.
+  final HomePlaceService? _placeService;
+
+  final DateTime Function() _now;
 
   // The lead-in, one beat per line, with how long each stays up.
   //
@@ -213,6 +228,38 @@ class BreathingViewModel extends ViewModel<BreathingState> {
   // has no beats to offer.
   // Called once: from the view's initState when there is no introduction, and
   // from the Begin button when there is. Safe to call twice either way.
+  // The sky behind her: Home's, for the time of day. Called once from the
+  // view's initState, before either page is drawn.
+  //
+  // **Fixed hours first, the real sun a moment later.** The phase from the
+  // clock alone goes up on the first frame; the place is read from the phone
+  // and the phase corrected when it lands. Waiting for the read would hold a
+  // blank screen in front of somebody who could not wait, and the two only
+  // disagree in the hour around a sunrise or sunset. Read once and not
+  // refreshed: a sky that changed under somebody mid-session would be the
+  // screen moving on its own.
+  void readSky() {
+    final DateTime now = _now();
+    emit(current.copyWith(
+      phase: DayPhase.of(now),
+      moon: MoonPhase.at(now),
+    ));
+    unawaited(_readPlace(now));
+  }
+
+  Future<void> _readPlace(DateTime now) async {
+    final (double, double)? place = await _placeService?.coordinates();
+    if (place == null) return;
+    final DateTime today = DateTime(now.year, now.month, now.day);
+    final DayPhase phase =
+        DayPhase.of(now, sun: SunTimes.of(today, place.$1, place.$2));
+    final MoonPhase moon = MoonPhase.at(now, latitude: place.$1);
+    if (phase == current.phase && moon.southern == current.moon.southern) {
+      return;
+    }
+    emit(current.copyWith(phase: phase, moon: moon));
+  }
+
   void start() {
     if (_isStarted) return;
     _isStarted = true;
@@ -470,6 +517,11 @@ class BreathingState {
   // thing that changes it. See SettingsKeys.panicVoiceEnabled.
   final bool isVoiceOn;
 
+  // The sky behind her, Home's for the time of day. See
+  // BreathingViewModel.readSky.
+  final DayPhase phase;
+  final MoonPhase moon;
+
   const BreathingState({
     this.isLoading = false,
     this.errors = const {},
@@ -485,6 +537,8 @@ class BreathingState {
     this.breathsOnLine = 0,
     this.isExtended = false,
     this.isVoiceOn = true,
+    this.phase = DayPhase.midday,
+    this.moon = const MoonPhase(age: 0.5),
   });
 
   // The line on screen, or null while the lead-in still has the space.
@@ -537,6 +591,8 @@ class BreathingState {
     int? breathsOnLine,
     bool? isExtended,
     bool? isVoiceOn,
+    DayPhase? phase,
+    MoonPhase? moon,
   }) {
     return BreathingState(
       isLoading: isLoading ?? this.isLoading,
@@ -553,6 +609,8 @@ class BreathingState {
       breathsOnLine: breathsOnLine ?? this.breathsOnLine,
       isExtended: isExtended ?? this.isExtended,
       isVoiceOn: isVoiceOn ?? this.isVoiceOn,
+      phase: phase ?? this.phase,
+      moon: moon ?? this.moon,
     );
   }
 }

@@ -186,6 +186,27 @@ notice today" above the prompt and "Write down what you noticed" at the foot.
 "Wiggle your fingers slowly" is not something noticed. Both need new words.
 
 
+## Added 26 September 2026: each card says why
+
+The Pause card now carries one short line under the step, saying why it
+helps. "Look at the thing furthest away from you" is followed by "Your eyes
+work hard on close things, like a phone. Looking far away lets them rest."
+
+A step with no reason is an order. A step with a reason is a skill the reader
+keeps and can use without the app, which is what teaching mindfulness is for.
+The old "a prompt names one thing and stops" was guarding against a card that
+became a task; a reason adds no finish and nothing to fail, so it did not
+apply here.
+
+The lines live beside the prompts in `NoticingPrompts.why`, with their rules.
+The one to remember: **if a prompt has no plain true reason, the prompt
+goes.** `test/noticing_prompts_test.dart` checks every prompt has one, and
+holds each to twelve words a sentence and the house bans.
+
+Affirmation lines were considered for the card and left out. They are
+permission, not practice, and this brief already moved them off Home for that
+reason.
+
 ## The prompts
 
 Twenty-two to start, in nine groups. The groups are how the set is kept

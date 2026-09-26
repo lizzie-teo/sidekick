@@ -107,10 +107,21 @@ abstract class Routes {
   // same reason the panic sensation is never stored.
   static const String actuallyOkay = '/play/actually-okay';
 
-  // The scribble pad. No longer a feeling: it is reached from the Play button
-  // on Home, by somebody who is not angry, where it is drawing rather than
-  // therapy. Nothing on it is saved either.
+  // The Scribble button on Home. Two tabs since 26 September 2026: Colouring,
+  // where pictures are kept, and Scribble, the pad where nothing is. See
+  // `_docs/briefs/colouring-book.md`.
   static const String scribble = '/play/scribble';
+
+  // One colouring picture, full screen, pushed from the Colouring tab.
+  //
+  // `?picture=<id>` opens one already started. `?scene=<id>` starts a new
+  // one, which is not saved until the first mark -- so opening a scene and
+  // backing out leaves nothing behind. A picture id is not the reader's
+  // words, so a query parameter is fine here, and it survives a restored
+  // route.
+  static const String colouring = '/play/colouring';
+  static const String colouringPictureQuery = 'picture';
+  static const String colouringSceneQuery = 'scene';
 
   // Drill 0 -- swap the sentence. Four pages that teach the "I" sentence,
   // then six sentences to sort, one to fix, and one of the reader's own built
@@ -137,6 +148,10 @@ abstract class Routes {
     practice,
     me,
   ];
+
+  // Who the quotes on Home belong to. Owned by the dashboard feature, linked
+  // from the Me tab.
+  static const String quoteCredits = '/quote-credits';
 
   // Signed-out entry point
   static const String welcome = '/welcome';
@@ -256,6 +271,16 @@ abstract class SettingsKeys {
   // phone costs the user nothing, which is the test that decides between the
   // two. A fresh install opens on lessons.
   static const String practiceSection = 'practice_section';
+
+  // Which tab the Scribble screen showed last: colouring or scribble. A first
+  // visit opens on Colouring -- the new thing, and the calmer one.
+  static const String scribbleTab = 'scribble_tab';
+
+  // The colouring book's set of paints, by id, and which side of the page the
+  // tools sit on when there is room for them down one side. Lost on a new
+  // phone at no cost, which is why they are here and not on the server.
+  static const String colouringPalette = 'colouring_palette';
+  static const String colouringRailSide = 'colouring_rail_side';
 
   static const String appearanceMode = 'appearance_mode';
   static const String themePalette = 'theme_palette';

@@ -56,6 +56,11 @@ void main() {
     expect(DateFormatUtils.monthLabel(DateTime(2025, 12)), 'December 2025');
   });
 
+  test('shortMonthLabel writes September as Sept', () {
+    expect(DateFormatUtils.shortMonthLabel(DateTime(2026, 9)), 'Sept 2026');
+    expect(DateFormatUtils.shortMonthLabel(DateTime(2025, 12)), 'Dec 2025');
+  });
+
   // Anything kept or sent somewhere needs a day that is still that day when
   // it is read. "Yesterday" in a PDF opened next month names nothing.
   group('fullDate', () {

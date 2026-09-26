@@ -41,6 +41,28 @@ abstract final class DateFormatUtils {
   static String monthLabel(DateTime month) =>
       '${_months[month.month - 1]} ${month.year}';
 
+  // "Sept 2026". Home's date sits in large capitals over the sky, and the
+  // whole month name ran long there. Three letters, except September, which
+  // is "Sept" -- the short form people write, and "Sep" reads as a typo.
+  // Asked for by the user, 26 September 2026.
+  static String shortMonthLabel(DateTime month) =>
+      '${_shortMonths[month.month - 1]} ${month.year}';
+
+  static const List<String> _shortMonths = <String>[
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sept',
+    'Oct',
+    'Nov',
+    'Dec',
+  ];
+
   // "5 September 2026", always, however near the day is.
   //
   // The relative names dayLabel gives -- Today, Yesterday, Friday -- are read

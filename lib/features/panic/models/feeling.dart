@@ -75,7 +75,7 @@ enum Feeling {
   good(
     label: 'Good',
     artboardBase: 'feeling-good',
-    ctaLabel: 'Write it down',
+    ctaLabel: 'What went well',
   ),
   reallyGood(
     label: 'Really good',
@@ -127,7 +127,7 @@ enum Feeling {
   // it opens already uses. That is `TightenScript.emphasis`'s own test, moved
   // one screen earlier.
   //
-  // **None of them congratulates and none of them scores.** "Write it down"
+  // **None of them congratulates and none of them scores.** "What went well"
   // is an invitation; "Well done" would be a verdict on a feeling.
   //
   // **And none of them is an instruction to the reader.** "Hear something

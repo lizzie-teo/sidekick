@@ -9,9 +9,10 @@ import 'package:sidekick/app/core/notification_service.dart';
 import 'package:sidekick/app/core/theme_service.dart';
 import 'package:sidekick/app/core/view_model.dart';
 import 'package:sidekick/data/models/noticing_prompts.dart';
-import 'package:sidekick/features/dashboard/models/day_phase.dart';
-import 'package:sidekick/features/dashboard/models/sun_times.dart';
-import 'package:sidekick/features/dashboard/services/home_place_service.dart';
+import 'package:sidekick/app/models/day_phase.dart';
+import 'package:sidekick/app/models/moon_phase.dart';
+import 'package:sidekick/app/models/sun_times.dart';
+import 'package:sidekick/app/core/home_place_service.dart';
 
 // Home.
 //
@@ -197,10 +198,17 @@ class DashboardViewModel extends ViewModel<DashboardViewModelState> {
     final DateTime now = _now();
     final DateTime today = DateTime(now.year, now.month, now.day);
     final DayPhase phase = DayPhase.of(now, sun: _sunFor(today));
+    // Read whenever the sky is. The moon changes by a few per cent a day,
+    // so reading it only when the sky turns over is plenty.
+    final MoonPhase moon = MoonPhase.at(now, latitude: _place?.$1);
 
-    if (phase == current.phase && today == current.today) return;
+    if (phase == current.phase &&
+        today == current.today &&
+        moon.southern == current.moon.southern) {
+      return;
+    }
 
-    emit(current.copyWith(phase: phase, today: today));
+    emit(current.copyWith(phase: phase, today: today, moon: moon));
   }
 
   // Not awaited by init(): the prompt and a tapped check-in should not wait
@@ -263,6 +271,9 @@ class DashboardViewModelState {
   final DayPhase phase;
   final DateTime? today;
 
+  // Tonight's moon: how much of it is lit, and which side.
+  final MoonPhase moon;
+
   final Map<String, String> errors;
   final Map<String, String> messages;
 
@@ -271,8 +282,9 @@ class DashboardViewModelState {
     this.prompt = '',
     this.line = '',
     this.character = SidekickCharacter.girl,
-    this.phase = DayPhase.day,
+    this.phase = DayPhase.midday,
     this.today,
+    this.moon = const MoonPhase(age: 0.5),
     this.errors = const {},
     this.messages = const {},
   });
@@ -284,6 +296,7 @@ class DashboardViewModelState {
     SidekickCharacter? character,
     DayPhase? phase,
     DateTime? today,
+    MoonPhase? moon,
     Map<String, String>? errors,
     Map<String, String>? messages,
   }) {
@@ -294,6 +307,7 @@ class DashboardViewModelState {
       character: character ?? this.character,
       phase: phase ?? this.phase,
       today: today ?? this.today,
+      moon: moon ?? this.moon,
       errors: errors ?? this.errors,
       messages: messages ?? this.messages,
     );

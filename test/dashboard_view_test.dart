@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 
 import 'package:flutter_test/flutter_test.dart';
 
@@ -10,7 +11,6 @@ import 'package:sidekick/features/dashboard/widgets/affirmation_sheet.dart';
 import 'package:sidekick/features/dashboard/widgets/feelings_moth.dart';
 import 'package:sidekick/features/dashboard/widgets/pause_sheet.dart';
 import 'package:sidekick/features/play/views/scribble_view.dart';
-import 'package:sidekick/features/play/widgets/scribble_pad.dart';
 
 import 'support/pump_app.dart';
 
@@ -50,7 +50,7 @@ void main() {
     expect(find.text(quote.attribution), findsOneWidget);
   });
 
-  // The day's prompt is a card behind the Pause button, not a line under
+  // The day's prompt is a card behind the Mindfulness button, not a line under
   // her. As a line it read as an order from nowhere; a card is a thing the
   // reader asked for. `lib/features/dashboard/widgets/pause_sheet.dart`.
   testWidgets('an ordinary open shows no prompt under her', (tester) async {
@@ -69,9 +69,21 @@ void main() {
     await tester.tap(find.text(PauseSheet.buttonLabel));
     await tester.pumpAndSettle();
 
+    // Dealt face down: the words wait for the reader's tap.
     expect(find.byType(PauseSheet), findsOneWidget);
-    expect(find.text(PauseSheet.label), findsOneWidget);
+    expect(find.text(NoticingPrompts.all.first), findsNothing);
+    expect(find.text('Close'), findsOneWidget);
+
+    await tester.tap(find.bySemanticsLabel(PauseSheet.turnLabel));
+    await tester.pumpAndSettle();
+
     expect(find.text(NoticingPrompts.all.first), findsOneWidget);
+
+    // The reason sits under the step, so the card teaches rather than orders.
+    expect(
+      find.text(NoticingPrompts.whyFor(NoticingPrompts.all.first)!),
+      findsOneWidget,
+    );
 
     // Nothing marks it done. Close is the only word on the way out.
     expect(find.text('Done'), findsNothing);
@@ -82,14 +94,17 @@ void main() {
     expect(find.byType(PauseSheet), findsNothing);
   });
 
-  // **The card is not a button.** Nothing is behind it -- a prompt names one
-  // thing and stops, and a tap that opened something would turn it into a
-  // task with a finish on it. Rule 2 of the brief.
+  // **The face is not a button.** The back turns over and that is all a tap
+  // does -- a prompt names one thing and stops, and a tap that opened
+  // something would turn it into a task with a finish on it. Rule 2 of the
+  // brief.
   testWidgets('the card opens nothing when tapped', (tester) async {
     usePhone(tester);
     await pumpApp(tester, isAuthenticated: true);
 
     await tester.tap(find.text(PauseSheet.buttonLabel));
+    await tester.pumpAndSettle();
+    await tester.tap(find.bySemanticsLabel(PauseSheet.turnLabel));
     await tester.pumpAndSettle();
     await tester.tap(find.text(NoticingPrompts.all.first));
     await tester.pumpAndSettle();
@@ -98,11 +113,22 @@ void main() {
     expect(find.byType(PauseSheet), findsOneWidget);
   });
 
-  // Every prompt has its own picture. A missing one would fall back to a
-  // generic leaf, quietly, and nobody would notice the card had lost it.
-  test('every prompt has an icon', () {
-    for (final String prompt in NoticingPrompts.all) {
-      expect(PauseSheet.icons.containsKey(prompt), isTrue, reason: prompt);
+  // A tile hugs its label rather than wrapping it. "Mindfulness" broke onto
+  // a second line inside a fixed 132-point tile; the tile grows instead.
+  testWidgets('every tile label sits on one line', (tester) async {
+    usePhone(tester);
+    await pumpApp(tester, isAuthenticated: true);
+
+    for (final String label in <String>[
+      'Scribble',
+      PauseSheet.buttonLabel,
+      DashboardView.whatWentWell,
+    ]) {
+      final Finder text = find.text(label);
+      final double lineHeight =
+          tester.renderObject<RenderParagraph>(text).preferredLineHeight;
+      expect(tester.getSize(text).height, lessThan(lineHeight * 1.5),
+          reason: label);
     }
   });
 
@@ -126,7 +152,9 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byType(ScribbleView), findsOneWidget);
-    expect(find.byType(ScribblePad), findsOneWidget);
+    // Two tabs since 26 September 2026, and a first visit opens on
+    // Colouring. The pad is one tap away, on the Scribble tab.
+    expect(find.text(ScribbleView.newPicture), findsOneWidget);
   });
 
   // The style guide's one test, on the screen the 24 September 2026 swap
@@ -203,6 +231,8 @@ void main() {
       await tester.ensureVisible(find.text(PauseSheet.buttonLabel));
       await tester.pumpAndSettle();
       await tester.tap(find.text(PauseSheet.buttonLabel));
+      await tester.pumpAndSettle();
+      await tester.tap(find.bySemanticsLabel(PauseSheet.turnLabel));
       await tester.pumpAndSettle();
 
       expect(tester.takeException(), isNull);

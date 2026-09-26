@@ -15,6 +15,7 @@ import 'package:sidekick/app/core/logger_service.dart';
 import 'package:sidekick/app/core/notification_service.dart';
 import 'package:sidekick/app/utilities/date_format_utils.dart';
 import 'package:sidekick/data/models/entities/good_thing_model.dart';
+import 'package:sidekick/data/services/colouring_archive.dart';
 import 'package:sidekick/data/services/good_things_service.dart';
 
 // "Send me a copy of everything" on the Me tab.
@@ -40,15 +41,21 @@ class DataExportService {
   final DeviceSettingsService _deviceSettingsService;
   final AuthService _authService;
 
+  // The colouring pictures. Optional, because they belong to the play
+  // feature: without it the copy simply has no pictures in it.
+  final ColouringArchive? _colouringArchive;
+
   DataExportService({
     required LoggerService loggerService,
     required GoodThingsService goodThingsService,
     required DeviceSettingsService deviceSettingsService,
     required AuthService authService,
+    ColouringArchive? colouringArchive,
   })  : _loggerService = loggerService,
         _goodThingsService = goodThingsService,
         _deviceSettingsService = deviceSettingsService,
-        _authService = authService;
+        _authService = authService,
+        _colouringArchive = colouringArchive;
 
   // Gathers, renders, writes and shares. The one call the viewmodel makes.
   //
@@ -97,6 +104,8 @@ class DataExportService {
       email: _authService.getUserEmail(),
       goodThings: entries,
       settings: await _gatherSettings(),
+      pictures: await _colouringArchive?.exportAll() ??
+          const <ArchivedPicture>[],
     );
   }
 
@@ -172,6 +181,7 @@ class DataExportService {
           pw.SizedBox(height: 28),
           _goodThings(data),
           pw.SizedBox(height: 28),
+          ..._pictures(data),
           _settings(data),
           pw.SizedBox(height: 28),
           _whatIsNotHere(),
@@ -230,6 +240,33 @@ class DataExportService {
     );
   }
 
+  // The colouring pictures, one to a row, each with its scene's name and the
+  // day it was last touched. Left out entirely when there are none: an empty
+  // heading would read as something that went missing.
+  List<pw.Widget> _pictures(ExportData data) {
+    if (data.pictures.isEmpty) return const <pw.Widget>[];
+
+    return <pw.Widget>[
+      _heading('Your colouring', 'The pictures kept on this phone'),
+      for (final ArchivedPicture picture in data.pictures)
+        pw.Padding(
+          padding: const pw.EdgeInsets.only(top: 14),
+          child: pw.Column(
+            crossAxisAlignment: pw.CrossAxisAlignment.start,
+            children: <pw.Widget>[
+              pw.Text(
+                '${picture.title}, ${DateFormatUtils.fullDate(picture.updatedAt)}',
+                style: pw.TextStyle(fontSize: 11, fontWeight: pw.FontWeight.bold),
+              ),
+              pw.SizedBox(height: 6),
+              pw.Image(pw.MemoryImage(picture.png), width: 220),
+            ],
+          ),
+        ),
+      pw.SizedBox(height: 28),
+    ];
+  }
+
   pw.Widget _settings(ExportData data) {
     return pw.Column(
       crossAxisAlignment: pw.CrossAxisAlignment.start,
@@ -271,11 +308,12 @@ class DataExportService {
         _heading('What is not here', 'Because it was never kept'),
         pw.SizedBox(height: 10),
         pw.Text(
-          'Breathing, the panic screen, the feeling you picked, the play '
-          'screens and the practice lessons record nothing at all. Nothing is '
-          'timed, counted or compared between one day and the next, so there '
-          'is nothing of that kind to send you. What you write down is the '
-          'only thing kept, and it is all above.',
+          'Breathing, the panic screen, the feeling you picked, the scribble '
+          'pad, the other play screens and the practice lessons record '
+          'nothing at all. Nothing is timed, counted or compared between one '
+          'day and the next, so there is nothing of that kind to send you. '
+          'What you write down and the pictures you colour are the only '
+          'things kept, and they are all above.',
           style: const pw.TextStyle(fontSize: 12, lineSpacing: 3),
         ),
       ],
@@ -335,12 +373,16 @@ class ExportData {
   // Newest first, as the history screen shows them.
   final List<GoodThingModel> goodThings;
   final List<ExportSetting> settings;
+  // Newest first. Empty when there are none, or when the play feature is not
+  // there to ask.
+  final List<ArchivedPicture> pictures;
 
   const ExportData({
     required this.madeAt,
     required this.email,
     required this.goodThings,
     required this.settings,
+    this.pictures = const <ArchivedPicture>[],
   });
 
   // Grouped into days, newest day first, each day's entries kept in the order

@@ -3,13 +3,16 @@ import 'package:go_router/go_router.dart';
 
 import 'package:sidekick/app/core/app_constants.dart';
 import 'package:sidekick/app/core/device_settings_service.dart';
+import 'package:sidekick/app/core/home_place_service.dart';
 import 'package:sidekick/app/core/logger_service.dart';
 import 'package:sidekick/app/core/service_locator.dart';
 import 'package:sidekick/app/core/theme_service.dart';
+import 'package:sidekick/app/models/day_phase.dart';
+import 'package:sidekick/app/models/moon_phase.dart';
+import 'package:sidekick/app/widgets/home_sky.dart';
 import 'package:sidekick/app/widgets/sk_circle_icon_button.dart';
 import 'package:sidekick/app/widgets/sk_colors.dart';
 import 'package:sidekick/app/widgets/sk_outline_button.dart';
-import 'package:sidekick/app/widgets/sk_scene_panel.dart';
 import 'package:sidekick/app/widgets/sk_text.dart';
 import 'package:sidekick/app/widgets/sk_text_button.dart';
 import 'package:sidekick/app/widgets/guided_intro.dart';
@@ -21,9 +24,13 @@ import 'package:sidekick/features/panic/widgets/breath_ring.dart';
 
 // Breathe with the sidekick -- the panic path's first stop after the picker.
 //
-// The scene gradient takes the whole screen here, the same green Home wears
-// across the top, so walking in from Home is one room getting bigger rather
-// than a new one. Text sits on onScene for that reason, not on ink.
+// The pacer stands on Home's hill, under Home's sky for the time of day,
+// the same size and in the same place on it as on Home. Changed 26 September
+// 2026, at the user's request, after five backdrops of its own were tried
+// that afternoon. The fireflies and butterflies move, on Home's own loop --
+// the user's decision, knowing it is a second clock on this screen. Home's
+// moth is not here. The words take the sky's `onSky`; the buttons take
+// `BreathingView.wordsOn` on the ground below her.
 //
 // The animation is the clock. SkCharacter starts her breathing cycle on
 // arrival and surfaces the timeline's own inhale/exhale moments, so the cue
@@ -81,6 +88,46 @@ class BreathingView extends StatefulWidget {
   // missing.
   final bool showsIntro;
 
+  // The two word colours the buttons at the foot can take.
+  static const Color _darkWords = Color(0xFF221D33);
+  static const Color _lightWords = Color(0xFFFBF8F2);
+
+  // Near-white or near-black, whichever reads better on [ground]: the colour
+  // of the buttons at the foot of the screen, which sit on Home's hill.
+  static Color wordsOn(Color ground) =>
+      _ratio(_darkWords, ground) >= _ratio(_lightWords, ground)
+          ? _darkWords
+          : _lightWords;
+
+  // The ground under the buttons: Home's own ground, taken only as much
+  // darker as it needs for the faintest words there -- "That's enough for
+  // now", at 70% -- to reach 4.5:1.
+  //
+  // **Home never needed this, because a cream panel covers its ground.** Here
+  // the buttons sit on the hill itself, and the light-mode morning and midday
+  // grounds are mid-tones that neither near-black nor near-white clears at
+  // 70%. Darkening is the one direction that always ends: near-white clears
+  // any ground dark enough. The dark-mode grounds already pass and come back
+  // unchanged. `test/breathing_view_sky_test.dart` walks every sky.
+  static Color groundUnderButtons(Color ground) {
+    HSLColor hsl = HSLColor.fromColor(ground);
+    Color c = ground;
+    while (_faintRatio(c) < 4.5 && hsl.lightness > 0) {
+      hsl = hsl.withLightness((hsl.lightness - 0.02).clamp(0.0, 1.0));
+      c = hsl.toColor();
+    }
+    return c;
+  }
+
+  static double _faintRatio(Color ground) => _ratio(
+      Color.alphaBlend(wordsOn(ground).withValues(alpha: 0.7), ground), ground);
+
+  static double _ratio(Color a, Color b) {
+    final double x = a.computeLuminance();
+    final double y = b.computeLuminance();
+    return x > y ? (x + 0.05) / (y + 0.05) : (y + 0.05) / (x + 0.05);
+  }
+
   @override
   State<BreathingView> createState() => _BreathingViewState();
 }
@@ -106,6 +153,11 @@ class _BreathingViewState extends State<BreathingView> {
     showsIntro: widget.showsIntro,
     voice: JustAudioPanicVoice(loggerService: getIt<LoggerService>()),
     deviceSettingsService: getIt<DeviceSettingsService>(),
+    // Guarded the way Home guards it, so a widget test with no place in the
+    // container gets fixed hours rather than a crash.
+    placeService: getIt.isRegistered<HomePlaceService>()
+        ? getIt<HomePlaceService>()
+        : null,
   );
 
   // The character chosen on the Me tab, read once on arrival rather than
@@ -117,6 +169,9 @@ class _BreathingViewState extends State<BreathingView> {
   @override
   void initState() {
     super.initState();
+
+    // Home's sky for the time of day, behind both pages.
+    _viewModel.readSky();
 
     // With an introduction there is nothing to start yet: Begin is what calls
     // this, and until then the pacer, the lead-in timers and the voice are all
@@ -167,69 +222,6 @@ class _BreathingViewState extends State<BreathingView> {
   @override
   Widget build(BuildContext context) {
     final SkColors sk = context.sk;
-
-    // The breath rings are drawn in `onScene`, the slot already tuned to read
-    // against the scene gradient in every palette and both modes. Two earlier
-    // fills could not use it -- one was a shadow behind her, the other was
-    // derived from the scene and landed three times weaker in light mode than
-    // in dark -- but a stroke is a couple of pixels, so it can take the
-    // strongest colour on the screen without covering anything.
-    //
-    // The light around that line is a second colour: the scene's own middle
-    // colour, lit.
-    //
-    // **A fixed sun colour was considered and rejected.** Gold reads as light
-    // anywhere, but there are six palettes: it clashes on the blue one, where
-    // gold against blue is loud rather than calm, and disappears on the coral
-    // and pink ones, where it is the same hue as the scene behind it. It also
-    // throws away the palette the user chose. Deriving from the scene cannot
-    // do either.
-    //
-    // **The two modes need opposite treatments, and the branch is on the
-    // scene rather than on the theme**, so a palette whose light mode has a
-    // dark scene -- night forest does -- is handled by what it actually looks
-    // like rather than by what it is called:
-    //
-    // - **A dark scene has headroom, so light means brighter.** Lightness up
-    //   a long way is read as a lamp.
-    // - **A light scene has none**, and a near-white glow on a near-white
-    //   background is the flaw that made the light theme not work: it read as
-    //   a paler patch of paint, not as light. There, light means *more
-    //   colourful* -- saturation up, lightness barely moved, which is what
-    //   sunlight actually does to a coloured surface.
-    //
-    // The last step warms it slightly without moving the hue, so it reads as
-    // sunlight rather than as a lamp, while a blue palette stays blue.
-    final HSLColor scene = HSLColor.fromColor(sk.scene[1]);
-    final bool sceneIsLight = scene.lightness > 0.5;
-    final Color glow = Color.lerp(
-      scene
-          .withSaturation(
-            (scene.saturation + (sceneIsLight ? 0.38 : 0.10)).clamp(0.0, 1.0),
-          )
-          .withLightness(
-            (scene.lightness + (sceneIsLight ? 0.06 : 0.34)).clamp(0.0, 0.97),
-          )
-          .toColor(),
-      _sunlight,
-      0.18,
-    )!;
-
-    // The same asymmetry, applied to how much of it there is. A dark scene
-    // has the whole range up to white to play with, so the settings that a
-    // light scene needs read there as a blown-out lamp.
-    final double glowStrength = sceneIsLight ? 1 : 0.55;
-
-    // And once more for the line itself. `onScene` on a light scene is the
-    // darkest thing in the palette, which on a pale background reads as a
-    // circle drawn in ink rather than as light gathering -- it was the one
-    // part of this screen louder than her. Pulling it a third of the way back
-    // towards the scene softens it without losing the hard edge the whole
-    // design rests on. A dark scene has no such problem: `onScene` there is
-    // the pale end, and softening it would only make it disappear.
-    final Color line =
-        sceneIsLight ? Color.lerp(sk.onScene, sk.scene[1], 0.35)! : sk.onScene;
-
     // The panel pads for the status bar itself; the home indicator at the
     // bottom is ours to clear, and SafeArea cannot do it without cutting the
     // gradient short.
@@ -242,6 +234,78 @@ class _BreathingViewState extends State<BreathingView> {
     return ValueListenableBuilder<BreathingState>(
       valueListenable: _viewModel.state,
       builder: (BuildContext context, BreathingState state, Widget? _) {
+        // Home's sky for the time of day: the words on it take its `onSky`, and
+        // the buttons at the foot the colour that reads on its ground.
+        final HomeSkyColors sky =
+            HomeSkyColors.of(state.phase, Theme.of(context).brightness);
+        final Color onGround =
+            BreathingView.wordsOn(BreathingView.groundUnderButtons(sky.ground));
+
+        // The breath rings are drawn in the sky's `onSky`, the colour already
+        // tuned to read against its sky in both modes (it was the palette's
+        // `onScene` until the scene arrived, 26 September 2026). Two earlier
+        // fills could not use it -- one was a shadow behind her, the other was
+        // derived from the scene and landed three times weaker in light mode than
+        // in dark -- but a stroke is a couple of pixels, so it can take the
+        // strongest colour on the screen without covering anything.
+        //
+        // The light around that line is a second colour: the scene's own middle
+        // colour, lit.
+        //
+        // **It is derived from the sky's own horizon rather than fixed**, so the
+        // light around the ring is the colour of the sky it passes through.
+        //
+        // **The two modes need opposite treatments, and the branch is on the
+        // scene rather than on the theme**, so a palette whose light mode has a
+        // dark scene -- night forest does -- is handled by what it actually looks
+        // like rather than by what it is called:
+        //
+        // - **A dark scene has headroom, so light means brighter.** Lightness up
+        //   a long way is read as a lamp.
+        // - **A light scene has none**, and a near-white glow on a near-white
+        //   background is the flaw that made the light theme not work: it read as
+        //   a paler patch of paint, not as light. There, light means *more
+        //   colourful* -- saturation up, lightness barely moved, which is what
+        //   sunlight actually does to a coloured surface.
+        //
+        // The last step warms it slightly without moving the hue, so it reads as
+        // sunlight rather than as a lamp, while a blue palette stays blue.
+        //
+        // Since the scene, the colour it starts from is the sky's horizon -- the
+        // band the ring passes through -- rather than the palette's middle stop.
+        final HSLColor scene = HSLColor.fromColor(sky.horizon);
+        final bool sceneIsLight = scene.lightness > 0.5;
+        final Color glow = Color.lerp(
+          scene
+              .withSaturation(
+                (scene.saturation + (sceneIsLight ? 0.38 : 0.10))
+                    .clamp(0.0, 1.0),
+              )
+              .withLightness(
+                (scene.lightness + (sceneIsLight ? 0.06 : 0.34))
+                    .clamp(0.0, 0.97),
+              )
+              .toColor(),
+          _sunlight,
+          0.18,
+        )!;
+
+        // The same asymmetry, applied to how much of it there is. A dark scene
+        // has the whole range up to white to play with, so the settings that a
+        // light scene needs read there as a blown-out lamp.
+        final double glowStrength = sceneIsLight ? 1 : 0.55;
+
+        // And once more for the line itself. `onSky` on a light scene is the
+        // darkest thing in the palette, which on a pale background reads as a
+        // circle drawn in ink rather than as light gathering -- it was the one
+        // part of this screen louder than her. Pulling it a third of the way back
+        // towards the scene softens it without losing the hard edge the whole
+        // design rests on. A dark scene has no such problem: `onSky` there is
+        // the pale end, and softening it would only make it disappear.
+        final Color line = sceneIsLight
+            ? Color.lerp(sky.onSky, sky.horizon, 0.35)!
+            : sky.onSky;
+
         // The introduction, until Begin. A whole page of its own, so the scene
         // gradient, the rings and the Rive character are not built behind it
         // -- and the sidekick on it is standing still rather than pacing.
@@ -282,8 +346,9 @@ class _BreathingViewState extends State<BreathingView> {
         }
 
         return Scaffold(
-          body: SkScenePanel(
-            fullScreen: true,
+          body: _Place(
+            phase: state.phase,
+            moon: state.moon,
             child: Padding(
               padding: EdgeInsets.only(bottom: bottomInset),
               // A tap anywhere skips the lead-in and nothing else. Once the
@@ -326,7 +391,7 @@ class _BreathingViewState extends State<BreathingView> {
                           SkCircleIconButton(
                             icon: Icons.close,
                             label: 'Close',
-                            color: sk.onScene,
+                            color: sky.onSky,
                             onPressed: _leave,
                           ),
                           SkCircleIconButton(
@@ -336,7 +401,7 @@ class _BreathingViewState extends State<BreathingView> {
                             label: state.isVoiceOn
                                 ? 'Turn the voice off'
                                 : 'Turn the voice on',
-                            color: sk.onScene,
+                            color: sky.onSky,
                             onPressed: _viewModel.toggleVoice,
                           ),
                         ],
@@ -377,7 +442,7 @@ class _BreathingViewState extends State<BreathingView> {
                                 style: (state.showsWords
                                         ? SkText.sceneLine
                                         : SkText.breathCue)
-                                    .copyWith(color: sk.onScene),
+                                    .copyWith(color: sky.onSky),
                               ),
                             ),
                           ),
@@ -405,7 +470,31 @@ class _BreathingViewState extends State<BreathingView> {
                       // rather than a second thing keeping time. Her body alone
                       // was reported as not obvious enough to breathe along
                       // with; see BreathRing for why circles and not a glow.
-                      Expanded(child: IgnorePointer(child: sidekick)),
+                      //
+                      // **She stands the way she stands on Home**: the same
+                      // 250, in a band the same height as Home's, 6 off its
+                      // foot, so the hill `_Place` paints behind her meets her
+                      // exactly where Home's does. The band is centred in the
+                      // space, and `_Place` centres the hill on the same line.
+                      Expanded(
+                        child: Center(
+                          child: SizedBox(
+                            height: HomeStage.bandHeight,
+                            child: Padding(
+                              padding: const EdgeInsets.only(
+                                bottom: HomeStage.characterLift,
+                              ),
+                              child: Align(
+                                alignment: Alignment.bottomCenter,
+                                child: SizedBox(
+                                  height: HomeStage.characterHeight,
+                                  child: IgnorePointer(child: sidekick),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
 
                       const SizedBox(height: 16),
 
@@ -437,7 +526,7 @@ class _BreathingViewState extends State<BreathingView> {
                                 label: state.isLastLine
                                     ? "I'm alright now"
                                     : 'Next',
-                                color: sk.onScene,
+                                color: onGround,
                                 onPressed:
                                     state.isLastLine ? _leave : _viewModel.next,
                               )
@@ -474,14 +563,12 @@ class _BreathingViewState extends State<BreathingView> {
                                 child: state.showsWords && state.isLastLine
                                     ? SkTextButton(
                                         label: 'Keep breathing with me',
-                                        color:
-                                            sk.onScene.withValues(alpha: 0.7),
+                                        color: onGround.withValues(alpha: 0.7),
                                         onPressed: _viewModel.keepBreathing,
                                       )
                                     : SkTextButton(
                                         label: "That's enough for now",
-                                        color:
-                                            sk.onScene.withValues(alpha: 0.7),
+                                        color: onGround.withValues(alpha: 0.7),
                                         onPressed: _leave,
                                       ),
                               )
@@ -493,6 +580,101 @@ class _BreathingViewState extends State<BreathingView> {
               ),
             ),
           ),
+        );
+      },
+    );
+  }
+}
+
+// The scene behind the whole screen, and everything else padded in front of
+// it the way `SkScenePanel` pads its full-screen shape: 24 at the sides, the
+// status bar and 16 at the top, 28 at the foot. Those numbers are what
+// `BreathRing`'s extents and its measured `_centreY` were tuned inside, so
+// they are kept exactly.
+class _Place extends StatelessWidget {
+  final DayPhase phase;
+  final MoonPhase moon;
+  final Widget child;
+
+  const _Place({required this.phase, required this.moon, required this.child});
+
+  // Home's scene behind the whole screen, and everything else padded in front
+  // of it the way `SkScenePanel` pads its full-screen shape: 24 at the sides,
+  // the status bar and 16 at the top, 28 at the foot. Those numbers are what
+  // `BreathRing`'s extents and its measured `_centreY` were tuned inside.
+  //
+  // **The hill is painted here, under the ring, not in her band.** The ring
+  // paints beneath everything in front of it, so a hill in her band would
+  // cover it. The band's place is worked out from the fixed bands above and
+  // below her instead -- every band on this screen but hers is a fixed height,
+  // which is what makes that possible. Moving any band means changing this.
+  @override
+  Widget build(BuildContext context) {
+    final EdgeInsets insets = MediaQuery.paddingOf(context);
+    final HomeSkyColors sky =
+        HomeSkyColors.of(phase, Theme.of(context).brightness);
+
+    return LayoutBuilder(
+      builder: (BuildContext context, BoxConstraints box) {
+        final double top = insets.top +
+            16 +
+            SkCircleIconButton.size +
+            8 +
+            _BreathingViewState._wordsBand;
+        final double bottom = box.maxHeight -
+            28 -
+            insets.bottom -
+            16 -
+            _BreathingViewState._buttonBand -
+            _BreathingViewState._exitBand;
+        final double stageTop = (top + bottom) / 2 - HomeStage.bandHeight / 2;
+
+        return Stack(
+          fit: StackFit.expand,
+          children: <Widget>[
+            HomeSky(phase: phase),
+            Positioned(
+              left: 0,
+              right: 0,
+              top: stageTop,
+              height: HomeStage.bandHeight,
+              // The same band Home draws, with nothing in it: she is drawn in
+              // front of the ring. Its fireflies and butterflies move; the
+              // moth is Home's and is not here.
+              child: HomeStage(
+                phase: phase,
+                moon: moon,
+                height: HomeStage.bandHeight,
+                child: const SizedBox.shrink(),
+              ),
+            ),
+            // The rest of the hill, down to the foot of the screen: the colour
+            // the band's own ground fades to, deepening only where the
+            // buttons need it. See `BreathingView.groundUnderButtons`.
+            Positioned(
+              left: 0,
+              right: 0,
+              top: stageTop + HomeStage.bandHeight,
+              bottom: 0,
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: <Color>[
+                      sky.ground,
+                      BreathingView.groundUnderButtons(sky.ground),
+                    ],
+                    stops: const <double>[0, 0.3],
+                  ),
+                ),
+              ),
+            ),
+            Padding(
+              padding: EdgeInsets.fromLTRB(24, insets.top + 16, 24, 28),
+              child: child,
+            ),
+          ],
         );
       },
     );
